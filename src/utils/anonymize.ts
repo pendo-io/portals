@@ -16,17 +16,11 @@ function pick<T>(pool: T[], key: string): T {
 // Unique company assignment: avoids two real companies mapping to the same fake one
 const companyMap = new Map<string, string>();
 const usedCompanies = new Set<string>();
+let openAIAssignedToAccount = false;
 
 function pickCompany(realName: string): string {
   const existing = companyMap.get(realName);
   if (existing) return existing;
-
-  // First company assigned always gets OpenAI
-  if (companyMap.size === 0) {
-    companyMap.set(realName, "OpenAI");
-    usedCompanies.add("OpenAI");
-    return "OpenAI";
-  }
 
   let idx = hash(realName) % COMPANIES.length;
   let company = COMPANIES[idx];
@@ -45,6 +39,31 @@ function pickCompany(realName: string): string {
   companyMap.set(realName, company);
   usedCompanies.add(company);
   return company;
+}
+
+// Ensures first SFDC account record always maps to OpenAI
+function pickAccountCompany(realName: string): string {
+  if (!openAIAssignedToAccount && !companyMap.has(realName)) {
+    openAIAssignedToAccount = true;
+    // If OpenAI was already assigned to a different key (e.g. from signals), swap it
+    const existingOpenAIKey = [...companyMap.entries()].find(([, v]) => v === "OpenAI")?.[0];
+    if (existingOpenAIKey) {
+      // Give that key a new company instead
+      const idx = hash(existingOpenAIKey) % COMPANIES.length;
+      for (let i = 0; i < COMPANIES.length; i++) {
+        const candidate = COMPANIES[(idx + i) % COMPANIES.length];
+        if (!usedCompanies.has(candidate)) {
+          companyMap.set(existingOpenAIKey, candidate);
+          usedCompanies.add(candidate);
+          break;
+        }
+      }
+    }
+    usedCompanies.add("OpenAI");
+    companyMap.set(realName, "OpenAI");
+    return "OpenAI";
+  }
+  return pickCompany(realName);
 }
 
 // --- Data pools ---
@@ -224,7 +243,7 @@ export function anonymizeAccount(record: any): any {
   if (!DEMO_MODE || !record) return record;
 
   const nameKey = record.Name ?? record.Id ?? "";
-  const fakeCompany = pickCompany(nameKey);
+  const fakeCompany = pickAccountCompany(nameKey);
   const fakeDomain = domainFromCompany(fakeCompany);
   const { city: bCity, state: bState } = anonCityState(
     record.BillingCity, record.BillingState, nameKey + "_geo"
