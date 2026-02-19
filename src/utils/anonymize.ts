@@ -21,6 +21,13 @@ function pickCompany(realName: string): string {
   const existing = companyMap.get(realName);
   if (existing) return existing;
 
+  // First company assigned always gets OpenAI
+  if (companyMap.size === 0) {
+    companyMap.set(realName, "OpenAI");
+    usedCompanies.add("OpenAI");
+    return "OpenAI";
+  }
+
   let idx = hash(realName) % COMPANIES.length;
   let company = COMPANIES[idx];
 
@@ -42,11 +49,36 @@ function pickCompany(realName: string): string {
 
 // --- Data pools ---
 const COMPANIES = [
+  "OpenAI",
   "Nike",
   "Apple",
-  "OpenAI",
-  "Netflix",
   "Tesla",
+  "Spotify",
+  "Airbnb",
+  "Netflix",
+  "Shopify",
+  "Uber",
+  "Zoom",
+  "Adobe",
+  "Lululemon",
+  "Starbucks",
+  "Disney",
+  "Target",
+  "Peloton",
+  "Stripe",
+  "Squarespace",
+  "Etsy",
+  "Lyft",
+  "DoorDash",
+  "Rivian",
+  "Hulu",
+  "Pinterest",
+  "Snap",
+  "Reddit",
+  "Roku",
+  "Wayfair",
+  "Zillow",
+  "Dropbox",
 ];
 
 const FIRST_NAMES = [
@@ -84,11 +116,36 @@ const CITIES_STATES = [
 // --- Low-level anonymizers ---
 
 const COMPANY_DOMAINS: Record<string, string> = {
+  "OpenAI": "openai.com",
   "Nike": "nike.com",
   "Apple": "apple.com",
-  "OpenAI": "openai.com",
-  "Netflix": "netflix.com",
   "Tesla": "tesla.com",
+  "Spotify": "spotify.com",
+  "Airbnb": "airbnb.com",
+  "Netflix": "netflix.com",
+  "Shopify": "shopify.com",
+  "Uber": "uber.com",
+  "Zoom": "zoom.us",
+  "Adobe": "adobe.com",
+  "Lululemon": "lululemon.com",
+  "Starbucks": "starbucks.com",
+  "Disney": "disney.com",
+  "Target": "target.com",
+  "Peloton": "onepeloton.com",
+  "Stripe": "stripe.com",
+  "Squarespace": "squarespace.com",
+  "Etsy": "etsy.com",
+  "Lyft": "lyft.com",
+  "DoorDash": "doordash.com",
+  "Rivian": "rivian.com",
+  "Hulu": "hulu.com",
+  "Pinterest": "pinterest.com",
+  "Snap": "snap.com",
+  "Reddit": "reddit.com",
+  "Roku": "roku.com",
+  "Wayfair": "wayfair.com",
+  "Zillow": "zillow.com",
+  "Dropbox": "dropbox.com",
 };
 
 function domainFromCompany(company: string): string {
