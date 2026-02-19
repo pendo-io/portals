@@ -50,6 +50,7 @@ const App = () => (
                 <Route path="/login" element={<Login />} />
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/auth/callback" element={<AuthCallback />} />
+                <Route path="/api/auth/callback" element={<AuthCallback />} />
                 <Route path="/public/workflow" element={<PublicWorkflow />} />
                 <Route
                   element={
