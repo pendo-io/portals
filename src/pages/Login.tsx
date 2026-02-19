@@ -27,6 +27,7 @@ const Login = () => {
     authUrl.searchParams.set("response_type", "code");
     authUrl.searchParams.set("client_id", SFDC_CLIENT_ID);
     authUrl.searchParams.set("redirect_uri", SFDC_REDIRECT_URI);
+    authUrl.searchParams.set("prompt", "login");
     window.location.href = authUrl.toString();
   };
 
