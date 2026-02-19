@@ -6,15 +6,15 @@ import type {
   ClariForecastExportResult,
 } from "@/types/clari";
 
-async function clariFetch<T>(path: string, options?: RequestInit): Promise<T> {
-  const url = `/clari-api${path}`;
-
-  const res = await fetch(url, {
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      ...options?.headers,
-    },
+async function clariFetch<T>(path: string, options?: { method?: string; body?: unknown }): Promise<T> {
+  const res = await fetch("/api/clari-proxy", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      path,
+      method: options?.method,
+      body: options?.body,
+    }),
   });
 
   if (!res.ok) {
@@ -27,10 +27,6 @@ async function clariFetch<T>(path: string, options?: RequestInit): Promise<T> {
 
 function getField(fields: ClariRawField[], id: string): unknown {
   return fields.find((f) => f.id === id)?.value ?? null;
-}
-
-function getAlias(fields: ClariRawField[], id: string): string | null {
-  return fields.find((f) => f.id === id)?.alias ?? null;
 }
 
 function parseOpportunity(raw: ClariRawOpportunity): ClariOpportunity {
@@ -87,7 +83,7 @@ export async function fetchClariOpportunities(
 export async function queueForecastExport(): Promise<{ exportId: string }> {
   return clariFetch<{ exportId: string }>("/forecast/export", {
     method: "POST",
-    body: JSON.stringify({ format: "json" }),
+    body: { format: "json" },
   });
 }
 
@@ -128,7 +124,6 @@ export function aggregateAccountSummary(
     0
   );
 
-  // Collect risk reasons
   const risks = opportunities
     .map((o) => o.riskReason)
     .filter((r): r is string => r != null);

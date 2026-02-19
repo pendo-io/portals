@@ -1,28 +1,11 @@
 import type { MomentumMeeting } from "@/types/meeting";
 
-const DEV_BYPASS = import.meta.env.VITE_DEV_BYPASS_AUTH === "true";
-
 async function momentumFetch<T>(path: string, params?: Record<string, string>): Promise<T> {
-  const url = new URL(
-    DEV_BYPASS
-      ? `${window.location.origin}/momentum-api${path}`
-      : `https://api.momentum.io/v1${path}`
-  );
-
-  if (params) {
-    Object.entries(params).forEach(([key, value]) => {
-      if (value) url.searchParams.set(key, value);
-    });
-  }
-
-  const headers: Record<string, string> = {
-    "Content-Type": "application/json",
-  };
-
-  // In production, the API key would come via the edge function.
-  // In dev mode, the Vite proxy injects the header automatically.
-
-  const res = await fetch(url.toString(), { headers });
+  const res = await fetch("/api/momentum-proxy", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ path, params }),
+  });
 
   if (!res.ok) {
     const errorBody = await res.text();
