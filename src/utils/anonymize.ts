@@ -13,38 +13,39 @@ function pick<T>(pool: T[], key: string): T {
   return pool[hash(key) % pool.length];
 }
 
-// --- Fake data pools ---
+// --- Data pools ---
 const COMPANIES = [
-  "Northwind Systems",
-  "Apex Dynamics",
-  "Silverline Corp",
-  "Meridian Labs",
-  "Horizon Digital",
-  "Crestview Analytics",
-  "BluePeak Software",
-  "Ironclad Solutions",
-  "Vantage Cloud",
-  "Orion Technologies",
-  "Summit Partners",
-  "Catalyst Group",
-  "Pinnacle AI",
-  "Redwood Data",
-  "Evergreen Platform",
-  "Cobalt Industries",
-  "Nexus Innovations",
-  "Atlas Ventures",
-  "Prism Analytics",
-  "Sterling Logic",
-  "Quantum Reach",
-  "Ember Systems",
-  "Velocity Labs",
-  "Keystone Digital",
-  "BrightPath Tech",
-  "Forge Dynamics",
-  "Elevate Cloud",
-  "Spectrum IO",
-  "Trident Software",
-  "Lumen Works",
+  "Nike",
+  "McDonald's",
+  "Apple",
+  "Tesla",
+  "Spotify",
+  "Airbnb",
+  "Netflix",
+  "Shopify",
+  "Uber",
+  "Zoom",
+  "Adobe",
+  "Lululemon",
+  "Starbucks",
+  "Disney",
+  "Target",
+  "Peloton",
+  "Stripe",
+  "Squarespace",
+  "Etsy",
+  "Lyft",
+  "DoorDash",
+  "Rivian",
+  "Hulu",
+  "Pinterest",
+  "Snap",
+  "Reddit",
+  "Roku",
+  "Wayfair",
+  "Zillow",
+  "Dropbox",
+  "OpenAI",
 ];
 
 const FIRST_NAMES = [
@@ -81,8 +82,42 @@ const CITIES_STATES = [
 
 // --- Low-level anonymizers ---
 
+const COMPANY_DOMAINS: Record<string, string> = {
+  "Nike": "nike.com",
+  "McDonald's": "mcdonalds.com",
+  "Apple": "apple.com",
+  "Tesla": "tesla.com",
+  "Spotify": "spotify.com",
+  "Airbnb": "airbnb.com",
+  "Netflix": "netflix.com",
+  "Shopify": "shopify.com",
+  "Uber": "uber.com",
+  "Zoom": "zoom.us",
+  "Adobe": "adobe.com",
+  "Lululemon": "lululemon.com",
+  "Starbucks": "starbucks.com",
+  "Disney": "disney.com",
+  "Target": "target.com",
+  "Peloton": "onepeloton.com",
+  "Stripe": "stripe.com",
+  "Squarespace": "squarespace.com",
+  "Etsy": "etsy.com",
+  "Lyft": "lyft.com",
+  "DoorDash": "doordash.com",
+  "Rivian": "rivian.com",
+  "Hulu": "hulu.com",
+  "Pinterest": "pinterest.com",
+  "Snap": "snap.com",
+  "Reddit": "reddit.com",
+  "Roku": "roku.com",
+  "Wayfair": "wayfair.com",
+  "Zillow": "zillow.com",
+  "Dropbox": "dropbox.com",
+  "OpenAI": "openai.com",
+};
+
 function domainFromCompany(company: string): string {
-  return company.toLowerCase().replace(/[^a-z0-9]/g, "") + ".com";
+  return COMPANY_DOMAINS[company] ?? company.toLowerCase().replace(/[^a-z0-9]/g, "") + ".com";
 }
 
 export function anonCompany(name: string | null | undefined): string | null | undefined {
