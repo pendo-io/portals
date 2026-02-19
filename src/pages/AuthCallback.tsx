@@ -57,7 +57,7 @@ const AuthCallback = () => {
           })
         );
 
-        navigate("/accounts", { replace: true });
+        navigate("/", { replace: true });
       } catch (err: any) {
         console.error("Auth callback error:", err);
         setError(err.message || "Authentication failed. Please try again.");

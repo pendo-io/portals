@@ -18,7 +18,7 @@ const Login = () => {
 
   useEffect(() => {
     if (!sfdcLoading && sfdcAccessToken) {
-      navigate("/accounts", { replace: true });
+      navigate("/", { replace: true });
     }
   }, [sfdcLoading, sfdcAccessToken, navigate]);
 
