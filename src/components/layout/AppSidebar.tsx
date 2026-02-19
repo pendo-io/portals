@@ -89,7 +89,7 @@ export function AppSidebar() {
   const handleSignOut = async () => {
     localStorage.removeItem("sfdc_dev_session");
     await signOut();
-    window.location.href = "/login";
+    window.location.href = "/login?logout=true";
   };
 
   const isActive = (path: string) =>

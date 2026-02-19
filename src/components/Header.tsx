@@ -84,8 +84,9 @@ const Header = () => {
   }, [user?.id]);
 
   const handleSignOut = async () => {
+    localStorage.removeItem("sfdc_dev_session");
     await signOut();
-    window.location.href = '/auth';
+    window.location.href = "/login?logout=true";
   };
 
   const navLinkClass = (path: string) =>

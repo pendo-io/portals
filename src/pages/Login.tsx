@@ -14,6 +14,7 @@ const Login = () => {
   const navigate = useNavigate();
   const { sfdcAccessToken, sfdcLoading } = useSalesforce();
   const expired = searchParams.get("expired") === "true";
+  const loggedOut = searchParams.get("logout") === "true";
 
   useEffect(() => {
     if (!sfdcLoading && sfdcAccessToken) {
@@ -27,7 +28,9 @@ const Login = () => {
     authUrl.searchParams.set("response_type", "code");
     authUrl.searchParams.set("client_id", SFDC_CLIENT_ID);
     authUrl.searchParams.set("redirect_uri", SFDC_REDIRECT_URI);
-    authUrl.searchParams.set("prompt", "login");
+    if (loggedOut) {
+      authUrl.searchParams.set("prompt", "login");
+    }
     window.location.href = authUrl.toString();
   };
 
