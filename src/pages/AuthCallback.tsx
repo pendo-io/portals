@@ -1,13 +1,8 @@
 import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
 import { Loader2 } from "lucide-react";
 
 const SFDC_REDIRECT_URI = import.meta.env.VITE_SFDC_REDIRECT_URI;
-const SFDC_CLIENT_ID = import.meta.env.VITE_SFDC_CLIENT_ID;
-const SFDC_CLIENT_SECRET = import.meta.env.VITE_SFDC_CLIENT_SECRET;
-const SFDC_LOGIN_URL = import.meta.env.VITE_SFDC_LOGIN_URL || "https://login.salesforce.com";
-const DEV_BYPASS = import.meta.env.VITE_DEV_BYPASS_AUTH === "true";
 
 const AuthCallback = () => {
   const navigate = useNavigate();
@@ -15,7 +10,6 @@ const AuthCallback = () => {
   const processedRef = useRef(false);
 
   useEffect(() => {
-    // Guard against React strict mode double-mount (auth codes are single-use)
     if (processedRef.current) return;
     processedRef.current = true;
 
@@ -26,7 +20,6 @@ const AuthCallback = () => {
 
       if (errorParam) {
         console.error("SFDC OAuth error:", errorParam, params.get("error_description"));
-        console.error("Full callback URL:", window.location.href);
         setError(`Salesforce login failed: ${params.get("error_description") || errorParam}`);
         return;
       }
@@ -37,83 +30,32 @@ const AuthCallback = () => {
       }
 
       try {
-        if (DEV_BYPASS) {
-          // Client-side token exchange using client_secret (proxied via Vite)
-
-          const tokenParams: Record<string, string> = {
-            grant_type: "authorization_code",
-            code,
-            client_id: SFDC_CLIENT_ID,
-            redirect_uri: SFDC_REDIRECT_URI,
-          };
-          if (SFDC_CLIENT_SECRET) tokenParams.client_secret = SFDC_CLIENT_SECRET;
-
-          const tokenResponse = await fetch(
-            `/sfdc-token`,
-            {
-              method: "POST",
-              headers: { "Content-Type": "application/x-www-form-urlencoded" },
-              body: new URLSearchParams(tokenParams),
-            }
-          );
-
-          if (!tokenResponse.ok) {
-            const err = await tokenResponse.text();
-            throw new Error(`Token exchange failed: ${err}`);
-          }
-
-          const tokenData = await tokenResponse.json();
-
-          // Get user identity (proxied via Vite to avoid CORS)
-          const userInfoResponse = await fetch(
-            `/sfdc-api/services/oauth2/userinfo`,
-            { headers: { Authorization: `Bearer ${tokenData.access_token}` } }
-          );
-
-          if (!userInfoResponse.ok) {
-            throw new Error("Failed to fetch Salesforce user info");
-          }
-
-          const userInfo = await userInfoResponse.json();
-
-          // Store in localStorage for dev mode
-          const sfdcSession = {
-            access_token: tokenData.access_token,
-            refresh_token: tokenData.refresh_token,
-            instance_url: tokenData.instance_url,
-            user_id: userInfo.user_id,
-            org_id: userInfo.organization_id,
-            email: userInfo.email,
-            name: userInfo.name,
-            issued_at: tokenData.issued_at,
-          };
-
-          localStorage.setItem("sfdc_dev_session", JSON.stringify(sfdcSession));
-          navigate("/accounts", { replace: true });
-          return;
-        }
-
-        // Production path: use edge function
-        const { data, error: fnError } = await supabase.functions.invoke("sfdc-auth", {
-          body: { code, redirectUri: SFDC_REDIRECT_URI },
+        const response = await fetch("/api/sfdc-auth", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ code, redirectUri: SFDC_REDIRECT_URI }),
         });
 
-        if (fnError) {
-          throw new Error(fnError.message);
+        if (!response.ok) {
+          const err = await response.json().catch(() => ({}));
+          throw new Error(err.error || "Token exchange failed");
         }
 
-        if (!data?.success || !data?.session) {
-          throw new Error(data?.error || "Failed to authenticate with Salesforce");
-        }
+        const data = await response.json();
 
-        const { error: sessionError } = await supabase.auth.setSession({
-          access_token: data.session.access_token,
-          refresh_token: data.session.refresh_token,
-        });
-
-        if (sessionError) {
-          throw sessionError;
-        }
+        localStorage.setItem(
+          "sfdc_dev_session",
+          JSON.stringify({
+            access_token: data.access_token,
+            refresh_token: data.refresh_token,
+            instance_url: data.instance_url,
+            user_id: data.user_id,
+            org_id: data.org_id,
+            email: data.email,
+            name: data.name,
+            issued_at: data.issued_at,
+          })
+        );
 
         navigate("/accounts", { replace: true });
       } catch (err: any) {
