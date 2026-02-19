@@ -4,6 +4,7 @@ import { Moon, Sun, MessageSquare, LogOut, Users, FileText, ChevronDown, Shield,
 import { useTheme } from "next-themes";
 import { useLocation, Link } from "react-router-dom";
 import pendoLogo from "@/assets/pendo-logo-twitter.png";
+import { DEMO_MODE } from "@/utils/anonymize";
 import { useAuth } from "@/hooks/useAuth";
 import QuestionDialog from "@/components/QuestionDialog";
 import { supabase } from "@/integrations/supabase/client";
@@ -43,11 +44,13 @@ const Header = () => {
   });
   
   // Calculate userName directly from user - no state needed
-  const userName = user 
-    ? (user.user_metadata?.full_name?.split(' ')[0] || 
-       user.user_metadata?.name?.split(' ')[0] || 
-       user.email?.split('@')[0] || '')
-    : '';
+  const userName = DEMO_MODE
+    ? "Demo User"
+    : user
+      ? (user.user_metadata?.full_name?.split(' ')[0] ||
+         user.user_metadata?.name?.split(' ')[0] ||
+         user.email?.split('@')[0] || '')
+      : '';
 
   // Check super admin status - only fetch if not cached
   useEffect(() => {

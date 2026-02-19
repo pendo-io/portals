@@ -1,3 +1,5 @@
+import { anonymizeAccount, anonymizeContact, anonymizeOpportunity } from "@/utils/anonymize";
+
 export interface SFDCQueryResult<T> {
   totalSize: number;
   done: boolean;
@@ -66,7 +68,9 @@ export async function fetchAccounts(
   ownerId: string
 ) {
   const soql = `SELECT Id, Name, Industry, Type, OwnerId, Owner.Name, Website, Phone, NumberOfEmployees, AnnualRevenue, Domain_Name__c, BillingCity, BillingState, CreatedDate, LastModifiedDate FROM Account WHERE OwnerId = '${ownerId}' ORDER BY Name ASC`;
-  return query<any>(token, instanceUrl, soql);
+  const result = await query<any>(token, instanceUrl, soql);
+  result.records = result.records.map(anonymizeAccount);
+  return result;
 }
 
 export async function searchAccounts(
@@ -76,7 +80,9 @@ export async function searchAccounts(
 ) {
   const escaped = searchTerm.replace(/'/g, "\\'");
   const soql = `SELECT Id, Name, Industry, Type, OwnerId, Owner.Name, Website, Phone, NumberOfEmployees, AnnualRevenue, Domain_Name__c, BillingCity, BillingState, CreatedDate, LastModifiedDate FROM Account WHERE Name LIKE '%${escaped}%' ORDER BY Name ASC LIMIT 200`;
-  return query<any>(token, instanceUrl, soql);
+  const result = await query<any>(token, instanceUrl, soql);
+  result.records = result.records.map(anonymizeAccount);
+  return result;
 }
 
 export async function fetchAccount(
@@ -86,7 +92,7 @@ export async function fetchAccount(
 ) {
   const soql = `SELECT Id, Name, Industry, Type, OwnerId, Owner.Name, Website, Description, BillingCity, BillingState, BillingCountry, Phone, NumberOfEmployees, AnnualRevenue, Domain_Name__c, CreatedDate, LastModifiedDate FROM Account WHERE Id = '${accountId}'`;
   const result = await query<any>(token, instanceUrl, soql);
-  return result.records[0] || null;
+  return anonymizeAccount(result.records[0] || null);
 }
 
 export async function fetchOpportunities(
@@ -95,7 +101,9 @@ export async function fetchOpportunities(
   accountId: string
 ) {
   const soql = `SELECT Id, Name, StageName, Amount, CloseDate, Probability, OwnerId, Owner.Name, CreatedDate, LastModifiedDate FROM Opportunity WHERE AccountId = '${accountId}' ORDER BY CloseDate DESC`;
-  return query<any>(token, instanceUrl, soql);
+  const result = await query<any>(token, instanceUrl, soql);
+  result.records = result.records.map(anonymizeOpportunity);
+  return result;
 }
 
 export async function fetchOpenOpportunitiesByOwner(
@@ -104,7 +112,9 @@ export async function fetchOpenOpportunitiesByOwner(
   ownerId: string
 ) {
   const soql = `SELECT Id, Name, StageName, Amount, CloseDate, Probability, AccountId, OwnerId, Owner.Name, CreatedDate, LastModifiedDate FROM Opportunity WHERE OwnerId = '${ownerId}' AND StageName != 'Closed Won' AND StageName != 'Closed Lost' AND CloseDate >= TODAY ORDER BY CloseDate ASC`;
-  return query<any>(token, instanceUrl, soql);
+  const result = await query<any>(token, instanceUrl, soql);
+  result.records = result.records.map(anonymizeOpportunity);
+  return result;
 }
 
 export async function fetchContact(
@@ -114,7 +124,7 @@ export async function fetchContact(
 ) {
   const soql = `SELECT Id, FirstName, LastName, Name, Title, Email, Phone, MobilePhone, Department, MailingCity, MailingState, MailingCountry, Description, OwnerId, Owner.Name, AccountId, Account.Name, Account.Id, Account.Domain_Name__c, Account.Website, Account.Industry, Account.Type, Account.Phone, CreatedDate, LastModifiedDate FROM Contact WHERE Id = '${contactId}'`;
   const result = await query<any>(token, instanceUrl, soql);
-  return result.records[0] || null;
+  return anonymizeContact(result.records[0] || null);
 }
 
 export async function fetchContacts(
@@ -123,7 +133,9 @@ export async function fetchContacts(
   accountId: string
 ) {
   const soql = `SELECT Id, FirstName, LastName, Name, Title, Email, Phone, Department, CreatedDate FROM Contact WHERE AccountId = '${accountId}' ORDER BY LastName ASC`;
-  return query<any>(token, instanceUrl, soql);
+  const result = await query<any>(token, instanceUrl, soql);
+  result.records = result.records.map(anonymizeContact);
+  return result;
 }
 
 export async function fetchMyContacts(
@@ -132,7 +144,9 @@ export async function fetchMyContacts(
   ownerId: string
 ) {
   const soql = `SELECT Id, FirstName, LastName, Name, Title, Email, Phone, Department, AccountId, Account.Name, Account.Id, Account.Domain_Name__c, Account.Website, CreatedDate FROM Contact WHERE Account.OwnerId = '${ownerId}' ORDER BY LastName ASC`;
-  return query<any>(token, instanceUrl, soql);
+  const result = await query<any>(token, instanceUrl, soql);
+  result.records = result.records.map(anonymizeContact);
+  return result;
 }
 
 export async function searchContacts(
@@ -142,5 +156,7 @@ export async function searchContacts(
 ) {
   const escaped = searchTerm.replace(/'/g, "\\'");
   const soql = `SELECT Id, FirstName, LastName, Name, Title, Email, Phone, Department, AccountId, Account.Name, Account.Id, Account.Domain_Name__c, Account.Website, CreatedDate FROM Contact WHERE Name LIKE '%${escaped}%' OR Email LIKE '%${escaped}%' ORDER BY LastName ASC LIMIT 200`;
-  return query<any>(token, instanceUrl, soql);
+  const result = await query<any>(token, instanceUrl, soql);
+  result.records = result.records.map(anonymizeContact);
+  return result;
 }

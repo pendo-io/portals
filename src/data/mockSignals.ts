@@ -1,3 +1,5 @@
+import { DEMO_MODE, anonymizeSignal } from "@/utils/anonymize";
+
 export interface Signal {
   id: string;
   accountName: string;
@@ -31,7 +33,7 @@ export const SIGNAL_TYPES = [
   "Qualified Signals Engagement",
 ] as const;
 
-export const MOCK_SIGNALS: Signal[] = [
+const RAW_SIGNALS: Signal[] = [
   {
     id: "sig-001",
     accountName: "HiBob",
@@ -261,3 +263,7 @@ export const MOCK_SIGNALS: Signal[] = [
     metaData: null,
   },
 ];
+
+export const MOCK_SIGNALS: Signal[] = DEMO_MODE
+  ? RAW_SIGNALS.map(anonymizeSignal) as Signal[]
+  : RAW_SIGNALS;
