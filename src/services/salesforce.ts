@@ -4,19 +4,15 @@ export interface SFDCQueryResult<T> {
   records: T[];
 }
 
-const DEV_BYPASS = import.meta.env.VITE_DEV_BYPASS_AUTH === "true";
-
 async function sfdcFetch<T>(
   token: string,
   instanceUrl: string,
   path: string
 ): Promise<T> {
-  const baseUrl = DEV_BYPASS ? "/sfdc-api" : instanceUrl;
-  const res = await fetch(`${baseUrl}${path}`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
-    },
+  const res = await fetch("/api/sfdc-proxy", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ token, instanceUrl, path }),
   });
 
   if (res.status === 401 || res.status === 403) {
