@@ -13,38 +13,40 @@ function pick<T>(pool: T[], key: string): T {
   return pool[hash(key) % pool.length];
 }
 
+// Unique company assignment: avoids two real companies mapping to the same fake one
+const companyMap = new Map<string, string>();
+const usedCompanies = new Set<string>();
+
+function pickCompany(realName: string): string {
+  const existing = companyMap.get(realName);
+  if (existing) return existing;
+
+  let idx = hash(realName) % COMPANIES.length;
+  let company = COMPANIES[idx];
+
+  // If taken, find next available slot
+  if (usedCompanies.has(company)) {
+    for (let i = 1; i < COMPANIES.length; i++) {
+      const candidate = COMPANIES[(idx + i) % COMPANIES.length];
+      if (!usedCompanies.has(candidate)) {
+        company = candidate;
+        break;
+      }
+    }
+  }
+
+  companyMap.set(realName, company);
+  usedCompanies.add(company);
+  return company;
+}
+
 // --- Data pools ---
 const COMPANIES = [
   "Nike",
-  "McDonald's",
   "Apple",
-  "Tesla",
-  "Spotify",
-  "Airbnb",
-  "Netflix",
-  "Shopify",
-  "Uber",
-  "Zoom",
-  "Adobe",
-  "Lululemon",
-  "Starbucks",
-  "Disney",
-  "Target",
-  "Peloton",
-  "Stripe",
-  "Squarespace",
-  "Etsy",
-  "Lyft",
-  "DoorDash",
-  "Rivian",
-  "Hulu",
-  "Pinterest",
-  "Reddit",
-  "Roku",
-  "Wayfair",
-  "Zillow",
-  "Dropbox",
   "OpenAI",
+  "Netflix",
+  "Tesla",
 ];
 
 const FIRST_NAMES = [
@@ -83,35 +85,10 @@ const CITIES_STATES = [
 
 const COMPANY_DOMAINS: Record<string, string> = {
   "Nike": "nike.com",
-  "McDonald's": "mcdonalds.com",
   "Apple": "apple.com",
-  "Tesla": "tesla.com",
-  "Spotify": "spotify.com",
-  "Airbnb": "airbnb.com",
-  "Netflix": "netflix.com",
-  "Shopify": "shopify.com",
-  "Uber": "uber.com",
-  "Zoom": "zoom.us",
-  "Adobe": "adobe.com",
-  "Lululemon": "lululemon.com",
-  "Starbucks": "starbucks.com",
-  "Disney": "disney.com",
-  "Target": "target.com",
-  "Peloton": "onepeloton.com",
-  "Stripe": "stripe.com",
-  "Squarespace": "squarespace.com",
-  "Etsy": "etsy.com",
-  "Lyft": "lyft.com",
-  "DoorDash": "doordash.com",
-  "Rivian": "rivian.com",
-  "Hulu": "hulu.com",
-  "Pinterest": "pinterest.com",
-  "Reddit": "reddit.com",
-  "Roku": "roku.com",
-  "Wayfair": "wayfair.com",
-  "Zillow": "zillow.com",
-  "Dropbox": "dropbox.com",
   "OpenAI": "openai.com",
+  "Netflix": "netflix.com",
+  "Tesla": "tesla.com",
 };
 
 function domainFromCompany(company: string): string {
@@ -120,12 +97,12 @@ function domainFromCompany(company: string): string {
 
 export function anonCompany(name: string | null | undefined): string | null | undefined {
   if (!DEMO_MODE || name == null) return name;
-  return pick(COMPANIES, name);
+  return pickCompany(name);
 }
 
 export function anonDomain(domain: string | null | undefined): string | null | undefined {
   if (!DEMO_MODE || domain == null) return domain;
-  const company = pick(COMPANIES, domain);
+  const company = pickCompany(domain);
   return domainFromCompany(company);
 }
 
@@ -152,7 +129,7 @@ export function anonEmail(email: string | null | undefined): string | null | und
   if (!DEMO_MODE || email == null) return email;
   const first = pick(FIRST_NAMES, email + "_first").toLowerCase();
   const last = pick(LAST_NAMES, email + "_last").toLowerCase();
-  const company = pick(COMPANIES, email + "_company");
+  const company = pickCompany(email + "_company");
   return `${first}.${last}@${domainFromCompany(company)}`;
 }
 
@@ -171,7 +148,7 @@ export function anonPhone(phone: string | null | undefined): string | null | und
 
 function anonWebsite(website: string | null | undefined): string | null | undefined {
   if (!DEMO_MODE || website == null) return website;
-  const company = pick(COMPANIES, website);
+  const company = pickCompany(website);
   return `https://www.${domainFromCompany(company)}`;
 }
 
@@ -190,7 +167,7 @@ export function anonymizeAccount(record: any): any {
   if (!DEMO_MODE || !record) return record;
 
   const nameKey = record.Name ?? record.Id ?? "";
-  const fakeCompany = pick(COMPANIES, nameKey);
+  const fakeCompany = pickCompany(nameKey);
   const fakeDomain = domainFromCompany(fakeCompany);
   const { city: bCity, state: bState } = anonCityState(
     record.BillingCity, record.BillingState, nameKey + "_geo"
@@ -224,7 +201,7 @@ export function anonymizeContact(record: any): any {
   let account = record.Account;
   if (account) {
     const acctKey = account.Name ?? account.Id ?? "";
-    const fakeAcctCompany = pick(COMPANIES, acctKey);
+    const fakeAcctCompany = pickCompany(acctKey);
     const fakeAcctDomain = domainFromCompany(fakeAcctCompany);
     account = {
       ...account,
@@ -238,8 +215,8 @@ export function anonymizeContact(record: any): any {
 
   const emailDomainKey = record.Email ?? nameKey;
   const emailCompany = account
-    ? pick(COMPANIES, (record.Account?.Name ?? record.Account?.Id ?? "") )
-    : pick(COMPANIES, emailDomainKey + "_company");
+    ? pickCompany(record.Account?.Name ?? record.Account?.Id ?? "")
+    : pickCompany(emailDomainKey + "_company");
   const emailDomain = domainFromCompany(emailCompany);
 
   const { city: mCity, state: mState } = anonCityState(
@@ -269,7 +246,7 @@ export function anonymizeOpportunity(record: any): any {
   if (!DEMO_MODE || !record) return record;
 
   const nameKey = record.Name ?? record.Id ?? "";
-  const fakeCompany = pick(COMPANIES, nameKey + "_opp");
+  const fakeCompany = pickCompany(nameKey + "_opp");
 
   return {
     ...record,
@@ -294,7 +271,7 @@ export function anonymizeSignal(signal: {
   if (!DEMO_MODE) return signal;
 
   const acctKey = signal.accountName;
-  const fakeCompany = pick(COMPANIES, acctKey);
+  const fakeCompany = pickCompany(acctKey);
   const fakeDomain = domainFromCompany(fakeCompany);
 
   let title = signal.title;
