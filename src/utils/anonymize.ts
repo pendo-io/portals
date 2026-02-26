@@ -16,7 +16,7 @@ function pick<T>(pool: T[], key: string): T {
 // Unique company assignment: avoids two real companies mapping to the same fake one
 const companyMap = new Map<string, string>();
 const usedCompanies = new Set<string>();
-let harveyAssignedToAccount = false;
+let rampAssignedToAccount = false;
 
 function pickCompany(realName: string): string {
   const existing = companyMap.get(realName);
@@ -41,34 +41,34 @@ function pickCompany(realName: string): string {
   return company;
 }
 
-// Ensures first SFDC account record always maps to OpenAI
+// Ensures first SFDC account record always maps to Ramp
 function pickAccountCompany(realName: string): string {
-  if (!harveyAssignedToAccount && !companyMap.has(realName)) {
-    harveyAssignedToAccount = true;
-    // If OpenAI was already assigned to a different key (e.g. from signals), swap it
-    const existingHarveyKey = [...companyMap.entries()].find(([, v]) => v === "Harvey")?.[0];
-    if (existingHarveyKey) {
+  if (!rampAssignedToAccount && !companyMap.has(realName)) {
+    rampAssignedToAccount = true;
+    // If Ramp was already assigned to a different key (e.g. from signals), swap it
+    const existingRampKey = [...companyMap.entries()].find(([, v]) => v === "Ramp")?.[0];
+    if (existingRampKey) {
       // Give that key a new company instead
-      const idx = hash(existingHarveyKey) % COMPANIES.length;
+      const idx = hash(existingRampKey) % COMPANIES.length;
       for (let i = 0; i < COMPANIES.length; i++) {
         const candidate = COMPANIES[(idx + i) % COMPANIES.length];
         if (!usedCompanies.has(candidate)) {
-          companyMap.set(existingHarveyKey, candidate);
+          companyMap.set(existingRampKey, candidate);
           usedCompanies.add(candidate);
           break;
         }
       }
     }
-    usedCompanies.add("Harvey");
-    companyMap.set(realName, "Harvey");
-    return "Harvey";
+    usedCompanies.add("Ramp");
+    companyMap.set(realName, "Ramp");
+    return "Ramp";
   }
   return pickCompany(realName);
 }
 
 // --- Data pools ---
 const COMPANIES = [
-  "Harvey",
+  "Ramp",
   "Nike",
   "Apple",
   "Spotify",
@@ -134,7 +134,7 @@ const CITIES_STATES = [
 // --- Low-level anonymizers ---
 
 const COMPANY_DOMAINS: Record<string, string> = {
-  "Harvey": "harvey.ai",
+  "Ramp": "ramp.com",
   "Nike": "nike.com",
   "Apple": "apple.com",
   "Spotify": "spotify.com",
