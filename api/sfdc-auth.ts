@@ -14,7 +14,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
-  const { code, redirectUri } = req.body;
+  const { code, redirectUri, codeVerifier } = req.body;
 
   if (!code) {
     return res.status(400).json({ error: "Missing authorization code" });
@@ -39,6 +39,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         client_id: clientId,
         client_secret: clientSecret,
         redirect_uri: redirectUri,
+        ...(codeVerifier ? { code_verifier: codeVerifier } : {}),
       }),
     });
 

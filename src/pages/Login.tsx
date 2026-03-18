@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { Button } from "@/components/ui/button";
 import { Loader2, AlertTriangle } from "lucide-react";
 import { useSalesforce } from "@/hooks/useSalesforce";
@@ -8,7 +9,22 @@ const SFDC_CLIENT_ID = import.meta.env.VITE_SFDC_CLIENT_ID;
 const SFDC_REDIRECT_URI = import.meta.env.VITE_SFDC_REDIRECT_URI;
 const SFDC_LOGIN_URL = import.meta.env.VITE_SFDC_LOGIN_URL || "https://login.salesforce.com";
 
+function generateCodeVerifier(): string {
+  const array = new Uint8Array(32);
+  crypto.getRandomValues(array);
+  return btoa(String.fromCharCode(...array))
+    .replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+
+async function generateCodeChallenge(verifier: string): Promise<string> {
+  const encoded = new TextEncoder().encode(verifier);
+  const hash = await crypto.subtle.digest("SHA-256", encoded);
+  return btoa(String.fromCharCode(...new Uint8Array(hash)))
+    .replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+
 const Login = () => {
+  useDocumentTitle("Sign In");
   const [loading, setLoading] = useState(false);
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -18,16 +34,24 @@ const Login = () => {
 
   useEffect(() => {
     if (!sfdcLoading && sfdcAccessToken) {
-      navigate("/", { replace: true });
+      navigate("/portals", { replace: true });
     }
   }, [sfdcLoading, sfdcAccessToken, navigate]);
 
-  const handleSalesforceLogin = () => {
+  const handleSalesforceLogin = async () => {
     setLoading(true);
+
+    // Generate PKCE code verifier + challenge
+    const verifier = generateCodeVerifier();
+    const challenge = await generateCodeChallenge(verifier);
+    sessionStorage.setItem("sfdc_pkce_verifier", verifier);
+
     const authUrl = new URL(`${SFDC_LOGIN_URL}/services/oauth2/authorize`);
     authUrl.searchParams.set("response_type", "code");
     authUrl.searchParams.set("client_id", SFDC_CLIENT_ID);
     authUrl.searchParams.set("redirect_uri", SFDC_REDIRECT_URI);
+    authUrl.searchParams.set("code_challenge", challenge);
+    authUrl.searchParams.set("code_challenge_method", "S256");
     if (loggedOut) {
       authUrl.searchParams.set("prompt", "login");
     }
@@ -64,17 +88,17 @@ const Login = () => {
               className="text-white text-[2.75rem] xl:text-[3.25rem] font-bold tracking-tight"
               style={{ fontFamily: "'Sora', system-ui, sans-serif", lineHeight: 1.1 }}
             >
-              Sales intelligence,
+              Pendo
               <br />
-              <span className="text-primary">powered by AI.</span>
+              <span className="text-primary">Partner Portal.</span>
             </h1>
             <p className="mt-5 text-white/50 text-[15px] leading-relaxed max-w-[380px]">
-              Account insights, meeting analysis, and workflow automation built on Pendo's GTM Systems.
+              Manage leads, opportunities, and referrals through the Pendo Partner Program.
             </p>
           </div>
 
           <p className="text-white/25 text-xs">
-            Pendo internal use only
+            Pendo Partner Program
           </p>
         </div>
       </div>

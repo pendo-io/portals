@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback } from "react";
-import { query as sfdcQuery, type SFDCQueryResult } from "@/services/salesforce";
 
 interface SFDCState {
   accessToken: string | null;
@@ -68,32 +67,6 @@ export function useSalesforce() {
     });
   }, []);
 
-  // Validate session on mount with a lightweight API call
-  const validateSession = useCallback(async (token: string, instanceUrl: string) => {
-    try {
-      const res = await fetch("/api/sfdc-proxy", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token, instanceUrl, path: "/services/oauth2/userinfo" }),
-      });
-
-      if (res.ok) return true;
-
-      if (res.status === 401 || res.status === 403) {
-        const newToken = await refreshSFDCToken();
-        if (!newToken) {
-          markExpired();
-          return false;
-        }
-        return true;
-      }
-
-      return true;
-    } catch {
-      return true;
-    }
-  }, [refreshSFDCToken, markExpired]);
-
   // Load initial state from localStorage
   useEffect(() => {
     const stored = localStorage.getItem("sfdc_dev_session");
@@ -104,14 +77,8 @@ export function useSalesforce() {
           accessToken: session.access_token,
           instanceUrl: session.instance_url,
           userId: session.user_id,
-          loading: true,
+          loading: false,
           expired: false,
-        });
-
-        validateSession(session.access_token, session.instance_url).then((valid) => {
-          if (valid) {
-            setState((prev) => ({ ...prev, loading: false }));
-          }
         });
         return;
       } catch {
@@ -119,9 +86,9 @@ export function useSalesforce() {
       }
     }
     setState({ accessToken: null, instanceUrl: null, userId: null, loading: false, expired: false });
-  }, [validateSession]);
+  }, []);
 
-  // Listen for sfdc-session-expired events from sfdcFetch
+  // Listen for sfdc-session-expired events
   useEffect(() => {
     const handleExpired = () => {
       refreshSFDCToken().then((newToken) => {
@@ -135,25 +102,6 @@ export function useSalesforce() {
     return () => window.removeEventListener("sfdc-session-expired", handleExpired);
   }, [refreshSFDCToken, markExpired]);
 
-  const querySFDC = useCallback(
-    async <T>(soql: string): Promise<SFDCQueryResult<T> | null> => {
-      if (!state.accessToken || !state.instanceUrl) return null;
-
-      try {
-        return await sfdcQuery<T>(state.accessToken, state.instanceUrl, soql);
-      } catch (err: any) {
-        if (err.message?.includes("401")) {
-          const newToken = await refreshSFDCToken();
-          if (newToken && state.instanceUrl) {
-            return await sfdcQuery<T>(newToken, state.instanceUrl, soql);
-          }
-        }
-        throw err;
-      }
-    },
-    [state.accessToken, state.instanceUrl, refreshSFDCToken]
-  );
-
   return {
     sfdcAccessToken: state.accessToken,
     sfdcInstanceUrl: state.instanceUrl,
@@ -161,6 +109,5 @@ export function useSalesforce() {
     sfdcLoading: state.loading,
     sfdcExpired: state.expired,
     refreshSFDCToken,
-    querySFDC,
   };
 }

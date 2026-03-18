@@ -33,7 +33,11 @@ const AuthCallback = () => {
         const response = await fetch("/api/sfdc-auth", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ code, redirectUri: SFDC_REDIRECT_URI }),
+          body: JSON.stringify({
+            code,
+            redirectUri: SFDC_REDIRECT_URI,
+            codeVerifier: sessionStorage.getItem("sfdc_pkce_verifier") || undefined,
+          }),
         });
 
         if (!response.ok) {
@@ -42,6 +46,7 @@ const AuthCallback = () => {
         }
 
         const data = await response.json();
+        sessionStorage.removeItem("sfdc_pkce_verifier");
 
         localStorage.setItem(
           "sfdc_dev_session",
@@ -57,7 +62,7 @@ const AuthCallback = () => {
           })
         );
 
-        navigate("/", { replace: true });
+        navigate("/portals", { replace: true });
       } catch (err: any) {
         console.error("Auth callback error:", err);
         setError(err.message || "Authentication failed. Please try again.");
