@@ -13,9 +13,7 @@ import {
   DollarSign,
   User,
   Building2,
-  Cloud,
-  Database,
-  Users,
+  FileText,
   ClipboardCheck,
   CheckCircle2,
   XCircle,
@@ -27,7 +25,6 @@ const STAGE_COLORS: Record<string, string> = {
   Qualification: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400",
   "Needs Analysis": "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400",
   "Value Proposition": "bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-400",
-  "Id. Decision Makers": "bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-400",
   Proposal: "bg-violet-100 text-violet-800 dark:bg-violet-900/30 dark:text-violet-400",
   "Proposal/Price Quote": "bg-violet-100 text-violet-800 dark:bg-violet-900/30 dark:text-violet-400",
   Negotiation: "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400",
@@ -41,31 +38,25 @@ function getStageColor(stage: string | null): string {
   return STAGE_COLORS[stage] || "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400";
 }
 
-function Row({ label, value, href, wrap }: { label: string; value: string | number | null | undefined; href?: string; wrap?: boolean }) {
+function Row({ label, value, wrap }: { label: string; value: string | number | null | undefined; wrap?: boolean }) {
   if (value == null || value === "") return null;
   const display = typeof value === "number" ? value.toLocaleString() : value;
   return (
     <div className="flex justify-between gap-4 py-2">
       <span className="text-muted-foreground shrink-0">{label}</span>
-      {href ? (
-        <a href={href} target="_blank" rel="noopener noreferrer" className={`font-medium text-primary hover:underline text-right ${wrap ? "break-words" : "truncate"}`}>
-          {display}
-        </a>
-      ) : (
-        <span className={`font-medium text-right ${wrap ? "break-words" : "truncate"}`}>{display}</span>
-      )}
+      <span className={`font-medium text-right ${wrap ? "break-words" : "truncate"}`}>{display}</span>
     </div>
   );
 }
 
-const formatCurrency = (value: number | null): string | null => {
-  if (value == null) return null;
-  return `USD ${value.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+const fmtCurrency = (v: number | null): string | null => {
+  if (v == null) return null;
+  return `USD ${v.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 };
 
-const formatDate = (dateStr: string | null): string | null => {
-  if (!dateStr) return null;
-  return new Date(dateStr).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+const fmtDate = (d: string | null): string | null => {
+  if (!d) return null;
+  return new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 };
 
 export default function OpportunityDetail() {
@@ -134,13 +125,13 @@ export default function OpportunityDetail() {
               {opp.CloseDate && (
                 <span className="flex items-center gap-1.5">
                   <Calendar className="h-3.5 w-3.5" />
-                  Close {formatDate(opp.CloseDate)}
+                  Close {fmtDate(opp.CloseDate)}
                 </span>
               )}
               {opp.Amount != null && (
                 <span className="flex items-center gap-1.5">
                   <DollarSign className="h-3.5 w-3.5" />
-                  {formatCurrency(opp.Amount)}
+                  {fmtCurrency(opp.Amount)}
                 </span>
               )}
             </div>
@@ -173,9 +164,11 @@ export default function OpportunityDetail() {
               <CardContent className="text-sm space-y-0">
                 <Row label="Opportunity Name" value={opp.Name} wrap />
                 <Row label="Account Name" value={opp.Account?.Name} />
+                <Row label="Type" value={opp.Type} />
                 <Row label="Stage" value={opp.StageName} />
                 <Row label="Probability" value={opp.Probability != null ? `${opp.Probability}%` : null} />
                 <Row label="Lead Source" value={opp.LeadSource} />
+                <Row label="Transaction Type" value={opp.Transaction_Type__c} />
               </CardContent>
             </Card>
 
@@ -188,10 +181,14 @@ export default function OpportunityDetail() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="text-sm space-y-0">
-                <Row label="Amount" value={formatCurrency(opp.Amount)} />
-                <Row label="TCV" value={formatCurrency(opp.TCV__c)} />
-                <Row label="ARR" value={formatCurrency(opp.ARR__c)} />
-                <Row label="Net ARR" value={formatCurrency(opp.Net_ARR__c)} />
+                <Row label="TCV (Amount)" value={fmtCurrency(opp.Amount)} />
+                <Row label="TCV (USD)" value={opp.TCV_USD__c?.toLocaleString() ?? null} />
+                <Row label="ARR" value={fmtCurrency(opp.ARR__c)} />
+                <Row label="ARR (USD)" value={opp.ARR_USD__c?.toLocaleString() ?? null} />
+                <Row label="Net ARR" value={fmtCurrency(opp.Net_ARR__c)} />
+                <Row label="Net ARR %" value={opp.Net_ARR_Percentage__c != null ? `${opp.Net_ARR_Percentage__c}%` : null} />
+                <Row label="Available to Renew" value={fmtCurrency(opp.Current_ARR__c)} />
+                <Row label="Renewed ARR" value={fmtCurrency(opp.Renewal_ARR__c)} />
               </CardContent>
             </Card>
 
@@ -204,38 +201,76 @@ export default function OpportunityDetail() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="text-sm space-y-0">
-                <Row label="Close Date" value={formatDate(opp.CloseDate)} />
-                <Row label="Expiration Date" value={formatDate(opp.Expiration_Date__c)} />
+                <Row label="Close Date" value={fmtDate(opp.CloseDate)} />
+                <Row label="Expiration Date" value={fmtDate(opp.Expiration_Date__c)} />
+                <Row label="Pipeline Date" value={fmtDate(opp.Pipeline_Date__c)} />
                 <Row label="Opportunity Owner" value={opp.Owner?.Name} />
-                <Row label="Created Date" value={formatDate(opp.CreatedDate)} />
+                <Row label="Created Date" value={fmtDate(opp.CreatedDate)} />
+                <Row label="Created By" value={opp.CreatedBy?.Name} />
+                <Row label="Created By Role" value={opp.Created_By_Role__c} />
               </CardContent>
             </Card>
 
-            {/* Partner & Technology */}
-            <Card className="md:col-span-2 lg:col-span-3">
-              <CardHeader>
-                <CardTitle className="text-sm font-medium flex items-center gap-2">
-                  <Building2 className="h-4 w-4" />
-                  Partner & Technology
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="text-sm">
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-x-8">
-                  <div>
-                    <Row label="Solution Partner/SI" value={opp.Solution_Partner_SI__c} />
-                    <Row label="Referring Account Owner" value={opp.Referring_Account_Owner__c} />
+            {/* Partner Details */}
+            {(opp.Partner_Relationship__c || opp.Partner_Sub_type__c || opp.Primary_Competitor_Names__c || opp.Initial_Product_Interest__c) && (
+              <Card className="md:col-span-2 lg:col-span-3">
+                <CardHeader>
+                  <CardTitle className="text-sm font-medium flex items-center gap-2">
+                    <Building2 className="h-4 w-4" />
+                    Partner & Product Details
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="text-sm">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-x-8">
+                    <div>
+                      <Row label="Partner Relationship" value={opp.Partner_Relationship__c} />
+                      <Row label="Partner Sub-type" value={opp.Partner_Sub_type__c} />
+                    </div>
+                    <div>
+                      <Row label="Initial Product Interest" value={opp.Initial_Product_Interest__c} wrap />
+                      <Row label="Primary Competitors" value={opp.Primary_Competitor_Names__c} wrap />
+                    </div>
+                    <div>
+                      <Row label="Transaction Type" value={opp.Transaction_Type__c} />
+                    </div>
                   </div>
-                  <div>
-                    <Row label="Cloud Hosting / Hyperscalers" value={opp.Cloud_Hosting_Commit_Hyperscalers__c} />
-                    <Row label="Data Warehouse Provider" value={opp.Data_Warehouse_Provider__c} />
-                  </div>
-                  <div>
-                    <Row label="Initial Contact" value={opp.Initial_Contact__c} />
-                    <Row label="Initial Contact Role" value={opp.Initial_Contact_Role__c} />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Next Steps */}
+            {opp.Next_Steps__c && (
+              <Card className="md:col-span-2 lg:col-span-3">
+                <CardHeader>
+                  <CardTitle className="text-sm font-medium flex items-center gap-2">
+                    <FileText className="h-4 w-4" />
+                    Next Steps
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">
+                    {opp.Next_Steps__c}
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Management Notes */}
+            {opp.Management_Notes__c && (
+              <Card className="md:col-span-2 lg:col-span-3">
+                <CardHeader>
+                  <CardTitle className="text-sm font-medium flex items-center gap-2">
+                    <FileText className="h-4 w-4" />
+                    Management Notes
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">
+                    {opp.Management_Notes__c}
+                  </p>
+                </CardContent>
+              </Card>
+            )}
 
             {/* Approval History */}
             <Card className="md:col-span-2 lg:col-span-3">
