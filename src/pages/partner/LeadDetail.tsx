@@ -163,16 +163,6 @@ export default function LeadDetail() {
               <ArrowLeft className="h-4 w-4 mr-1.5" />
               Back
             </Button>
-            <Button variant="outline" size="sm" asChild>
-              <a
-                href={`https://pendo--full.sandbox.lightning.force.com/${lead.Id}`}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <ExternalLink className="h-4 w-4 mr-1.5" />
-                View in SFDC
-              </a>
-            </Button>
           </div>
         </div>
       </div>
@@ -193,7 +183,6 @@ export default function LeadDetail() {
               <CardContent className="text-sm space-y-0">
                 <Row label="Name" value={lead.Name} />
                 <Row label="Email" value={lead.Email} href={lead.Email ? `mailto:${lead.Email}` : undefined} />
-                <Row label="Company" value={lead.Company} />
                 <Row
                   label="Website"
                   value={websiteDisplay}
@@ -216,14 +205,28 @@ export default function LeadDetail() {
                 <Row label="Lead Source" value={lead.LeadSource} />
                 <Row label="Lead Owner" value={lead.Owner?.Name} />
                 <Row label="Partner Account" value={lead.Referral_Partner_Account__r?.Name} />
-                <Row label="Created" value={formatDate(lead.CreatedDate)} />
+              </CardContent>
+            </Card>
+
+            {/* Overview */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-sm font-medium flex items-center gap-2">
+                  <Calendar className="h-4 w-4" />
+                  Overview
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="text-sm space-y-0">
+                <Row label="Number of Users" value={lead.Number_of_Users__c} />
+                <Row label="Use Case" value={lead.Use_Case__c} />
+                <Row label="Created Date" value={formatDate(lead.CreatedDate)} />
                 <Row label="Created By" value={lead.CreatedBy?.Name} />
               </CardContent>
             </Card>
 
             {/* Opportunity Details */}
             {(lead.Number_of_Users__c || lead.Use_Case__c || lead.Current_Tech_Stack_Solutions__c) && (
-              <Card className="md:col-span-2 lg:col-span-2">
+              <Card className="md:col-span-2 lg:col-span-3">
                 <CardHeader>
                   <CardTitle className="text-sm font-medium flex items-center gap-2">
                     <Lightbulb className="h-4 w-4" />
@@ -231,7 +234,7 @@ export default function LeadDetail() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="text-sm">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-x-8">
                     <div>
                       <Row label="Use Case" value={lead.Use_Case__c} />
                       <Row label="Number of Users" value={lead.Number_of_Users__c} />
@@ -246,6 +249,8 @@ export default function LeadDetail() {
                           <p className="font-medium whitespace-pre-wrap">{lead.Current_Tech_Stack_Solutions__c}</p>
                         </div>
                       )}
+                    </div>
+                    <div>
                       {lead.Competitors_Considered_or_Incumbent__c && (
                         <div className="py-2">
                           <div className="flex items-center gap-1.5 text-muted-foreground mb-1">
@@ -260,42 +265,6 @@ export default function LeadDetail() {
                 </CardContent>
               </Card>
             )}
-
-            {/* Quick Stats */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-sm font-medium flex items-center gap-2">
-                  <Users className="h-4 w-4" />
-                  Quick Stats
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="text-center p-3 rounded-lg bg-muted/30">
-                    <p className="text-2xl font-bold tabular-nums">
-                      {lead.Number_of_Users__c?.toLocaleString() ?? "—"}
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-1">Users</p>
-                  </div>
-                  <div className="text-center p-3 rounded-lg bg-muted/30">
-                    <p className="text-2xl font-bold">
-                      {lead.Status === "Closed - Converted" || lead.Status === "Qualified" ? (
-                        <span className="text-emerald-600">Active</span>
-                      ) : lead.Status?.includes("Closed") || lead.Status === "Disqualified" || lead.Status === "Rejected" ? (
-                        <span className="text-red-600">Closed</span>
-                      ) : (
-                        <span className="text-blue-600">Open</span>
-                      )}
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-1">Stage</p>
-                  </div>
-                </div>
-                <div className="mt-3 text-center p-3 rounded-lg bg-muted/30">
-                  <p className="text-sm font-medium">{lead.Use_Case__c ?? "—"}</p>
-                  <p className="text-xs text-muted-foreground mt-1">Use Case</p>
-                </div>
-              </CardContent>
-            </Card>
 
             {/* Additional Information */}
             {lead.Additional_Information__c && (
