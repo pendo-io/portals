@@ -133,7 +133,7 @@ export default function LeadDetail() {
                 <User className="h-5 w-5 text-primary" />
               </div>
               <div>
-                <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Lead</p>
+                <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">{lead.Company}</p>
                 <h1 className="text-xl sm:text-2xl font-bold tracking-tight">{lead.Name}</h1>
               </div>
               <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${getStatusColor(lead.Status)}`}>
@@ -141,23 +141,6 @@ export default function LeadDetail() {
               </span>
             </div>
             <div className="flex items-center gap-4 text-sm text-muted-foreground flex-wrap">
-              {lead.Company && (
-                <span className="flex items-center gap-1.5">
-                  <Building2 className="h-3.5 w-3.5" />
-                  {lead.Company}
-                </span>
-              )}
-              {lead.Website && (
-                <a
-                  href={lead.Website.startsWith("http") ? lead.Website : `https://${lead.Website}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-1.5 hover:text-foreground transition-colors"
-                >
-                  <Globe className="h-3.5 w-3.5" />
-                  {websiteDisplay}
-                </a>
-              )}
               {lead.Email && (
                 <a
                   href={`mailto:${lead.Email}`}
@@ -233,22 +216,8 @@ export default function LeadDetail() {
                 <Row label="Lead Source" value={lead.LeadSource} />
                 <Row label="Lead Owner" value={lead.Owner?.Name} />
                 <Row label="Partner Account" value={lead.Referral_Partner_Account__r?.Name} />
-                {address && <Row label="Address" value={address} wrap />}
-              </CardContent>
-            </Card>
-
-            {/* Dates & Ownership */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-sm font-medium flex items-center gap-2">
-                  <Calendar className="h-4 w-4" />
-                  Dates & Ownership
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="text-sm space-y-0">
                 <Row label="Created" value={formatDate(lead.CreatedDate)} />
                 <Row label="Created By" value={lead.CreatedBy?.Name} />
-                <Row label="Lead Owner" value={lead.Owner?.Name} />
               </CardContent>
             </Card>
 
