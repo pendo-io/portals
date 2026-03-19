@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { Badge } from "@/components/ui/badge";
@@ -49,27 +49,6 @@ function SortIcon({ active, dir }: { active: boolean; dir?: SortDir }) {
   return dir === "asc" ? <ArrowUp className="h-3 w-3 ml-1" /> : <ArrowDown className="h-3 w-3 ml-1" />;
 }
 
-function useDebounce(value: string, delay: number) {
-  const [debounced, setDebounced] = useState(value);
-  useEffect(() => {
-    const timer = setTimeout(() => setDebounced(value), delay);
-    return () => clearTimeout(timer);
-  }, [value, delay]);
-  return debounced;
-}
-
-const LEAD_STATUSES = [
-  "New",
-  "Open - Not Contacted",
-  "Working - Contacted",
-  "Contacted",
-  "Qualified",
-  "Nurturing",
-  "Disqualified",
-  "Closed - Converted",
-  "Closed - Not Converted",
-];
-
 const PartnerLeads = () => {
   useDocumentTitle("Leads");
   const [search, setSearch] = useState("");
@@ -78,11 +57,13 @@ const PartnerLeads = () => {
   const [sortKey, setSortKey] = useState<SortKey | null>(null);
   const [sortDir, setSortDir] = useState<SortDir>("asc");
   const navigate = useNavigate();
-
-  const debouncedSearch = useDebounce(search, 400);
-  const { data, isLoading, isFetching, isError, error } = useSfdcLeads(debouncedSearch, statusFilter);
+  const { data, isLoading, isError, error } = useSfdcLeads();
 
   const leads = data?.records ?? [];
+
+  const statuses = useMemo(() => {
+    return [...new Set(leads.map((l) => l.Status))].filter(Boolean).sort();
+  }, [leads]);
 
   const handleSearchChange = (value: string) => {
     setSearch(value);
@@ -104,9 +85,21 @@ const PartnerLeads = () => {
     setPage(0);
   };
 
+  const filtered = useMemo(() => {
+    return leads.filter((lead) => {
+      const matchesSearch =
+        !search ||
+        lead.Company?.toLowerCase().includes(search.toLowerCase()) ||
+        lead.Name?.toLowerCase().includes(search.toLowerCase()) ||
+        lead.Email?.toLowerCase().includes(search.toLowerCase());
+      const matchesStatus = statusFilter === "all" || lead.Status === statusFilter;
+      return matchesSearch && matchesStatus;
+    });
+  }, [leads, search, statusFilter]);
+
   const sorted = useMemo(() => {
-    if (!sortKey) return leads;
-    return [...leads].sort((a, b) => {
+    if (!sortKey) return filtered;
+    return [...filtered].sort((a, b) => {
       let aVal: string | number | null;
       let bVal: string | number | null;
       switch (sortKey) {
@@ -123,7 +116,7 @@ const PartnerLeads = () => {
       const cmp = String(aVal).localeCompare(String(bVal));
       return sortDir === "asc" ? cmp : -cmp;
     });
-  }, [leads, sortKey, sortDir]);
+  }, [filtered, sortKey, sortDir]);
 
   const totalPages = Math.max(1, Math.ceil(sorted.length / PAGE_SIZE));
   const paginated = useMemo(() => {
@@ -138,7 +131,7 @@ const PartnerLeads = () => {
       {/* Toolbar */}
       <div className="border-b px-3 sm:px-6 py-3 flex items-center gap-2 sm:gap-4 flex-wrap">
         <div className="relative w-full sm:w-auto sm:flex-1 sm:min-w-[200px] sm:max-w-sm">
-          {isFetching ? (
+          {isLoading ? (
             <Loader2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground animate-spin" />
           ) : (
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -157,14 +150,16 @@ const PartnerLeads = () => {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Statuses</SelectItem>
-            {LEAD_STATUSES.map((s) => (
+            {statuses.map((s) => (
               <SelectItem key={s} value={s}>{s}</SelectItem>
             ))}
           </SelectContent>
         </Select>
 
         <Badge variant="secondary" className="ml-auto">
-          {`${leads.length} leads`}
+          {filtered.length === leads.length
+            ? `${leads.length} leads`
+            : `${filtered.length} of ${leads.length} leads`}
         </Badge>
       </div>
 
