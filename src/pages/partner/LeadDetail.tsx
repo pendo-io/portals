@@ -1,6 +1,7 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { useSfdcLeadDetail } from "@/hooks/useSfdcLeadDetail";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
   Loader2,
@@ -10,15 +11,16 @@ import {
   Mail,
   Globe,
   User,
-  Briefcase,
   Calendar,
-  FileText,
   Tag,
   Users,
   MapPin,
   Lightbulb,
   Swords,
   Monitor,
+  Briefcase,
+  FileText,
+  Clock,
 } from "lucide-react";
 
 const STATUS_COLORS: Record<string, string> = {
@@ -39,32 +41,24 @@ function getStatusColor(status: string | null): string {
   return STATUS_COLORS[status] || "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400";
 }
 
-function DetailField({ icon: Icon, label, value, href }: {
-  icon: React.ComponentType<{ className?: string }>;
-  label: string;
-  value: string | number | null | undefined;
-  href?: string;
-}) {
+function Row({ label, value, href }: { label: string; value: string | number | null | undefined; href?: string }) {
   if (value == null || value === "") return null;
   const display = typeof value === "number" ? value.toLocaleString() : value;
   return (
-    <div className="flex items-start gap-3 py-3 border-b border-border/50 last:border-b-0">
-      <Icon className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
-      <div className="min-w-0">
-        <p className="text-xs text-muted-foreground">{label}</p>
-        {href ? (
-          <a
-            href={href}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-sm font-medium text-primary hover:underline break-all"
-          >
-            {display}
-          </a>
-        ) : (
-          <p className="text-sm font-medium break-words">{display}</p>
-        )}
-      </div>
+    <div className="flex justify-between gap-4 py-2">
+      <span className="text-muted-foreground shrink-0">{label}</span>
+      {href ? (
+        <a
+          href={href}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="font-medium text-primary hover:underline text-right truncate"
+        >
+          {display}
+        </a>
+      ) : (
+        <span className="font-medium text-right truncate">{display}</span>
+      )}
     </div>
   );
 }
@@ -119,6 +113,8 @@ export default function LeadDetail() {
       year: "numeric",
     });
 
+  const websiteDisplay = lead.Website?.replace(/^https?:\/\/(www\.)?/, "");
+
   return (
     <div className="flex-1 flex flex-col min-h-0">
       {/* Header */}
@@ -139,15 +135,35 @@ export default function LeadDetail() {
             </div>
             <div className="flex items-center gap-4 text-sm text-muted-foreground flex-wrap">
               {lead.Company && (
-                <span className="flex items-center gap-1">
+                <span className="flex items-center gap-1.5">
                   <Building2 className="h-3.5 w-3.5" />
                   {lead.Company}
                 </span>
               )}
-              {lead.LeadSource && (
-                <span className="flex items-center gap-1">
-                  <Tag className="h-3.5 w-3.5" />
-                  {lead.LeadSource}
+              {lead.Website && (
+                <a
+                  href={lead.Website.startsWith("http") ? lead.Website : `https://${lead.Website}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1.5 hover:text-foreground transition-colors"
+                >
+                  <Globe className="h-3.5 w-3.5" />
+                  {websiteDisplay}
+                </a>
+              )}
+              {lead.Email && (
+                <a
+                  href={`mailto:${lead.Email}`}
+                  className="flex items-center gap-1.5 hover:text-foreground transition-colors"
+                >
+                  <Mail className="h-3.5 w-3.5" />
+                  {lead.Email}
+                </a>
+              )}
+              {address && (
+                <span className="flex items-center gap-1.5">
+                  <MapPin className="h-3.5 w-3.5" />
+                  {address}
                 </span>
               )}
             </div>
@@ -171,57 +187,157 @@ export default function LeadDetail() {
         </div>
       </div>
 
-      {/* Detail fields */}
+      {/* Card grid */}
       <div className="flex-1 overflow-auto">
         <div className="p-3 sm:p-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-8 gap-y-0 max-w-5xl">
-            {/* Left column */}
-            <div>
-              <DetailField icon={Building2} label="Company" value={lead.Company} />
-              <DetailField icon={User} label="Name" value={lead.Name} />
-              <DetailField
-                icon={Mail}
-                label="Email"
-                value={lead.Email}
-                href={lead.Email ? `mailto:${lead.Email}` : undefined}
-              />
-              <DetailField icon={Briefcase} label="Department(s)" value={lead.Department_s__c} />
-              <DetailField icon={Lightbulb} label="Use Case" value={lead.Use_Case__c} />
-              <DetailField icon={Swords} label="Competitors Considered or Incumbent?" value={lead.Competitors_Considered_or_Incumbent__c} />
-              <DetailField
-                icon={Globe}
-                label="Website"
-                value={lead.Website}
-                href={lead.Website ? (lead.Website.startsWith("http") ? lead.Website : `https://${lead.Website}`) : undefined}
-              />
-              <DetailField icon={Building2} label="Referral Partner Account" value={lead.Referral_Partner_Account__c} />
-            </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl">
 
-            {/* Right column */}
-            <div>
-              <DetailField icon={Users} label="Number of Users" value={lead.Number_of_Users__c} />
-              <DetailField icon={Monitor} label="Current Tech Stack/Solutions" value={lead.Current_Tech_Stack_Solutions__c} />
-              <DetailField icon={Tag} label="Lead Status" value={lead.Status} />
-              <DetailField icon={User} label="Lead Owner" value={lead.Owner?.Name} />
-              <DetailField icon={Tag} label="Lead Source" value={lead.LeadSource} />
-              <DetailField icon={User} label="Created By" value={lead.CreatedBy?.Name} />
-              <DetailField icon={Calendar} label="Created Date" value={formatDate(lead.CreatedDate)} />
-              <DetailField icon={MapPin} label="Address" value={address || null} />
-            </div>
-          </div>
+            {/* Contact Information */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-sm font-medium flex items-center gap-2">
+                  <User className="h-4 w-4" />
+                  Contact Information
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="text-sm space-y-0">
+                <Row label="Name" value={lead.Name} />
+                <Row label="Email" value={lead.Email} href={lead.Email ? `mailto:${lead.Email}` : undefined} />
+                <Row label="Company" value={lead.Company} />
+                <Row
+                  label="Website"
+                  value={websiteDisplay}
+                  href={lead.Website ? (lead.Website.startsWith("http") ? lead.Website : `https://${lead.Website}`) : undefined}
+                />
+                <Row label="Department(s)" value={lead.Department_s__c} />
+              </CardContent>
+            </Card>
 
-          {/* Additional Information */}
-          {lead.Additional_Information__c && (
-            <div className="mt-6 max-w-5xl">
-              <div className="flex items-start gap-3 py-3">
-                <FileText className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
-                <div className="min-w-0">
-                  <p className="text-xs text-muted-foreground">Additional Information</p>
-                  <p className="text-sm font-medium whitespace-pre-wrap mt-1">{lead.Additional_Information__c}</p>
+            {/* Lead Details */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-sm font-medium flex items-center gap-2">
+                  <Tag className="h-4 w-4" />
+                  Lead Details
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="text-sm space-y-0">
+                <Row label="Status" value={lead.Status} />
+                <Row label="Lead Source" value={lead.LeadSource} />
+                <Row label="Lead Owner" value={lead.Owner?.Name} />
+                <Row label="Partner Account" value={lead.Referral_Partner_Account__c} />
+                {address && <Row label="Address" value={address} />}
+              </CardContent>
+            </Card>
+
+            {/* Dates & Ownership */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-sm font-medium flex items-center gap-2">
+                  <Calendar className="h-4 w-4" />
+                  Dates & Ownership
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="text-sm space-y-0">
+                <Row label="Created" value={formatDate(lead.CreatedDate)} />
+                <Row label="Created By" value={lead.CreatedBy?.Name} />
+                <Row label="Lead Owner" value={lead.Owner?.Name} />
+              </CardContent>
+            </Card>
+
+            {/* Opportunity Details */}
+            {(lead.Number_of_Users__c || lead.Use_Case__c || lead.Current_Tech_Stack_Solutions__c) && (
+              <Card className="md:col-span-2 lg:col-span-2">
+                <CardHeader>
+                  <CardTitle className="text-sm font-medium flex items-center gap-2">
+                    <Lightbulb className="h-4 w-4" />
+                    Opportunity Details
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="text-sm">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8">
+                    <div>
+                      <Row label="Use Case" value={lead.Use_Case__c} />
+                      <Row label="Number of Users" value={lead.Number_of_Users__c} />
+                    </div>
+                    <div>
+                      {lead.Current_Tech_Stack_Solutions__c && (
+                        <div className="py-2">
+                          <div className="flex items-center gap-1.5 text-muted-foreground mb-1">
+                            <Monitor className="h-3.5 w-3.5" />
+                            Current Tech Stack
+                          </div>
+                          <p className="font-medium whitespace-pre-wrap">{lead.Current_Tech_Stack_Solutions__c}</p>
+                        </div>
+                      )}
+                      {lead.Competitors_Considered_or_Incumbent__c && (
+                        <div className="py-2">
+                          <div className="flex items-center gap-1.5 text-muted-foreground mb-1">
+                            <Swords className="h-3.5 w-3.5" />
+                            Competitors / Incumbent
+                          </div>
+                          <p className="font-medium whitespace-pre-wrap">{lead.Competitors_Considered_or_Incumbent__c}</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Quick Stats */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-sm font-medium flex items-center gap-2">
+                  <Users className="h-4 w-4" />
+                  Quick Stats
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="text-center p-3 rounded-lg bg-muted/30">
+                    <p className="text-2xl font-bold tabular-nums">
+                      {lead.Number_of_Users__c?.toLocaleString() ?? "—"}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">Users</p>
+                  </div>
+                  <div className="text-center p-3 rounded-lg bg-muted/30">
+                    <p className="text-2xl font-bold">
+                      {lead.Status === "Closed - Converted" || lead.Status === "Qualified" ? (
+                        <span className="text-emerald-600">Active</span>
+                      ) : lead.Status?.includes("Closed") || lead.Status === "Disqualified" || lead.Status === "Rejected" ? (
+                        <span className="text-red-600">Closed</span>
+                      ) : (
+                        <span className="text-blue-600">Open</span>
+                      )}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">Stage</p>
+                  </div>
                 </div>
-              </div>
-            </div>
-          )}
+                <div className="mt-3 text-center p-3 rounded-lg bg-muted/30">
+                  <p className="text-sm font-medium">{lead.Use_Case__c ?? "—"}</p>
+                  <p className="text-xs text-muted-foreground mt-1">Use Case</p>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Additional Information */}
+            {lead.Additional_Information__c && (
+              <Card className="md:col-span-2 lg:col-span-3">
+                <CardHeader>
+                  <CardTitle className="text-sm font-medium flex items-center gap-2">
+                    <FileText className="h-4 w-4" />
+                    Additional Information
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">
+                    {lead.Additional_Information__c}
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+          </div>
         </div>
       </div>
     </div>
