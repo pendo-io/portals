@@ -22,7 +22,9 @@ export async function sfdcQuery<T>(
 
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error(err.error || `SFDC query failed (${res.status})`);
+    const detail = Array.isArray(err) ? err.map((e: any) => e.message).join("; ") : err.message || err.error || JSON.stringify(err);
+    console.error("[SFDC Query Error]", detail, "\nQuery:", query);
+    throw new Error(detail || `SFDC query failed (${res.status})`);
   }
 
   return res.json();
