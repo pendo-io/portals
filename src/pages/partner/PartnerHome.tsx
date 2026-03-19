@@ -45,9 +45,11 @@ const PartnerHome = () => {
   }, [opps]);
 
   const recentActivity = useMemo(() => {
-    const items: { description: string; time: string; date: Date }[] = [];
+    const items: { id: string; path: string; description: string; time: string; date: Date }[] = [];
     for (const lead of leads.slice(0, 10)) {
       items.push({
+        id: lead.Id,
+        path: `/portal/partner/leads/${lead.Id}`,
         description: `New lead: ${lead.Company} (${lead.Name})`,
         time: new Date(lead.CreatedDate).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
         date: new Date(lead.CreatedDate),
@@ -56,6 +58,8 @@ const PartnerHome = () => {
     for (const opp of opps.slice(0, 10)) {
       const amount = opp.Amount != null ? ` - ${formatCurrency(opp.Amount)}` : "";
       items.push({
+        id: opp.Id,
+        path: `/portal/partner/opportunities/${opp.Id}`,
         description: `Opportunity: ${opp.Name}${amount} (${opp.StageName})`,
         time: new Date(opp.CloseDate).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
         date: new Date(opp.CloseDate),
@@ -173,9 +177,13 @@ const PartnerHome = () => {
             <p className="text-sm text-muted-foreground text-center py-4">No recent activity</p>
           ) : (
             <div className="space-y-4">
-              {recentActivity.map((activity, i) => (
-                <div key={i} className="flex items-start gap-3">
-                  <div className="mt-0.5 h-2 w-2 rounded-full bg-primary shrink-0" />
+              {recentActivity.map((activity) => (
+                <div
+                  key={activity.id}
+                  className="flex items-start gap-3 cursor-pointer hover:bg-muted/50 -mx-2 px-2 py-1 rounded-md transition-colors"
+                  onClick={() => navigate(activity.path)}
+                >
+                  <div className="mt-1.5 h-2 w-2 rounded-full bg-primary shrink-0" />
                   <div className="flex-1 min-w-0">
                     <p className="text-sm">{activity.description}</p>
                     <p className="text-xs text-muted-foreground">{activity.time}</p>
