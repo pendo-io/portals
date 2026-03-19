@@ -115,18 +115,14 @@ export default function OpportunityDetail() {
               </div>
             </div>
             <div className="flex items-center gap-4 text-sm text-muted-foreground flex-wrap">
-              {opp.Owner?.Name && (
-                <span className="flex items-center gap-1.5">
-                  <User className="h-3.5 w-3.5" />
-                  {opp.Owner.Name}
-                </span>
-              )}
-              {opp.Amount != null && (
-                <span className="flex items-center gap-1.5">
-                  <DollarSign className="h-3.5 w-3.5" />
-                  {fmtCurrency(opp.Amount)}
-                </span>
-              )}
+              <span className="flex items-center gap-1.5">
+                <User className="h-3.5 w-3.5" />
+                {opp.Owner?.Name ?? "—"}
+              </span>
+              <span className="flex items-center gap-1.5">
+                <DollarSign className="h-3.5 w-3.5" />
+                TCV {opp.Amount != null ? fmtCurrency(opp.Amount) : "—"}
+              </span>
             </div>
           </div>
           <div className="flex items-center gap-2 shrink-0">
@@ -173,7 +169,6 @@ export default function OpportunityDetail() {
                 <Row label="TCV" value={fmtCurrency(opp.Amount)} />
                 <Row label="ARR" value={fmtCurrency(opp.ARR__c)} />
                 <Row label="Net ARR" value={fmtCurrency(opp.Net_ARR__c)} />
-                <Row label="Net ARR %" value={opp.Net_ARR_Percentage__c != null ? `${opp.Net_ARR_Percentage__c}%` : null} />
               </CardContent>
             </Card>
 
