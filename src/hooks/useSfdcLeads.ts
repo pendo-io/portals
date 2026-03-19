@@ -14,20 +14,36 @@ export interface SfdcLead {
   CreatedDate: string;
 }
 
-export const LEADS_QUERY = `SELECT Id, Company, Name, FirstName, LastName, Email, Status, LeadSource, CreatedDate
-         FROM Lead
-         WHERE LeadSource = 'Partner Referral'
-         ORDER BY CreatedDate DESC
-         LIMIT 50`;
+function buildLeadsQuery(search: string, status: string): string {
+  const conditions = ["LeadSource = 'Partner Referral'"];
 
-export function useSfdcLeads() {
+  if (search.trim()) {
+    const escaped = search.trim().replace(/'/g, "\\'");
+    conditions.push(
+      `(Company LIKE '%${escaped}%' OR Name LIKE '%${escaped}%' OR Email LIKE '%${escaped}%')`
+    );
+  }
+
+  if (status && status !== "all") {
+    const escaped = status.replace(/'/g, "\\'");
+    conditions.push(`Status = '${escaped}'`);
+  }
+
+  return `SELECT Id, Company, Name, FirstName, LastName, Email, Status, LeadSource, CreatedDate
+    FROM Lead
+    WHERE ${conditions.join(" AND ")}
+    ORDER BY CreatedDate DESC
+    LIMIT 200`;
+}
+
+export function useSfdcLeads(search = "", status = "all") {
   const { sfdcAccessToken, sfdcInstanceUrl, sfdcUserId } = useSalesforce();
 
   return useQuery({
-    queryKey: ["sfdc-leads", sfdcUserId],
+    queryKey: ["sfdc-leads", sfdcUserId, search, status],
     queryFn: () =>
       sfdcQuery<SfdcLead>(
-        LEADS_QUERY,
+        buildLeadsQuery(search, status),
         sfdcInstanceUrl!,
         sfdcAccessToken!
       ),
