@@ -18,6 +18,7 @@ const LEAD_STATUS_COLORS: Record<string, string> = {
 
 // Opportunity stage colors
 const OPP_STAGE_COLORS: Record<string, string> = {
+  // Standard stages
   "Prospecting": "bg-slate-100 text-slate-800 dark:bg-slate-800/40 dark:text-slate-300",
   "Qualification": "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400",
   "Needs Analysis": "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400",
@@ -30,6 +31,15 @@ const OPP_STAGE_COLORS: Record<string, string> = {
   "Negotiation/Review": "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400",
   "Closed Won": "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400",
   "Closed Lost": "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400",
+  // Transaction types / deal types
+  "New Subscription": "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400",
+  "New Business": "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400",
+  "Expansion": "bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-400",
+  "Renewal": "bg-cyan-100 text-cyan-800 dark:bg-cyan-900/30 dark:text-cyan-400",
+  "Upsell": "bg-violet-100 text-violet-800 dark:bg-violet-900/30 dark:text-violet-400",
+  "Cross-Sell": "bg-violet-100 text-violet-800 dark:bg-violet-900/30 dark:text-violet-400",
+  "Churn": "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400",
+  "Disqualified": "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400",
   // Stage numbers
   "Stage 1": "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400",
   "Stage 2": "bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-400",
