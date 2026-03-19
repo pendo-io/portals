@@ -24,8 +24,7 @@ export function useSfdcLeads() {
         `SELECT Id, Company, Name, FirstName, LastName, Email, Status, LeadSource, CreatedDate
          FROM Lead
          WHERE LeadSource = 'Partner Referral'
-         ORDER BY CreatedDate DESC
-         LIMIT 50`,
+         ORDER BY CreatedDate DESC`,
         sfdcInstanceUrl!,
         sfdcAccessToken!
       ),

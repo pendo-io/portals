@@ -22,8 +22,7 @@ export function useSfdcOpportunities() {
         `SELECT Id, Name, Account.Name, StageName, Amount, CloseDate, Probability, LeadSource
          FROM Opportunity
          WHERE LeadSource = 'Partner Referral'
-         ORDER BY CloseDate DESC
-         LIMIT 50`,
+         ORDER BY CloseDate DESC`,
         sfdcInstanceUrl!,
         sfdcAccessToken!
       ),
