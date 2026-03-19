@@ -1,5 +1,4 @@
 import { useLocation, useNavigate } from "react-router-dom";
-import { useQueryClient } from "@tanstack/react-query";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -8,9 +7,6 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import type { SfdcLeadDetail } from "@/hooks/useSfdcLeadDetail";
-import type { SfdcOpportunityDetail } from "@/hooks/useSfdcOpportunityDetail";
-import type { SfdcQueryResult } from "@/lib/sfdc";
 
 function getHomeLabel(): string {
   let firstName = "";
@@ -36,7 +32,6 @@ const ROUTE_LABELS: Record<string, string> = {
 export function PortalTopBar() {
   const location = useLocation();
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
   const currentPath = location.pathname;
 
   const isLeadDetail = currentPath.startsWith("/portal/partner/leads/") && currentPath !== "/portal/partner/leads";
@@ -45,15 +40,9 @@ export function PortalTopBar() {
   let breadcrumbSegments: { label: string; path?: string }[];
 
   if (isLeadDetail) {
-    const leadId = currentPath.split("/portal/partner/leads/")[1];
-    const cachedLead = queryClient.getQueryData<SfdcQueryResult<SfdcLeadDetail>>(["sfdc-lead", leadId]);
-    const label = cachedLead?.records?.[0]?.Name || "Lead Detail";
-    breadcrumbSegments = [{ label: "Partner Leads", path: "/portal/partner/leads" }, { label }];
+    breadcrumbSegments = [{ label: "Partner Leads", path: "/portal/partner/leads" }, { label: "Lead Detail" }];
   } else if (isOppDetail) {
-    const oppId = currentPath.split("/portal/partner/opportunities/")[1];
-    const cachedOpp = queryClient.getQueryData<SfdcQueryResult<SfdcOpportunityDetail>>(["sfdc-opportunity", oppId]);
-    const label = cachedOpp?.records?.[0]?.Name || "Opportunity Detail";
-    breadcrumbSegments = [{ label: "Partner Opportunities", path: "/portal/partner/opportunities" }, { label }];
+    breadcrumbSegments = [{ label: "Partner Opportunities", path: "/portal/partner/opportunities" }, { label: "Opportunity Detail" }];
   } else {
     breadcrumbSegments = [{
       label: currentPath === "/portal/partner"

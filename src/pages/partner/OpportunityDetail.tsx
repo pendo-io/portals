@@ -39,12 +39,11 @@ function getStageColor(stage: string | null): string {
 }
 
 function Row({ label, value, wrap }: { label: string; value: string | number | null | undefined; wrap?: boolean }) {
-  if (value == null || value === "") return null;
-  const display = typeof value === "number" ? value.toLocaleString() : value;
+  const display = value == null || value === "" ? "—" : typeof value === "number" ? value.toLocaleString() : value;
   return (
     <div className="flex justify-between gap-4 py-2">
       <span className="text-muted-foreground shrink-0">{label}</span>
-      <span className={`font-medium text-right ${wrap ? "break-words" : "truncate"}`}>{display}</span>
+      <span className={`font-medium text-right ${wrap ? "break-words" : "truncate"} ${display === "—" ? "text-muted-foreground font-normal" : ""}`}>{display}</span>
     </div>
   );
 }
@@ -226,7 +225,7 @@ export default function OpportunityDetail() {
               <CardContent className="text-sm">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8">
                   <div>
-                    <Row label="Initial Contact" value={opp.Initial_Contact__c} />
+                    <Row label="Initial Contact" value={opp.Initial_Contact__r?.Name} />
                   </div>
                   <div>
                     <Row label="Initial Contact Role" value={opp.Initial_Contact_Role__c} />
@@ -236,38 +235,34 @@ export default function OpportunityDetail() {
             </Card>
 
             {/* Next Steps */}
-            {opp.Next_Steps__c && (
-              <Card className="md:col-span-2 lg:col-span-3">
-                <CardHeader>
-                  <CardTitle className="text-sm font-medium flex items-center gap-2">
-                    <FileText className="h-4 w-4" />
-                    Next Steps
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">
-                    {opp.Next_Steps__c}
-                  </p>
-                </CardContent>
-              </Card>
-            )}
+            <Card className="md:col-span-2 lg:col-span-3">
+              <CardHeader>
+                <CardTitle className="text-sm font-medium flex items-center gap-2">
+                  <FileText className="h-4 w-4" />
+                  Next Steps
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">
+                  {opp.Next_Steps__c || "—"}
+                </p>
+              </CardContent>
+            </Card>
 
             {/* Management Notes */}
-            {opp.Management_Notes__c && (
-              <Card className="md:col-span-2 lg:col-span-3">
-                <CardHeader>
-                  <CardTitle className="text-sm font-medium flex items-center gap-2">
-                    <FileText className="h-4 w-4" />
-                    Management Notes
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">
-                    {opp.Management_Notes__c}
+            <Card className="md:col-span-2 lg:col-span-3">
+              <CardHeader>
+                <CardTitle className="text-sm font-medium flex items-center gap-2">
+                  <FileText className="h-4 w-4" />
+                  Management Notes
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">
+                  {opp.Management_Notes__c || "—"}
                   </p>
                 </CardContent>
-              </Card>
-            )}
+            </Card>
 
             {/* Approval History */}
             <Card className="md:col-span-2 lg:col-span-3">
