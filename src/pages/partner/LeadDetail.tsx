@@ -136,7 +136,7 @@ export default function LeadDetail() {
                 <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">{lead.Company}</p>
                 <h1 className="text-xl sm:text-2xl font-bold tracking-tight">{lead.Name}</h1>
               </div>
-              <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${getStatusColor(lead.Status)}`}>
+              <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium self-start mt-1 ${getStatusColor(lead.Status)}`}>
                 {lead.Status}
               </span>
             </div>
