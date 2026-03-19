@@ -244,21 +244,6 @@ export default function OpportunityDetail() {
               </CardContent>
             </Card>
 
-            {/* Management Notes */}
-            <Card className="md:col-span-2 lg:col-span-3">
-              <CardHeader>
-                <CardTitle className="text-sm font-medium flex items-center gap-2">
-                  <FileText className="h-4 w-4" />
-                  Management Notes
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">
-                  {opp.Management_Notes__c || "—"}
-                  </p>
-                </CardContent>
-            </Card>
-
             {/* Approval History */}
             <Card className="md:col-span-2 lg:col-span-3">
               <CardHeader>
