@@ -212,10 +212,7 @@ const PartnerLeads = () => {
                 {paginated.map((lead) => (
                   <TableRow key={lead.Id} className="cursor-pointer hover:bg-muted/50 h-[52px]" onClick={() => navigate(`/portal/partner/leads/${lead.Id}`)}>
                     <TableCell className="py-2">
-                      <div className="min-w-[140px] sm:min-w-[180px]">
-                        <p className="font-medium text-sm leading-tight truncate">{lead.Company}</p>
-                        <p className="text-xs text-muted-foreground truncate">{lead.Id}</p>
-                      </div>
+                      <p className="font-medium text-sm leading-tight truncate min-w-[140px] sm:min-w-[180px]">{lead.Company}</p>
                     </TableCell>
                     <TableCell className="py-2">
                       <span className="text-sm">{lead.Name}</span>

@@ -202,22 +202,19 @@ const PartnerOpportunities = () => {
               <TableHeader>
                 <TableRow className="bg-muted/30 hover:bg-muted/30">
                   <TableHead className={thClass} onClick={() => handleSort("name")}>
-                    <span className="inline-flex items-center">Opportunity<SortIcon active={sortKey === "name"} dir={sortDir} /></span>
+                    <span className="inline-flex items-center">Opp Name<SortIcon active={sortKey === "name"} dir={sortDir} /></span>
                   </TableHead>
                   <TableHead className={`${thClass} hidden md:table-cell`} onClick={() => handleSort("account")}>
-                    <span className="inline-flex items-center">Account<SortIcon active={sortKey === "account"} dir={sortDir} /></span>
+                    <span className="inline-flex items-center">Account Name<SortIcon active={sortKey === "account"} dir={sortDir} /></span>
                   </TableHead>
                   <TableHead className={thClass} onClick={() => handleSort("stage")}>
                     <span className="inline-flex items-center">Stage<SortIcon active={sortKey === "stage"} dir={sortDir} /></span>
                   </TableHead>
-                  <TableHead className={`${thClass} text-right`} onClick={() => handleSort("amount")}>
-                    <span className="inline-flex items-center justify-end">Amount<SortIcon active={sortKey === "amount"} dir={sortDir} /></span>
-                  </TableHead>
-                  <TableHead className={`${thClass} text-right hidden lg:table-cell`} onClick={() => handleSort("probability")}>
-                    <span className="inline-flex items-center justify-end">Probability<SortIcon active={sortKey === "probability"} dir={sortDir} /></span>
-                  </TableHead>
                   <TableHead className={`${thClass} text-right hidden sm:table-cell`} onClick={() => handleSort("closeDate")}>
                     <span className="inline-flex items-center justify-end">Close Date<SortIcon active={sortKey === "closeDate"} dir={sortDir} /></span>
+                  </TableHead>
+                  <TableHead className={`${thClass} text-right`} onClick={() => handleSort("amount")}>
+                    <span className="inline-flex items-center justify-end">TCV<SortIcon active={sortKey === "amount"} dir={sortDir} /></span>
                   </TableHead>
                 </TableRow>
               </TableHeader>
@@ -225,10 +222,7 @@ const PartnerOpportunities = () => {
                 {paginated.map((opp) => (
                   <TableRow key={opp.Id} className="cursor-pointer hover:bg-muted/50 h-[52px]" onClick={() => navigate(`/portal/partner/opportunities/${opp.Id}`)}>
                     <TableCell className="py-2">
-                      <div className="min-w-[140px] sm:min-w-[180px]">
-                        <p className="font-medium text-sm leading-tight truncate">{opp.Name}</p>
-                        <p className="text-xs text-muted-foreground truncate">{opp.Id}</p>
-                      </div>
+                      <p className="font-medium text-sm leading-tight truncate min-w-[140px] sm:min-w-[180px]">{opp.Name}</p>
                     </TableCell>
                     <TableCell className="py-2 hidden md:table-cell">
                       <span className="text-sm">{opp.Account?.Name ?? "—"}</span>
@@ -242,21 +236,13 @@ const PartnerOpportunities = () => {
                         <span className="text-muted-foreground text-xs">—</span>
                       )}
                     </TableCell>
-                    <TableCell className="py-2 text-right">
-                      <span className="text-sm font-medium tabular-nums">{formatCurrency(opp.Amount)}</span>
-                    </TableCell>
-                    <TableCell className="py-2 text-right hidden lg:table-cell">
-                      <div className="flex items-center gap-2 justify-end">
-                        <Progress value={opp.Probability ?? 0} className="w-16 h-1.5" />
-                        <span className="text-xs text-muted-foreground tabular-nums w-8 text-right">
-                          {opp.Probability ?? 0}%
-                        </span>
-                      </div>
-                    </TableCell>
                     <TableCell className="py-2 text-right hidden sm:table-cell">
                       <span className="text-sm text-muted-foreground tabular-nums">
                         {new Date(opp.CloseDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
                       </span>
+                    </TableCell>
+                    <TableCell className="py-2 text-right">
+                      <span className="text-sm font-medium tabular-nums">{formatCurrency(opp.Amount)}</span>
                     </TableCell>
                   </TableRow>
                 ))}
