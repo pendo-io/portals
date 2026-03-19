@@ -156,7 +156,7 @@ export default function LeadDetail() {
             </div>
           </div>
           <div className="flex items-center gap-2 shrink-0">
-            <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${getStatusColor(lead.Status)}`}>
+            <span className={`inline-flex items-center rounded-full px-3 py-1 text-sm font-medium ${getStatusColor(lead.Status)}`}>
               {lead.Status}
             </span>
             <Button variant="outline" size="sm" onClick={() => navigate("/portal/partner/leads")}>
