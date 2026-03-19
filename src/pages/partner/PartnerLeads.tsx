@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -55,6 +56,7 @@ const PartnerLeads = () => {
   const [page, setPage] = useState(0);
   const [sortKey, setSortKey] = useState<SortKey | null>(null);
   const [sortDir, setSortDir] = useState<SortDir>("asc");
+  const navigate = useNavigate();
   const { data, isLoading, isError, error } = useSfdcLeads();
 
   const leads = data?.records ?? [];
@@ -208,7 +210,7 @@ const PartnerLeads = () => {
               </TableHeader>
               <TableBody>
                 {paginated.map((lead) => (
-                  <TableRow key={lead.Id} className="cursor-pointer hover:bg-muted/50 h-[52px]">
+                  <TableRow key={lead.Id} className="cursor-pointer hover:bg-muted/50 h-[52px]" onClick={() => navigate(`/portal/partner/leads/${lead.Id}`)}>
                     <TableCell className="py-2">
                       <div className="min-w-[140px] sm:min-w-[180px]">
                         <p className="font-medium text-sm leading-tight truncate">{lead.Company}</p>

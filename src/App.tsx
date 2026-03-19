@@ -15,6 +15,7 @@ import PartnerHome from "./pages/partner/PartnerHome";
 import PartnerLeads from "./pages/partner/PartnerLeads";
 import PartnerOpportunities from "./pages/partner/PartnerOpportunities";
 import PartnerReferralForm from "./pages/partner/PartnerReferralForm";
+import LeadDetail from "./pages/partner/LeadDetail";
 
 const queryClient = new QueryClient();
 
@@ -39,6 +40,7 @@ const App = () => (
               <Route element={<ProtectedRoute><PortalLayout /></ProtectedRoute>}>
                 <Route path="/portal/partner" element={<PartnerHome />} />
                 <Route path="/portal/partner/leads" element={<PartnerLeads />} />
+                <Route path="/portal/partner/leads/:leadId" element={<LeadDetail />} />
                 <Route path="/portal/partner/opportunities" element={<PartnerOpportunities />} />
                 <Route path="/portal/partner/referral" element={<PartnerReferralForm />} />
               </Route>
