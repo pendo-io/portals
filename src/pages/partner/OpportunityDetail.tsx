@@ -162,13 +162,9 @@ export default function OpportunityDetail() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="text-sm space-y-0">
-                <Row label="Opportunity Name" value={opp.Name} wrap />
-                <Row label="Account Name" value={opp.Account?.Name} />
                 <Row label="Type" value={opp.Type} />
                 <Row label="Stage" value={opp.StageName} />
-                <Row label="Probability" value={opp.Probability != null ? `${opp.Probability}%` : null} />
-                <Row label="Lead Source" value={opp.LeadSource} />
-                <Row label="Transaction Type" value={opp.Transaction_Type__c} />
+                <Row label="Opportunity Owner" value={opp.Owner?.Name} />
               </CardContent>
             </Card>
 
@@ -181,10 +177,8 @@ export default function OpportunityDetail() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="text-sm space-y-0">
-                <Row label="TCV (Amount)" value={fmtCurrency(opp.Amount)} />
-                <Row label="TCV (USD)" value={opp.TCV_USD__c?.toLocaleString() ?? null} />
+                <Row label="TCV" value={fmtCurrency(opp.Amount)} />
                 <Row label="ARR" value={fmtCurrency(opp.ARR__c)} />
-                <Row label="ARR (USD)" value={opp.ARR_USD__c?.toLocaleString() ?? null} />
                 <Row label="Net ARR" value={fmtCurrency(opp.Net_ARR__c)} />
                 <Row label="Net ARR %" value={opp.Net_ARR_Percentage__c != null ? `${opp.Net_ARR_Percentage__c}%` : null} />
               </CardContent>
@@ -201,11 +195,8 @@ export default function OpportunityDetail() {
               <CardContent className="text-sm space-y-0">
                 <Row label="Close Date" value={fmtDate(opp.CloseDate)} />
                 <Row label="Expiration Date" value={fmtDate(opp.Expiration_Date__c)} />
-                <Row label="Pipeline Date" value={fmtDate(opp.Pipeline_Date__c)} />
-                <Row label="Opportunity Owner" value={opp.Owner?.Name} />
                 <Row label="Created Date" value={fmtDate(opp.CreatedDate)} />
                 <Row label="Created By" value={opp.CreatedBy?.Name} />
-                <Row label="Created By Role" value={opp.Created_By_Role__c} />
               </CardContent>
             </Card>
 
