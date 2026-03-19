@@ -1,6 +1,9 @@
 import { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
+import { useSalesforce } from "@/hooks/useSalesforce";
+import { sfdcCreate } from "@/lib/sfdc";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -50,6 +53,8 @@ const requiredBySection: Record<number, (keyof FormData)[]> = {
 const PartnerReferralForm = () => {
   useDocumentTitle("Lead Referral Form");
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const { sfdcAccessToken, sfdcInstanceUrl } = useSalesforce();
   const [step, setStep] = useState(0);
   const [submitted, setSubmitted] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -85,11 +90,53 @@ const PartnerReferralForm = () => {
 
   const handleSubmit = async () => {
     if (!validateStep()) return;
+    if (!sfdcAccessToken || !sfdcInstanceUrl) {
+      toast.error("Not connected to Salesforce");
+      return;
+    }
+
     setSaving(true);
-    await new Promise((r) => setTimeout(r, 800));
-    setSaving(false);
-    setSubmitted(true);
-    toast.success("Referral submitted successfully");
+    try {
+      const fields: Record<string, unknown> = {
+        Company: form.company,
+        Website: form.website,
+        FirstName: form.firstName || null,
+        LastName: form.lastName,
+        Email: form.email,
+        LeadSource: "Partner Referral",
+        // Address fields
+        Street: form.street || null,
+        City: form.city || null,
+        State: form.state || null,
+        PostalCode: form.zip || null,
+        Country: form.country || null,
+        // Custom fields
+        Department_s__c: form.departments || null,
+        Number_of_Users__c: form.numberOfUsers ? Number(form.numberOfUsers) : null,
+        Current_Tech_Stack_Solutions__c: form.currentTechStack || null,
+        Use_Case__c: form.useCase || null,
+        Competitors_Considered_or_Incumbent__c: form.competitors || null,
+        Additional_Information__c: form.additionalInfo || null,
+      };
+
+      // Remove null values
+      for (const key of Object.keys(fields)) {
+        if (fields[key] === null) delete fields[key];
+      }
+
+      await sfdcCreate("Lead", fields, sfdcInstanceUrl, sfdcAccessToken);
+
+      // Invalidate leads cache so the new lead shows up
+      queryClient.invalidateQueries({ queryKey: ["sfdc-leads"] });
+
+      setSubmitted(true);
+      toast.success("Referral submitted successfully");
+    } catch (err) {
+      console.error("Failed to create lead:", err);
+      toast.error((err as Error).message || "Failed to submit referral");
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -324,14 +371,16 @@ function OpportunityStep({ form, set, setSelect, shake }: StepProps) {
             <Select value={form.useCase} onValueChange={setSelect!("useCase")}>
               <SelectTrigger><SelectValue placeholder="Select use case" /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="onboarding">User Onboarding</SelectItem>
-                <SelectItem value="adoption">Feature Adoption</SelectItem>
-                <SelectItem value="retention">Retention / Churn</SelectItem>
-                <SelectItem value="analytics">Product Analytics</SelectItem>
-                <SelectItem value="feedback">Customer Feedback</SelectItem>
-                <SelectItem value="planning">Product Planning</SelectItem>
-                <SelectItem value="change-management">Change Management</SelectItem>
-                <SelectItem value="other">Other</SelectItem>
+                <SelectItem value="Pendo for Customers">Pendo for Customers</SelectItem>
+                <SelectItem value="Pendo for Employees">Pendo for Employees</SelectItem>
+                <SelectItem value="User Onboarding">User Onboarding</SelectItem>
+                <SelectItem value="Feature Adoption">Feature Adoption</SelectItem>
+                <SelectItem value="Retention / Churn">Retention / Churn</SelectItem>
+                <SelectItem value="Product Analytics">Product Analytics</SelectItem>
+                <SelectItem value="Customer Feedback">Customer Feedback</SelectItem>
+                <SelectItem value="Product Planning">Product Planning</SelectItem>
+                <SelectItem value="Change Management">Change Management</SelectItem>
+                <SelectItem value="Other">Other</SelectItem>
               </SelectContent>
             </Select>
           </Field>

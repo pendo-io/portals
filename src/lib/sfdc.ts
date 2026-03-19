@@ -27,3 +27,30 @@ export async function sfdcQuery<T>(
 
   return res.json();
 }
+
+export async function sfdcCreate(
+  sObject: string,
+  fields: Record<string, unknown>,
+  instanceUrl: string,
+  accessToken: string
+): Promise<{ id: string; success: boolean; errors: string[] }> {
+  const res = await fetch("/api/sfdc-create", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ sObject, fields, instanceUrl, accessToken }),
+  });
+
+  if (res.status === 401) {
+    window.dispatchEvent(new Event("sfdc-session-expired"));
+    throw new Error("SFDC session expired");
+  }
+
+  const data = await res.json();
+
+  if (!res.ok) {
+    const msg = Array.isArray(data) ? data[0]?.message : data.error || `Create failed (${res.status})`;
+    throw new Error(msg);
+  }
+
+  return data;
+}

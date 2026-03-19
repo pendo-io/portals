@@ -9,21 +9,38 @@ export interface SfdcLeadDetail {
   LastName: string;
   Company: string;
   Email: string | null;
-  Phone: string | null;
   Website: string | null;
   Status: string;
   LeadSource: string | null;
-  Industry: string | null;
-  Title: string | null;
-  Department: string | null;
-  Description: string | null;
-  NumberOfEmployees: number | null;
-  AnnualRevenue: number | null;
   CreatedDate: string;
-  LastModifiedDate: string;
   Owner: { Name: string } | null;
   CreatedBy: { Name: string } | null;
+  // Address compound field
+  Street: string | null;
+  City: string | null;
+  State: string | null;
+  PostalCode: string | null;
+  Country: string | null;
+  // Custom fields
+  Referral_Partner_Account__c: string | null;
+  Number_of_Users__c: number | null;
+  Current_Tech_Stack_Solutions__c: string | null;
+  Department_s__c: string | null;
+  Use_Case__c: string | null;
+  Competitors_Considered_or_Incumbent__c: string | null;
+  Additional_Information__c: string | null;
 }
+
+const LEAD_FIELDS = `Id, Name, FirstName, LastName, Company, Email, Website,
+                Status, LeadSource, CreatedDate,
+                Owner.Name, CreatedBy.Name,
+                Street, City, State, PostalCode, Country,
+                Referral_Partner_Account__c, Number_of_Users__c,
+                Current_Tech_Stack_Solutions__c, Department_s__c,
+                Use_Case__c, Competitors_Considered_or_Incumbent__c,
+                Additional_Information__c`;
+
+export { LEAD_FIELDS };
 
 export function useSfdcLeadDetail(leadId: string | undefined) {
   const { sfdcAccessToken, sfdcInstanceUrl, sfdcUserId } = useSalesforce();
@@ -41,11 +58,7 @@ export function useSfdcLeadDetail(leadId: string | undefined) {
 
       // Fallback to individual fetch
       return sfdcQuery<SfdcLeadDetail>(
-        `SELECT Id, Name, FirstName, LastName, Company, Email, Phone, Website,
-                Status, LeadSource, Industry, Title, Department, Description,
-                NumberOfEmployees, AnnualRevenue,
-                CreatedDate, LastModifiedDate,
-                Owner.Name, CreatedBy.Name
+        `SELECT ${LEAD_FIELDS}
          FROM Lead
          WHERE Id = '${leadId}'
          LIMIT 1`,

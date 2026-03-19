@@ -1,7 +1,6 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { useSfdcLeadDetail } from "@/hooks/useSfdcLeadDetail";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Loader2,
@@ -9,16 +8,17 @@ import {
   ArrowLeft,
   Building2,
   Mail,
-  Phone,
   Globe,
-  Users,
-  DollarSign,
   User,
   Briefcase,
   Calendar,
   FileText,
   Tag,
-  Clock,
+  Users,
+  MapPin,
+  Lightbulb,
+  Swords,
+  Monitor,
 } from "lucide-react";
 
 const STATUS_COLORS: Record<string, string> = {
@@ -42,10 +42,11 @@ function getStatusColor(status: string | null): string {
 function DetailField({ icon: Icon, label, value, href }: {
   icon: React.ComponentType<{ className?: string }>;
   label: string;
-  value: string | null | undefined;
+  value: string | number | null | undefined;
   href?: string;
 }) {
-  if (!value) return null;
+  if (value == null || value === "") return null;
+  const display = typeof value === "number" ? value.toLocaleString() : value;
   return (
     <div className="flex items-start gap-3 py-3 border-b border-border/50 last:border-b-0">
       <Icon className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
@@ -58,10 +59,10 @@ function DetailField({ icon: Icon, label, value, href }: {
             rel="noopener noreferrer"
             className="text-sm font-medium text-primary hover:underline break-all"
           >
-            {value}
+            {display}
           </a>
         ) : (
-          <p className="text-sm font-medium break-words">{value}</p>
+          <p className="text-sm font-medium break-words">{display}</p>
         )}
       </div>
     </div>
@@ -107,19 +108,16 @@ export default function LeadDetail() {
     );
   }
 
+  const address = [lead.Street, lead.City, lead.State, lead.PostalCode, lead.Country]
+    .filter(Boolean)
+    .join(", ");
+
   const formatDate = (dateStr: string) =>
     new Date(dateStr).toLocaleDateString("en-US", {
       month: "short",
       day: "numeric",
       year: "numeric",
     });
-
-  const formatRevenue = (revenue: number | null) => {
-    if (!revenue) return null;
-    if (revenue >= 1_000_000) return `$${(revenue / 1_000_000).toFixed(1)}M`;
-    if (revenue >= 1_000) return `$${(revenue / 1_000).toFixed(0)}K`;
-    return `$${revenue}`;
-  };
 
   return (
     <div className="flex-1 flex flex-col min-h-0">
@@ -187,47 +185,39 @@ export default function LeadDetail() {
                 value={lead.Email}
                 href={lead.Email ? `mailto:${lead.Email}` : undefined}
               />
-              <DetailField icon={Phone} label="Phone" value={lead.Phone} />
-              <DetailField icon={Briefcase} label="Title" value={lead.Title} />
-              <DetailField icon={Building2} label="Department" value={lead.Department} />
-              <DetailField icon={Building2} label="Industry" value={lead.Industry} />
+              <DetailField icon={Briefcase} label="Department(s)" value={lead.Department_s__c} />
+              <DetailField icon={Lightbulb} label="Use Case" value={lead.Use_Case__c} />
+              <DetailField icon={Swords} label="Competitors Considered or Incumbent?" value={lead.Competitors_Considered_or_Incumbent__c} />
               <DetailField
                 icon={Globe}
                 label="Website"
                 value={lead.Website}
                 href={lead.Website ? (lead.Website.startsWith("http") ? lead.Website : `https://${lead.Website}`) : undefined}
               />
+              <DetailField icon={Building2} label="Referral Partner Account" value={lead.Referral_Partner_Account__c} />
             </div>
 
             {/* Right column */}
             <div>
+              <DetailField icon={Users} label="Number of Users" value={lead.Number_of_Users__c} />
+              <DetailField icon={Monitor} label="Current Tech Stack/Solutions" value={lead.Current_Tech_Stack_Solutions__c} />
               <DetailField icon={Tag} label="Lead Status" value={lead.Status} />
-              <DetailField icon={Tag} label="Lead Source" value={lead.LeadSource} />
               <DetailField icon={User} label="Lead Owner" value={lead.Owner?.Name} />
-              <DetailField
-                icon={Users}
-                label="Number of Employees"
-                value={lead.NumberOfEmployees?.toLocaleString() ?? null}
-              />
-              <DetailField
-                icon={DollarSign}
-                label="Annual Revenue"
-                value={formatRevenue(lead.AnnualRevenue)}
-              />
+              <DetailField icon={Tag} label="Lead Source" value={lead.LeadSource} />
               <DetailField icon={User} label="Created By" value={lead.CreatedBy?.Name} />
               <DetailField icon={Calendar} label="Created Date" value={formatDate(lead.CreatedDate)} />
-              <DetailField icon={Clock} label="Last Modified" value={formatDate(lead.LastModifiedDate)} />
+              <DetailField icon={MapPin} label="Address" value={address || null} />
             </div>
           </div>
 
-          {/* Description / Additional Information */}
-          {lead.Description && (
+          {/* Additional Information */}
+          {lead.Additional_Information__c && (
             <div className="mt-6 max-w-5xl">
               <div className="flex items-start gap-3 py-3">
                 <FileText className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
                 <div className="min-w-0">
                   <p className="text-xs text-muted-foreground">Additional Information</p>
-                  <p className="text-sm font-medium whitespace-pre-wrap mt-1">{lead.Description}</p>
+                  <p className="text-sm font-medium whitespace-pre-wrap mt-1">{lead.Additional_Information__c}</p>
                 </div>
               </div>
             </div>

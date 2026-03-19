@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useSalesforce } from "./useSalesforce";
 import { sfdcQuery } from "@/lib/sfdc";
+import { LEAD_FIELDS } from "./useSfdcLeadDetail";
 import type { SfdcLeadDetail } from "./useSfdcLeadDetail";
 
 export type SfdcLead = SfdcLeadDetail;
@@ -12,11 +13,7 @@ export function useSfdcLeads() {
     queryKey: ["sfdc-leads", sfdcUserId],
     queryFn: () =>
       sfdcQuery<SfdcLead>(
-        `SELECT Id, Name, FirstName, LastName, Company, Email, Phone, Website,
-                Status, LeadSource, Industry, Title, Department, Description,
-                NumberOfEmployees, AnnualRevenue,
-                CreatedDate, LastModifiedDate,
-                Owner.Name, CreatedBy.Name
+        `SELECT ${LEAD_FIELDS}
          FROM Lead
          WHERE LeadSource = 'Partner Referral'
          ORDER BY CreatedDate DESC`,

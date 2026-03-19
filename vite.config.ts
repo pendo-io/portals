@@ -138,6 +138,43 @@ export default defineConfig(({ mode }) => {
               res.end(JSON.stringify({ error: error.message }));
             }
           });
+          // POST /api/sfdc-create — create an sObject record in Salesforce
+          server.middlewares.use("/api/sfdc-create", async (req, res) => {
+            if (req.method === "OPTIONS") { res.writeHead(204); res.end(); return; }
+            if (req.method !== "POST") { res.writeHead(405); res.end(JSON.stringify({ error: "Method not allowed" })); return; }
+
+            const body = await readBody(req);
+            const { sObject, fields, instanceUrl, accessToken } = body;
+
+            if (!sObject || !fields || !instanceUrl || !accessToken) {
+              res.writeHead(400, { "Content-Type": "application/json" });
+              res.end(JSON.stringify({ error: "Missing sObject, fields, instanceUrl, or accessToken" }));
+              return;
+            }
+
+            try {
+              const sfdcRes = await fetch(
+                `${instanceUrl}/services/data/v62.0/sobjects/${sObject}/`,
+                {
+                  method: "POST",
+                  headers: {
+                    Authorization: `Bearer ${accessToken}`,
+                    "Content-Type": "application/json",
+                  },
+                  body: JSON.stringify(fields),
+                }
+              );
+
+              const responseBody = await sfdcRes.text();
+              res.writeHead(sfdcRes.status, { "Content-Type": "application/json" });
+              res.end(responseBody);
+            } catch (error: any) {
+              console.error("sfdc-create error:", error);
+              res.writeHead(500, { "Content-Type": "application/json" });
+              res.end(JSON.stringify({ error: error.message }));
+            }
+          });
+
           // POST /api/sfdc-proxy — proxy SOQL queries to Salesforce
           server.middlewares.use("/api/sfdc-proxy", async (req, res) => {
             if (req.method === "OPTIONS") { res.writeHead(204); res.end(); return; }
