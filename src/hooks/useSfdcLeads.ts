@@ -14,6 +14,12 @@ export interface SfdcLead {
   CreatedDate: string;
 }
 
+export const LEADS_QUERY = `SELECT Id, Company, Name, FirstName, LastName, Email, Status, LeadSource, CreatedDate
+         FROM Lead
+         WHERE LeadSource = 'Partner Referral'
+         ORDER BY CreatedDate DESC
+         LIMIT 50`;
+
 export function useSfdcLeads() {
   const { sfdcAccessToken, sfdcInstanceUrl, sfdcUserId } = useSalesforce();
 
@@ -21,16 +27,14 @@ export function useSfdcLeads() {
     queryKey: ["sfdc-leads", sfdcUserId],
     queryFn: () =>
       sfdcQuery<SfdcLead>(
-        `SELECT Id, Company, Name, FirstName, LastName, Email, Status, LeadSource, CreatedDate
-         FROM Lead
-         WHERE LeadSource = 'Partner Referral'
-         ORDER BY CreatedDate DESC
-         LIMIT 50`,
+        LEADS_QUERY,
         sfdcInstanceUrl!,
         sfdcAccessToken!
       ),
     enabled: !!sfdcAccessToken && !!sfdcInstanceUrl && !!sfdcUserId,
-    staleTime: 5 * 60_000,
+    staleTime: 10 * 60_000,
+    gcTime: 30 * 60_000,
     refetchOnWindowFocus: false,
+    placeholderData: (prev) => prev,
   });
 }

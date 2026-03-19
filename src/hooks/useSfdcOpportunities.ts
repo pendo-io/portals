@@ -28,7 +28,9 @@ export function useSfdcOpportunities() {
         sfdcAccessToken!
       ),
     enabled: !!sfdcAccessToken && !!sfdcInstanceUrl && !!sfdcUserId,
-    staleTime: 5 * 60_000,
+    staleTime: 10 * 60_000,
+    gcTime: 30 * 60_000,
     refetchOnWindowFocus: false,
+    placeholderData: (prev) => prev,
   });
 }
