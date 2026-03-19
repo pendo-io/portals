@@ -31,6 +31,12 @@ export interface SfdcOpportunityDetail {
   Net_ARR_Percentage__c: number | null;
   Initial_Product_Interest__c: string | null;
   Management_Notes__c: string | null;
+  Solution_Partner_SI__c: string | null;
+  Cloud_Hosting_Commit_Hyperscalers__c: string | null;
+  Data_Warehouse_Provider__c: string | null;
+  Referring_Account_Owner__r: { Name: string } | null;
+  Initial_Contact__c: string | null;
+  Initial_Contact_Role__c: string | null;
 }
 
 export const OPP_FIELDS = `Id, Name, Account.Name, Owner.Name, CreatedBy.Name,
@@ -41,7 +47,10 @@ export const OPP_FIELDS = `Id, Name, Account.Name, Owner.Name, CreatedBy.Name,
                 Primary_Competitor_Names__c,
                 Partner_Relationship__c, Partner_Sub_type__c,
                 Created_By_Role__c, Net_ARR_Percentage__c,
-                Initial_Product_Interest__c, Management_Notes__c`;
+                Initial_Product_Interest__c, Management_Notes__c,
+                Solution_Partner_SI__c, Cloud_Hosting_Commit_Hyperscalers__c,
+                Data_Warehouse_Provider__c, Referring_Account_Owner__r.Name,
+                Initial_Contact__c, Initial_Contact_Role__c`;
 
 export function useSfdcOpportunityDetail(oppId: string | undefined) {
   const { sfdcAccessToken, sfdcInstanceUrl, sfdcUserId } = useSalesforce();

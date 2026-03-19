@@ -193,32 +193,47 @@ export default function OpportunityDetail() {
               </CardContent>
             </Card>
 
-            {/* Partner Details */}
-            {(opp.Partner_Relationship__c || opp.Partner_Sub_type__c || opp.Primary_Competitor_Names__c || opp.Initial_Product_Interest__c) && (
-              <Card className="md:col-span-2 lg:col-span-3">
-                <CardHeader>
-                  <CardTitle className="text-sm font-medium flex items-center gap-2">
-                    <Building2 className="h-4 w-4" />
-                    Partner & Product Details
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="text-sm">
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-x-8">
-                    <div>
-                      <Row label="Partner Relationship" value={opp.Partner_Relationship__c} />
-                      <Row label="Partner Sub-type" value={opp.Partner_Sub_type__c} />
-                    </div>
-                    <div>
-                      <Row label="Initial Product Interest" value={opp.Initial_Product_Interest__c} wrap />
-                      <Row label="Primary Competitors" value={opp.Primary_Competitor_Names__c} wrap />
-                    </div>
-                    <div>
-                      <Row label="Transaction Type" value={opp.Transaction_Type__c} />
-                    </div>
+            {/* Partner & Product Details */}
+            <Card className="md:col-span-2 lg:col-span-3">
+              <CardHeader>
+                <CardTitle className="text-sm font-medium flex items-center gap-2">
+                  <Building2 className="h-4 w-4" />
+                  Partner & Product Details
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="text-sm">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8">
+                  <div>
+                    <Row label="Solution Partner/SI" value={opp.Solution_Partner_SI__c} />
+                    <Row label="Referring Account Owner" value={opp.Referring_Account_Owner__r?.Name} />
                   </div>
-                </CardContent>
-              </Card>
-            )}
+                  <div>
+                    <Row label="Cloud Hosting / Hyperscalers" value={opp.Cloud_Hosting_Commit_Hyperscalers__c} />
+                    <Row label="Data Warehouse Provider" value={opp.Data_Warehouse_Provider__c} />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Contact Role Details */}
+            <Card className="md:col-span-2 lg:col-span-3">
+              <CardHeader>
+                <CardTitle className="text-sm font-medium flex items-center gap-2">
+                  <User className="h-4 w-4" />
+                  Contact Role Details
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="text-sm">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8">
+                  <div>
+                    <Row label="Initial Contact" value={opp.Initial_Contact__c} />
+                  </div>
+                  <div>
+                    <Row label="Initial Contact Role" value={opp.Initial_Contact_Role__c} />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
 
             {/* Next Steps */}
             {opp.Next_Steps__c && (
