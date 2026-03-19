@@ -46,7 +46,7 @@ function getStatusColor(status: string | null): string {
   return STATUS_COLORS[status] || "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400";
 }
 
-function Row({ label, value, href }: { label: string; value: string | number | null | undefined; href?: string }) {
+function Row({ label, value, href, wrap }: { label: string; value: string | number | null | undefined; href?: string; wrap?: boolean }) {
   if (value == null || value === "") return null;
   const display = typeof value === "number" ? value.toLocaleString() : value;
   return (
@@ -57,12 +57,12 @@ function Row({ label, value, href }: { label: string; value: string | number | n
           href={href}
           target="_blank"
           rel="noopener noreferrer"
-          className="font-medium text-primary hover:underline text-right truncate"
+          className={`font-medium text-primary hover:underline text-right ${wrap ? "break-words" : "truncate"}`}
         >
           {display}
         </a>
       ) : (
-        <span className="font-medium text-right truncate">{display}</span>
+        <span className={`font-medium text-right ${wrap ? "break-words" : "truncate"}`}>{display}</span>
       )}
     </div>
   );
@@ -232,8 +232,8 @@ export default function LeadDetail() {
                 <Row label="Status" value={lead.Status} />
                 <Row label="Lead Source" value={lead.LeadSource} />
                 <Row label="Lead Owner" value={lead.Owner?.Name} />
-                <Row label="Partner Account" value={lead.Referral_Partner_Account__c} />
-                {address && <Row label="Address" value={address} />}
+                <Row label="Partner Account" value={lead.Referral_Partner_Account__r?.Name} />
+                {address && <Row label="Address" value={address} wrap />}
               </CardContent>
             </Card>
 

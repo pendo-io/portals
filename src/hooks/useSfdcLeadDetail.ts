@@ -23,6 +23,7 @@ export interface SfdcLeadDetail {
   Country: string | null;
   // Custom fields
   Referral_Partner_Account__c: string | null;
+  Referral_Partner_Account__r: { Name: string } | null;
   Number_of_Users__c: number | null;
   Current_Tech_Stack_Solutions__c: string | null;
   Department_s__c: string | null;
@@ -35,7 +36,8 @@ const LEAD_FIELDS = `Id, Name, FirstName, LastName, Company, Email, Website,
                 Status, LeadSource, CreatedDate,
                 Owner.Name, CreatedBy.Name,
                 Street, City, State, PostalCode, Country,
-                Referral_Partner_Account__c, Number_of_Users__c,
+                Referral_Partner_Account__c, Referral_Partner_Account__r.Name,
+                Number_of_Users__c,
                 Current_Tech_Stack_Solutions__c, Department_s__c,
                 Use_Case__c, Competitors_Considered_or_Incumbent__c,
                 Additional_Information__c`;
