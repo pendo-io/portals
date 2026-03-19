@@ -1,6 +1,7 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { useSfdcLeadDetail } from "@/hooks/useSfdcLeadDetail";
+import { useSfdcApprovalHistory } from "@/hooks/useSfdcApprovalHistory";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -21,6 +22,10 @@ import {
   Briefcase,
   FileText,
   Clock,
+  ClipboardCheck,
+  CheckCircle2,
+  XCircle,
+  CircleDot,
 } from "lucide-react";
 
 const STATUS_COLORS: Record<string, string> = {
@@ -67,8 +72,10 @@ export default function LeadDetail() {
   const { leadId } = useParams<{ leadId: string }>();
   const navigate = useNavigate();
   const { data, isLoading, isError, error } = useSfdcLeadDetail(leadId);
+  const { data: approvalData, isLoading: approvalsLoading } = useSfdcApprovalHistory(leadId);
 
   const lead = data?.records?.[0];
+  const approvals = approvalData?.records ?? [];
 
   useDocumentTitle(lead?.Name ? `${lead.Name} - Lead` : "Lead Detail");
 
@@ -337,6 +344,94 @@ export default function LeadDetail() {
                 </CardContent>
               </Card>
             )}
+
+            {/* Approval History */}
+            <Card className="md:col-span-2 lg:col-span-3">
+              <CardHeader>
+                <CardTitle className="text-sm font-medium flex items-center gap-2">
+                  <ClipboardCheck className="h-4 w-4" />
+                  Approval History
+                  {approvals.length > 0 && (
+                    <span className="inline-flex items-center justify-center h-5 min-w-5 px-1.5 rounded-full bg-muted text-[11px] font-medium text-muted-foreground">
+                      {approvals.length}
+                    </span>
+                  )}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {approvalsLoading ? (
+                  <div className="flex items-center gap-2 py-4 justify-center">
+                    <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                    <span className="text-sm text-muted-foreground">Loading approvals...</span>
+                  </div>
+                ) : approvals.length === 0 ? (
+                  <p className="text-sm text-muted-foreground text-center py-4">No approval history</p>
+                ) : (
+                  <div className="relative">
+                    <div className="absolute left-[15px] top-3 bottom-3 w-px bg-border" />
+                    <div className="space-y-4">
+                      {approvals.map((step) => {
+                        const isApproved = step.StepStatus === "Approved";
+                        const isRejected = step.StepStatus === "Rejected";
+                        const StatusIcon = isApproved ? CheckCircle2 : isRejected ? XCircle : CircleDot;
+                        const statusColor = isApproved
+                          ? "text-emerald-600 bg-emerald-50 dark:bg-emerald-900/20"
+                          : isRejected
+                            ? "text-red-600 bg-red-50 dark:bg-red-900/20"
+                            : "text-blue-600 bg-blue-50 dark:bg-blue-900/20";
+
+                        return (
+                          <div key={step.Id} className="relative flex gap-3 pl-0">
+                            <div className={`relative z-10 flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${statusColor}`}>
+                              <StatusIcon className="h-4 w-4" />
+                            </div>
+                            <div className="flex-1 min-w-0 pt-0.5">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
+                                  isApproved
+                                    ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400"
+                                    : isRejected
+                                      ? "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400"
+                                      : "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400"
+                                }`}>
+                                  {step.StepStatus}
+                                </span>
+                                <span className="text-xs text-muted-foreground ml-auto shrink-0">
+                                  {new Date(step.CreatedDate).toLocaleDateString("en-US", {
+                                    month: "short",
+                                    day: "numeric",
+                                    year: "numeric",
+                                    hour: "numeric",
+                                    minute: "2-digit",
+                                  })}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-4 mt-1 text-sm flex-wrap">
+                                {step.OriginalActor?.Name && (
+                                  <span className="text-muted-foreground">
+                                    Assigned to: <span className="font-medium text-foreground">{step.OriginalActor.Name}</span>
+                                  </span>
+                                )}
+                                {step.Actor?.Name && step.Actor.Name !== step.OriginalActor?.Name && (
+                                  <span className="text-muted-foreground">
+                                    Approver: <span className="font-medium text-foreground">{step.Actor.Name}</span>
+                                  </span>
+                                )}
+                              </div>
+                              {step.Comments && (
+                                <p className="text-sm text-muted-foreground mt-1.5 whitespace-pre-wrap leading-relaxed">
+                                  {step.Comments}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           </div>
         </div>
       </div>
