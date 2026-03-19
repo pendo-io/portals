@@ -9,6 +9,7 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import type { SfdcLeadDetail } from "@/hooks/useSfdcLeadDetail";
+import type { SfdcOpportunityDetail } from "@/hooks/useSfdcOpportunityDetail";
 import type { SfdcQueryResult } from "@/lib/sfdc";
 
 function getHomeLabel(): string {
@@ -39,21 +40,27 @@ export function PortalTopBar() {
   const currentPath = location.pathname;
 
   const isLeadDetail = currentPath.startsWith("/portal/partner/leads/") && currentPath !== "/portal/partner/leads";
+  const isOppDetail = currentPath.startsWith("/portal/partner/opportunities/") && currentPath !== "/portal/partner/opportunities";
 
-  let leadDetailLabel = "Lead Detail";
+  let breadcrumbSegments: { label: string; path?: string }[];
+
   if (isLeadDetail) {
     const leadId = currentPath.split("/portal/partner/leads/")[1];
     const cachedLead = queryClient.getQueryData<SfdcQueryResult<SfdcLeadDetail>>(["sfdc-lead", leadId]);
-    if (cachedLead?.records?.[0]?.Name) leadDetailLabel = cachedLead.records[0].Name;
+    const label = cachedLead?.records?.[0]?.Name || "Lead Detail";
+    breadcrumbSegments = [{ label: "Partner Leads", path: "/portal/partner/leads" }, { label }];
+  } else if (isOppDetail) {
+    const oppId = currentPath.split("/portal/partner/opportunities/")[1];
+    const cachedOpp = queryClient.getQueryData<SfdcQueryResult<SfdcOpportunityDetail>>(["sfdc-opportunity", oppId]);
+    const label = cachedOpp?.records?.[0]?.Name || "Opportunity Detail";
+    breadcrumbSegments = [{ label: "Partner Opportunities", path: "/portal/partner/opportunities" }, { label }];
+  } else {
+    breadcrumbSegments = [{
+      label: currentPath === "/portal/partner"
+        ? getHomeLabel()
+        : ROUTE_LABELS[currentPath] || currentPath.split("/").filter(Boolean).pop() || "Home",
+    }];
   }
-
-  const breadcrumbSegments = isLeadDetail
-    ? [{ label: "Partner Leads", path: "/portal/partner/leads" }, { label: leadDetailLabel }]
-    : [{
-        label: currentPath === "/portal/partner"
-          ? getHomeLabel()
-          : ROUTE_LABELS[currentPath] || currentPath.split("/").filter(Boolean).pop() || "Home",
-      }];
 
   return (
     <header className="flex h-14 shrink-0 items-center gap-2 border-b px-4 sm:px-6">

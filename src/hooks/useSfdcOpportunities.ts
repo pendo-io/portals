@@ -1,16 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
 import { useSalesforce } from "./useSalesforce";
 import { sfdcQuery } from "@/lib/sfdc";
+import { OPP_FIELDS } from "./useSfdcOpportunityDetail";
+import type { SfdcOpportunityDetail } from "./useSfdcOpportunityDetail";
 
-export interface SfdcOpportunity {
-  Id: string;
-  Name: string;
-  Account: { Name: string } | null;
-  StageName: string;
-  Amount: number | null;
-  CloseDate: string;
-  Probability: number | null;
-}
+export type SfdcOpportunity = SfdcOpportunityDetail;
 
 export function useSfdcOpportunities() {
   const { sfdcAccessToken, sfdcInstanceUrl, sfdcUserId } = useSalesforce();
@@ -19,7 +13,7 @@ export function useSfdcOpportunities() {
     queryKey: ["sfdc-opportunities", sfdcUserId],
     queryFn: () =>
       sfdcQuery<SfdcOpportunity>(
-        `SELECT Id, Name, Account.Name, StageName, Amount, CloseDate, Probability, LeadSource
+        `SELECT ${OPP_FIELDS}
          FROM Opportunity
          WHERE LeadSource = 'Partner Referral'
          ORDER BY CloseDate DESC`,
