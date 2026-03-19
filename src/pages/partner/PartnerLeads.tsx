@@ -1,9 +1,8 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
-import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Table,
   TableBody,
@@ -19,66 +18,132 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Search, Filter } from "lucide-react";
+import { Search, Loader2, ArrowUp, ArrowDown, ArrowUpDown, ChevronLeft, ChevronRight } from "lucide-react";
 import { useSfdcLeads } from "@/hooks/useSfdcLeads";
 
-const statusColors: Record<string, string> = {
-  "Open - Not Contacted": "bg-blue-500/10 text-blue-700 dark:text-blue-400",
-  "Working - Contacted": "bg-amber-500/10 text-amber-700 dark:text-amber-400",
-  "Closed - Converted": "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400",
-  "Closed - Not Converted": "bg-red-500/10 text-red-700 dark:text-red-400",
-  New: "bg-blue-500/10 text-blue-700 dark:text-blue-400",
-  Contacted: "bg-amber-500/10 text-amber-700 dark:text-amber-400",
-  Qualified: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400",
-  Nurturing: "bg-purple-500/10 text-purple-700 dark:text-purple-400",
-  Disqualified: "bg-red-500/10 text-red-700 dark:text-red-400",
+type SortKey = "company" | "contact" | "email" | "status" | "source" | "created";
+type SortDir = "asc" | "desc";
+
+const PAGE_SIZE = 50;
+
+const STATUS_COLORS: Record<string, string> = {
+  "Open - Not Contacted": "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400",
+  "Working - Contacted": "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400",
+  "Closed - Converted": "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400",
+  "Closed - Not Converted": "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400",
+  New: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400",
+  Contacted: "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400",
+  Qualified: "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400",
+  Nurturing: "bg-violet-100 text-violet-800 dark:bg-violet-900/30 dark:text-violet-400",
+  Disqualified: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400",
 };
 
-const fallbackStatusColor = "bg-gray-500/10 text-gray-700 dark:text-gray-400";
+function getStatusColor(status: string | null): string {
+  if (!status) return "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400";
+  return STATUS_COLORS[status] || "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400";
+}
+
+function SortIcon({ active, dir }: { active: boolean; dir?: SortDir }) {
+  if (!active) return <ArrowUpDown className="h-3 w-3 ml-1 opacity-40" />;
+  return dir === "asc" ? <ArrowUp className="h-3 w-3 ml-1" /> : <ArrowDown className="h-3 w-3 ml-1" />;
+}
 
 const PartnerLeads = () => {
   useDocumentTitle("Leads");
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
-  const { data, isLoading, isError } = useSfdcLeads();
+  const [page, setPage] = useState(0);
+  const [sortKey, setSortKey] = useState<SortKey | null>(null);
+  const [sortDir, setSortDir] = useState<SortDir>("asc");
+  const { data, isLoading, isError, error } = useSfdcLeads();
 
   const leads = data?.records ?? [];
 
-  // Collect unique statuses for the filter dropdown
-  const statuses = [...new Set(leads.map((l) => l.Status))].sort();
+  const statuses = useMemo(() => {
+    return [...new Set(leads.map((l) => l.Status))].filter(Boolean).sort();
+  }, [leads]);
 
-  const filtered = leads.filter((lead) => {
-    const matchesSearch =
-      lead.Company?.toLowerCase().includes(search.toLowerCase()) ||
-      lead.Name?.toLowerCase().includes(search.toLowerCase()) ||
-      lead.Email?.toLowerCase().includes(search.toLowerCase());
-    const matchesStatus = statusFilter === "all" || lead.Status === statusFilter;
-    return matchesSearch && matchesStatus;
-  });
+  const handleSearchChange = (value: string) => {
+    setSearch(value);
+    setPage(0);
+  };
+
+  const handleStatusFilterChange = (value: string) => {
+    setStatusFilter(value);
+    setPage(0);
+  };
+
+  const handleSort = (key: SortKey) => {
+    if (sortKey === key) {
+      setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    } else {
+      setSortKey(key);
+      setSortDir("asc");
+    }
+    setPage(0);
+  };
+
+  const filtered = useMemo(() => {
+    return leads.filter((lead) => {
+      const matchesSearch =
+        !search ||
+        lead.Company?.toLowerCase().includes(search.toLowerCase()) ||
+        lead.Name?.toLowerCase().includes(search.toLowerCase()) ||
+        lead.Email?.toLowerCase().includes(search.toLowerCase());
+      const matchesStatus = statusFilter === "all" || lead.Status === statusFilter;
+      return matchesSearch && matchesStatus;
+    });
+  }, [leads, search, statusFilter]);
+
+  const sorted = useMemo(() => {
+    if (!sortKey) return filtered;
+    return [...filtered].sort((a, b) => {
+      let aVal: string | number | null;
+      let bVal: string | number | null;
+      switch (sortKey) {
+        case "company": aVal = a.Company; bVal = b.Company; break;
+        case "contact": aVal = a.Name; bVal = b.Name; break;
+        case "email": aVal = a.Email; bVal = b.Email; break;
+        case "status": aVal = a.Status; bVal = b.Status; break;
+        case "source": aVal = a.LeadSource; bVal = b.LeadSource; break;
+        case "created": aVal = a.CreatedDate; bVal = b.CreatedDate; break;
+      }
+      if (aVal == null && bVal == null) return 0;
+      if (aVal == null) return 1;
+      if (bVal == null) return -1;
+      const cmp = String(aVal).localeCompare(String(bVal));
+      return sortDir === "asc" ? cmp : -cmp;
+    });
+  }, [filtered, sortKey, sortDir]);
+
+  const totalPages = Math.max(1, Math.ceil(sorted.length / PAGE_SIZE));
+  const paginated = useMemo(() => {
+    const start = page * PAGE_SIZE;
+    return sorted.slice(start, start + PAGE_SIZE);
+  }, [sorted, page]);
+
+  const thClass = "font-semibold text-xs uppercase tracking-wider cursor-pointer select-none";
 
   return (
-    <div className="flex-1 p-6 space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">Leads</h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          {data ? `${data.totalSize} leads` : "Loading leads from Salesforce..."}
-        </p>
-      </div>
-
-      {/* Filters */}
-      <div className="flex items-center gap-3">
-        <div className="relative flex-1 max-w-sm">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+    <div className="flex-1 flex flex-col min-h-0">
+      {/* Toolbar */}
+      <div className="border-b px-3 sm:px-6 py-3 flex items-center gap-2 sm:gap-4 flex-wrap">
+        <div className="relative w-full sm:w-auto sm:flex-1 sm:min-w-[200px] sm:max-w-sm">
+          {isLoading ? (
+            <Loader2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground animate-spin" />
+          ) : (
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          )}
           <Input
             placeholder="Search leads..."
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="pl-9"
+            onChange={(e) => handleSearchChange(e.target.value)}
+            className="pl-9 h-9"
           />
         </div>
-        <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-[200px]">
-            <Filter className="h-3.5 w-3.5 mr-2 text-muted-foreground" />
+
+        <Select value={statusFilter} onValueChange={handleStatusFilterChange}>
+          <SelectTrigger className="w-full sm:w-[180px] h-9">
             <SelectValue placeholder="Status" />
           </SelectTrigger>
           <SelectContent>
@@ -88,72 +153,128 @@ const PartnerLeads = () => {
             ))}
           </SelectContent>
         </Select>
+
+        <Badge variant="secondary" className="ml-auto">
+          {filtered.length === leads.length
+            ? `${leads.length} leads`
+            : `${filtered.length} of ${leads.length} leads`}
+        </Badge>
       </div>
 
-      {/* Leads Table */}
-      <Card>
-        <CardContent className="p-0">
-          {isLoading ? (
-            <div className="p-6 space-y-3">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <Skeleton key={i} className="h-10 w-full" />
-              ))}
+      {/* Content */}
+      <div className="flex-1 overflow-auto">
+        {isError ? (
+          <div className="flex items-center justify-center p-8">
+            <div className="text-center space-y-2">
+              <p className="text-destructive font-medium">Failed to load leads</p>
+              <p className="text-sm text-muted-foreground">{(error as Error)?.message || "Please try refreshing."}</p>
             </div>
-          ) : isError ? (
-            <div className="p-8 text-center text-sm text-muted-foreground">
-              Failed to load leads from Salesforce. Please try refreshing.
+          </div>
+        ) : isLoading ? (
+          <div className="flex items-center justify-center p-12">
+            <div className="flex flex-col items-center gap-3">
+              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+              <p className="text-sm text-muted-foreground">Loading leads...</p>
             </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow className="bg-muted/30 hover:bg-muted/30">
-                    <TableHead className="font-semibold text-xs uppercase tracking-wider">Company</TableHead>
-                    <TableHead className="font-semibold text-xs uppercase tracking-wider">Contact</TableHead>
-                    <TableHead className="font-semibold text-xs uppercase tracking-wider hidden md:table-cell">Email</TableHead>
-                    <TableHead className="font-semibold text-xs uppercase tracking-wider">Status</TableHead>
-                    <TableHead className="font-semibold text-xs uppercase tracking-wider hidden lg:table-cell">Source</TableHead>
-                    <TableHead className="font-semibold text-xs uppercase tracking-wider text-right hidden sm:table-cell">Created</TableHead>
+          </div>
+        ) : paginated.length === 0 ? (
+          <div className="flex items-center justify-center py-20 text-muted-foreground">
+            No leads found
+          </div>
+        ) : (
+          <div className="w-full overflow-x-auto border-b">
+            <Table className="[&_th]:border-r [&_th:last-child]:border-r-0 [&_td]:border-r [&_td:last-child]:border-r-0">
+              <TableHeader>
+                <TableRow className="bg-muted/30 hover:bg-muted/30">
+                  <TableHead className={thClass} onClick={() => handleSort("company")}>
+                    <span className="inline-flex items-center">Company<SortIcon active={sortKey === "company"} dir={sortDir} /></span>
+                  </TableHead>
+                  <TableHead className={thClass} onClick={() => handleSort("contact")}>
+                    <span className="inline-flex items-center">Contact<SortIcon active={sortKey === "contact"} dir={sortDir} /></span>
+                  </TableHead>
+                  <TableHead className={`${thClass} hidden md:table-cell`} onClick={() => handleSort("email")}>
+                    <span className="inline-flex items-center">Email<SortIcon active={sortKey === "email"} dir={sortDir} /></span>
+                  </TableHead>
+                  <TableHead className={thClass} onClick={() => handleSort("status")}>
+                    <span className="inline-flex items-center">Status<SortIcon active={sortKey === "status"} dir={sortDir} /></span>
+                  </TableHead>
+                  <TableHead className={`${thClass} hidden lg:table-cell`} onClick={() => handleSort("source")}>
+                    <span className="inline-flex items-center">Source<SortIcon active={sortKey === "source"} dir={sortDir} /></span>
+                  </TableHead>
+                  <TableHead className={`${thClass} text-right hidden sm:table-cell`} onClick={() => handleSort("created")}>
+                    <span className="inline-flex items-center justify-end">Created<SortIcon active={sortKey === "created"} dir={sortDir} /></span>
+                  </TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {paginated.map((lead) => (
+                  <TableRow key={lead.Id} className="cursor-pointer hover:bg-muted/50 h-[52px]">
+                    <TableCell className="py-2">
+                      <div className="min-w-[140px] sm:min-w-[180px]">
+                        <p className="font-medium text-sm leading-tight truncate">{lead.Company}</p>
+                        <p className="text-xs text-muted-foreground truncate">{lead.Id}</p>
+                      </div>
+                    </TableCell>
+                    <TableCell className="py-2">
+                      <span className="text-sm">{lead.Name}</span>
+                    </TableCell>
+                    <TableCell className="py-2 hidden md:table-cell">
+                      <span className="text-sm text-muted-foreground">{lead.Email ?? "—"}</span>
+                    </TableCell>
+                    <TableCell className="py-2">
+                      {lead.Status ? (
+                        <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${getStatusColor(lead.Status)}`}>
+                          {lead.Status}
+                        </span>
+                      ) : (
+                        <span className="text-muted-foreground text-xs">—</span>
+                      )}
+                    </TableCell>
+                    <TableCell className="py-2 hidden lg:table-cell">
+                      <span className="text-sm">{lead.LeadSource ?? "—"}</span>
+                    </TableCell>
+                    <TableCell className="py-2 text-right hidden sm:table-cell">
+                      <span className="text-sm text-muted-foreground tabular-nums">
+                        {new Date(lead.CreatedDate).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                      </span>
+                    </TableCell>
                   </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filtered.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                        No leads found
-                      </TableCell>
-                    </TableRow>
-                  ) : (
-                    filtered.map((lead) => (
-                      <TableRow key={lead.Id} className="cursor-pointer hover:bg-muted/50">
-                        <TableCell>
-                          <div>
-                            <p className="font-medium text-sm">{lead.Company}</p>
-                            <p className="text-xs text-muted-foreground">{lead.Id}</p>
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-sm">{lead.Name}</TableCell>
-                        <TableCell className="text-sm text-muted-foreground hidden md:table-cell">
-                          {lead.Email ?? "—"}
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant="secondary" className={statusColors[lead.Status] ?? fallbackStatusColor}>
-                            {lead.Status}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="text-sm hidden lg:table-cell">{lead.LeadSource ?? "—"}</TableCell>
-                        <TableCell className="text-sm text-right text-muted-foreground hidden sm:table-cell">
-                          {new Date(lead.CreatedDate).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        )}
+      </div>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="border-t border-border/50 px-3 sm:px-6 py-3 flex items-center justify-between bg-card/30">
+          <span className="text-sm text-muted-foreground">
+            {page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, sorted.length)} of {sorted.length} leads
+          </span>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setPage((p) => Math.max(0, p - 1))}
+              disabled={page === 0}
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <span className="text-sm text-muted-foreground min-w-[80px] text-center">
+              Page {page + 1} of {totalPages}
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
+              disabled={page >= totalPages - 1}
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
