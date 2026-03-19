@@ -170,7 +170,7 @@ export default function LeadDetail() {
       {/* Card grid */}
       <div className="flex-1 overflow-auto">
         <div className="p-3 sm:p-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 
             {/* Contact Information */}
             <Card>
