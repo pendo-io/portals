@@ -21,28 +21,12 @@ import {
 } from "@/components/ui/select";
 import { Search, Loader2, ArrowUp, ArrowDown, ArrowUpDown, ChevronLeft, ChevronRight } from "lucide-react";
 import { useSfdcLeads } from "@/hooks/useSfdcLeads";
+import { getLeadStatusColor } from "@/lib/status-colors";
 
 type SortKey = "company" | "contact" | "email" | "status" | "source" | "created";
 type SortDir = "asc" | "desc";
 
 const PAGE_SIZE = 50;
-
-const STATUS_COLORS: Record<string, string> = {
-  "Open - Not Contacted": "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400",
-  "Working - Contacted": "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400",
-  "Closed - Converted": "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400",
-  "Closed - Not Converted": "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400",
-  New: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400",
-  Contacted: "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400",
-  Qualified: "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400",
-  Nurturing: "bg-violet-100 text-violet-800 dark:bg-violet-900/30 dark:text-violet-400",
-  Disqualified: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400",
-};
-
-function getStatusColor(status: string | null): string {
-  if (!status) return "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400";
-  return STATUS_COLORS[status] || "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400";
-}
 
 function SortIcon({ active, dir }: { active: boolean; dir?: SortDir }) {
   if (!active) return <ArrowUpDown className="h-3 w-3 ml-1 opacity-40" />;
@@ -215,7 +199,7 @@ const PartnerLeads = () => {
                     </TableCell>
                     <TableCell className="py-2">
                       {lead.Status ? (
-                        <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${getStatusColor(lead.Status)}`}>
+                        <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${getLeadStatusColor(lead.Status)}`}>
                           {lead.Status}
                         </span>
                       ) : (

@@ -22,31 +22,12 @@ import {
 } from "@/components/ui/select";
 import { Search, Loader2, ArrowUp, ArrowDown, ArrowUpDown, ChevronLeft, ChevronRight } from "lucide-react";
 import { useSfdcOpportunities } from "@/hooks/useSfdcOpportunities";
+import { getOppStageColor } from "@/lib/status-colors";
 
 type SortKey = "name" | "account" | "stage" | "amount" | "probability" | "closeDate";
 type SortDir = "asc" | "desc";
 
 const PAGE_SIZE = 50;
-
-const STATUS_COLORS: Record<string, string> = {
-  Prospecting: "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400",
-  Qualification: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400",
-  "Needs Analysis": "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400",
-  "Value Proposition": "bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-400",
-  "Id. Decision Makers": "bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-400",
-  "Perception Analysis": "bg-violet-100 text-violet-800 dark:bg-violet-900/30 dark:text-violet-400",
-  Proposal: "bg-violet-100 text-violet-800 dark:bg-violet-900/30 dark:text-violet-400",
-  "Proposal/Price Quote": "bg-violet-100 text-violet-800 dark:bg-violet-900/30 dark:text-violet-400",
-  Negotiation: "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400",
-  "Negotiation/Review": "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400",
-  "Closed Won": "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400",
-  "Closed Lost": "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400",
-};
-
-function getStageColor(stage: string | null): string {
-  if (!stage) return "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400";
-  return STATUS_COLORS[stage] || "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400";
-}
 
 const formatCurrency = (value: number | null): string => {
   if (value == null) return "—";
@@ -223,7 +204,7 @@ const PartnerOpportunities = () => {
                     </TableCell>
                     <TableCell className="py-2">
                       {opp.StageName ? (
-                        <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${getStageColor(opp.StageName)}`}>
+                        <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${getOppStageColor(opp.StageName)}`}>
                           {opp.StageName}
                         </span>
                       ) : (

@@ -19,24 +19,7 @@ import {
   XCircle,
   CircleDot,
 } from "lucide-react";
-
-const STAGE_COLORS: Record<string, string> = {
-  Prospecting: "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400",
-  Qualification: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400",
-  "Needs Analysis": "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400",
-  "Value Proposition": "bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-400",
-  Proposal: "bg-violet-100 text-violet-800 dark:bg-violet-900/30 dark:text-violet-400",
-  "Proposal/Price Quote": "bg-violet-100 text-violet-800 dark:bg-violet-900/30 dark:text-violet-400",
-  Negotiation: "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400",
-  "Negotiation/Review": "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400",
-  "Closed Won": "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400",
-  "Closed Lost": "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400",
-};
-
-function getStageColor(stage: string | null): string {
-  if (!stage) return "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400";
-  return STAGE_COLORS[stage] || "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400";
-}
+import { getOppStageColor } from "@/lib/status-colors";
 
 function Row({ label, value, wrap }: { label: string; value: string | number | null | undefined; wrap?: boolean }) {
   const display = value == null || value === "" ? "—" : typeof value === "number" ? value.toLocaleString() : value;
@@ -126,7 +109,7 @@ export default function OpportunityDetail() {
             </div>
           </div>
           <div className="flex items-center gap-2 shrink-0">
-            <span className={`inline-flex items-center rounded-full px-3 py-1 text-sm font-medium ${getStageColor(opp.StageName)}`}>
+            <span className={`inline-flex items-center rounded-full px-3 py-1 text-sm font-medium ${getOppStageColor(opp.StageName)}`}>
               {opp.StageName}
             </span>
             <Button variant="outline" size="sm" onClick={() => navigate("/portal/partner/opportunities")}>
