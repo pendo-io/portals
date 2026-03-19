@@ -136,9 +136,6 @@ export default function LeadDetail() {
                 <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">{lead.Company}</p>
                 <h1 className="text-xl sm:text-2xl font-bold tracking-tight">{lead.Name}</h1>
               </div>
-              <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium self-start mt-1 ${getStatusColor(lead.Status)}`}>
-                {lead.Status}
-              </span>
             </div>
             <div className="flex items-center gap-4 text-sm text-muted-foreground flex-wrap">
               {lead.Email && (
@@ -159,6 +156,9 @@ export default function LeadDetail() {
             </div>
           </div>
           <div className="flex items-center gap-2 shrink-0">
+            <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${getStatusColor(lead.Status)}`}>
+              {lead.Status}
+            </span>
             <Button variant="outline" size="sm" onClick={() => navigate("/portal/partner/leads")}>
               <ArrowLeft className="h-4 w-4 mr-1.5" />
               Back
