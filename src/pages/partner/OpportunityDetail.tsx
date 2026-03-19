@@ -187,8 +187,6 @@ export default function OpportunityDetail() {
                 <Row label="ARR (USD)" value={opp.ARR_USD__c?.toLocaleString() ?? null} />
                 <Row label="Net ARR" value={fmtCurrency(opp.Net_ARR__c)} />
                 <Row label="Net ARR %" value={opp.Net_ARR_Percentage__c != null ? `${opp.Net_ARR_Percentage__c}%` : null} />
-                <Row label="Available to Renew" value={fmtCurrency(opp.Current_ARR__c)} />
-                <Row label="Renewed ARR" value={fmtCurrency(opp.Renewal_ARR__c)} />
               </CardContent>
             </Card>
 

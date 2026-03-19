@@ -29,8 +29,6 @@ export interface SfdcOpportunityDetail {
   Partner_Sub_type__c: string | null;
   Created_By_Role__c: string | null;
   Net_ARR_Percentage__c: number | null;
-  Renewal_ARR__c: number | null;
-  Current_ARR__c: number | null;
   Initial_Product_Interest__c: string | null;
   Management_Notes__c: string | null;
 }
@@ -43,7 +41,6 @@ export const OPP_FIELDS = `Id, Name, Account.Name, Owner.Name, CreatedBy.Name,
                 Primary_Competitor_Names__c,
                 Partner_Relationship__c, Partner_Sub_type__c,
                 Created_By_Role__c, Net_ARR_Percentage__c,
-                Renewal_ARR__c, Current_ARR__c,
                 Initial_Product_Interest__c, Management_Notes__c`;
 
 export function useSfdcOpportunityDetail(oppId: string | undefined) {
