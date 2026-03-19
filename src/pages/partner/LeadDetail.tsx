@@ -11,7 +11,6 @@ import {
   Mail,
   Phone,
   Globe,
-  MapPin,
   Users,
   DollarSign,
   User,
@@ -107,10 +106,6 @@ export default function LeadDetail() {
       </div>
     );
   }
-
-  const address = [lead.Street, lead.City, lead.State, lead.PostalCode, lead.Country]
-    .filter(Boolean)
-    .join(", ");
 
   const formatDate = (dateStr: string) =>
     new Date(dateStr).toLocaleDateString("en-US", {
@@ -209,7 +204,6 @@ export default function LeadDetail() {
               <DetailField icon={Tag} label="Lead Status" value={lead.Status} />
               <DetailField icon={Tag} label="Lead Source" value={lead.LeadSource} />
               <DetailField icon={User} label="Lead Owner" value={lead.Owner?.Name} />
-              <DetailField icon={MapPin} label="Address" value={address || null} />
               <DetailField
                 icon={Users}
                 label="Number of Employees"
