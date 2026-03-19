@@ -197,7 +197,7 @@ const PartnerOpportunities = () => {
             <Table className="table-fixed [&_th]:border-r [&_th:last-child]:border-r-0 [&_td]:border-r [&_td:last-child]:border-r-0">
               <TableHeader>
                 <TableRow className="bg-muted/30 hover:bg-muted/30">
-                  <TableHead className={thClass} resizable onClick={() => handleSort("name")}>
+                  <TableHead className={thClass} resizable style={{ width: "35%" }} onClick={() => handleSort("name")}>
                     <span className="inline-flex items-center">Opportunity Name<SortIcon active={sortKey === "name"} dir={sortDir} /></span>
                   </TableHead>
                   <TableHead className={`${thClass} hidden md:table-cell`} resizable onClick={() => handleSort("account")}>

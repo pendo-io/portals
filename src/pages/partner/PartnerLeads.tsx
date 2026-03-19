@@ -197,7 +197,7 @@ const PartnerLeads = () => {
                     <span className="inline-flex items-center">Status<SortIcon active={sortKey === "status"} dir={sortDir} /></span>
                   </TableHead>
                   <TableHead className={`${thClass} text-right hidden sm:table-cell`} resizable onClick={() => handleSort("created")}>
-                    <span className="inline-flex items-center justify-end">Created<SortIcon active={sortKey === "created"} dir={sortDir} /></span>
+                    <span className="inline-flex items-center justify-end">Created Date<SortIcon active={sortKey === "created"} dir={sortDir} /></span>
                   </TableHead>
                 </TableRow>
               </TableHeader>
