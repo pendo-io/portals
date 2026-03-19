@@ -50,9 +50,7 @@ function getStageColor(stage: string | null): string {
 
 const formatCurrency = (value: number | null): string => {
   if (value == null) return "—";
-  if (value >= 1_000_000) return `$${(value / 1_000_000).toFixed(1)}M`;
-  if (value >= 1_000) return `$${(value / 1_000).toFixed(0)}K`;
-  return `$${value.toFixed(0)}`;
+  return `$${value.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 };
 
 function SortIcon({ active, dir }: { active: boolean; dir?: SortDir }) {
