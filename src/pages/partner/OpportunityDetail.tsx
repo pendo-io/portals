@@ -122,12 +122,6 @@ export default function OpportunityDetail() {
                   {opp.Owner.Name}
                 </span>
               )}
-              {opp.CloseDate && (
-                <span className="flex items-center gap-1.5">
-                  <Calendar className="h-3.5 w-3.5" />
-                  Close {fmtDate(opp.CloseDate)}
-                </span>
-              )}
               {opp.Amount != null && (
                 <span className="flex items-center gap-1.5">
                   <DollarSign className="h-3.5 w-3.5" />
@@ -189,14 +183,13 @@ export default function OpportunityDetail() {
               <CardHeader>
                 <CardTitle className="text-sm font-medium flex items-center gap-2">
                   <Calendar className="h-4 w-4" />
-                  Overview
+                  Key Dates
                 </CardTitle>
               </CardHeader>
               <CardContent className="text-sm space-y-0">
+                <Row label="Created Date" value={fmtDate(opp.CreatedDate)} />
                 <Row label="Close Date" value={fmtDate(opp.CloseDate)} />
                 <Row label="Expiration Date" value={fmtDate(opp.Expiration_Date__c)} />
-                <Row label="Created Date" value={fmtDate(opp.CreatedDate)} />
-                <Row label="Created By" value={opp.CreatedBy?.Name} />
               </CardContent>
             </Card>
 
