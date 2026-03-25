@@ -110,6 +110,7 @@ const AdminUsers = () => {
       email: u.email,
       full_name: u.full_name,
       partnerType,
+      sfdcAccountId: u.partners?.sfdc_account_id ?? null,
     });
     toast.success(`Impersonating ${u.full_name || u.email}`);
     navigate(`/portal/${partnerType || "partner"}`, { replace: true });

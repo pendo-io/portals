@@ -9,12 +9,14 @@ export interface ImpersonatedUser {
   email: string;
   full_name: string | null;
   partnerType: PartnerType | null;
+  sfdcAccountId: string | null;
 }
 
 interface AuthContextValue {
   user: User | null;
   session: Session | null;
   partnerType: PartnerType | null;
+  sfdcAccountId: string | null;
   /** The real admin's partner type (unaffected by impersonation) */
   realPartnerType: PartnerType | null;
   isSuperAdmin: boolean;
@@ -38,17 +40,22 @@ function getStoredImpersonation(): ImpersonatedUser | null {
   }
 }
 
+interface UserMeta {
+  partnerType: PartnerType | null;
+  sfdcAccountId: string | null;
+  isSuperAdmin: boolean;
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<{
     user: User | null;
     session: Session | null;
-    partnerType: PartnerType | null;
-    isSuperAdmin: boolean;
     loading: boolean;
-  }>({
+  } & UserMeta>({
     user: null,
     session: null,
     partnerType: null,
+    sfdcAccountId: null,
     isSuperAdmin: false,
     loading: true,
   });
@@ -64,7 +71,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setState({ user: session.user, session, ...meta, loading: false });
         });
       } else {
-        setState({ user: null, session: null, partnerType: null, isSuperAdmin: false, loading: false });
+        setState({ user: null, session: null, partnerType: null, sfdcAccountId: null, isSuperAdmin: false, loading: false });
       }
     });
 
@@ -75,7 +82,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             setState({ user: session.user, session, ...meta, loading: false });
           });
         } else {
-          setState({ user: null, session: null, partnerType: null, isSuperAdmin: false, loading: false });
+          setState({ user: null, session: null, partnerType: null, sfdcAccountId: null, isSuperAdmin: false, loading: false });
         }
       }
     );
@@ -112,10 +119,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     ? impersonating.partnerType
     : state.partnerType;
 
+  const effectiveSfdcAccountId = impersonating
+    ? impersonating.sfdcAccountId
+    : state.sfdcAccountId;
+
   const value: AuthContextValue = {
     user: effectiveUser,
     session: state.session,
     partnerType: effectivePartnerType,
+    sfdcAccountId: effectiveSfdcAccountId,
     realPartnerType: state.partnerType,
     isSuperAdmin: state.isSuperAdmin,
     loading: state.loading,
@@ -136,11 +148,11 @@ export function useAuth(): AuthContextValue {
   return context;
 }
 
-async function fetchUserMeta(userId: string): Promise<{ partnerType: PartnerType | null; isSuperAdmin: boolean }> {
+async function fetchUserMeta(userId: string): Promise<UserMeta> {
   const [profileRes, rolesRes] = await Promise.all([
     supabase
       .from("profiles")
-      .select("partners(type)")
+      .select("partners(type, sfdc_account_id)")
       .eq("id", userId)
       .single(),
     supabase
@@ -149,9 +161,11 @@ async function fetchUserMeta(userId: string): Promise<{ partnerType: PartnerType
       .eq("user_id", userId),
   ]);
 
-  const partnerType = (profileRes.data as any)?.partners?.type ?? null;
+  const partner = (profileRes.data as any)?.partners;
+  const partnerType = partner?.type ?? null;
+  const sfdcAccountId = partner?.sfdc_account_id ?? null;
   const roles = rolesRes.data?.map((r: any) => r.role) ?? [];
   const isSuperAdmin = roles.includes("super_admin");
 
-  return { partnerType, isSuperAdmin };
+  return { partnerType, sfdcAccountId, isSuperAdmin };
 }

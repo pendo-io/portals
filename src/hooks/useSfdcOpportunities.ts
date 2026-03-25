@@ -7,17 +7,22 @@ import type { SfdcOpportunityDetail } from "./useSfdcOpportunityDetail";
 export type SfdcOpportunity = SfdcOpportunityDetail;
 
 export function useSfdcOpportunities() {
-  const { user } = useAuth();
+  const { user, sfdcAccountId } = useAuth();
 
   return useQuery({
-    queryKey: ["sfdc-opportunities", user?.id],
-    queryFn: () =>
-      sfdcQuery<SfdcOpportunity>(
+    queryKey: ["sfdc-opportunities", user?.id, sfdcAccountId],
+    queryFn: () => {
+      const where = sfdcAccountId
+        ? `WHERE Partner_Account__c = '${sfdcAccountId}'`
+        : `WHERE LeadSource = 'Partner Referral'`;
+
+      return sfdcQuery<SfdcOpportunity>(
         `SELECT ${OPP_FIELDS}
          FROM Opportunity
-         WHERE LeadSource = 'Partner Referral'
+         ${where}
          ORDER BY CloseDate DESC`
-      ),
+      );
+    },
     enabled: !!user,
     staleTime: 10 * 60_000,
     gcTime: 30 * 60_000,
