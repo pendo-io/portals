@@ -113,6 +113,7 @@ const AdminUsers = () => {
       sfdcAccountId: u.partners?.sfdc_account_id ?? null,
     });
     toast.success(`Impersonating ${u.full_name || u.email}`);
+    window.scrollTo(0, 0);
     navigate(`/portal/${partnerType || "partner"}`, { replace: true });
   };
 
