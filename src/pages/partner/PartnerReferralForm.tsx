@@ -149,13 +149,11 @@ const PartnerReferralForm = () => {
     }
   };
 
-  const progress = submitted ? 100 : ((step + 1) / SECTIONS.length) * 100;
   const isLast = step === SECTIONS.length - 1;
 
   if (submitted) {
     return (
       <div className="flex-1 flex flex-col">
-        <ProgressBar value={100} />
         <div className="flex-1 flex items-center justify-center p-6">
           <div className="max-w-sm w-full text-center space-y-5">
             <div className="h-16 w-16 rounded-full bg-emerald-500/10 flex items-center justify-center mx-auto">
@@ -183,31 +181,9 @@ const PartnerReferralForm = () => {
 
   return (
     <div className="flex-1 flex flex-col" onKeyDown={handleKeyDown}>
-      <ProgressBar value={progress} />
-
-      {/* Header — progress indicator only */}
-      <div className="flex items-center justify-end px-6 py-3 shrink-0">
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-1.5">
-            {SECTIONS.map((_, i) => (
-              <button
-                key={i}
-                onClick={() => { if (i < step) setStep(i); }}
-                className={`h-1.5 rounded-full transition-all duration-300 ${
-                  i === step ? "w-6 bg-primary" : i < step ? "w-3 bg-primary/40 cursor-pointer" : "w-3 bg-border"
-                }`}
-              />
-            ))}
-          </div>
-          <span className="text-xs text-muted-foreground tabular-nums">
-            {step + 1} / {SECTIONS.length}
-          </span>
-        </div>
-      </div>
-
       {/* Content */}
-      <div className="flex-1 flex items-center justify-center p-6 sm:p-10 overflow-y-auto">
-        <div className="w-full max-w-2xl" key={step}>
+      <div className="flex-1 flex items-center justify-center p-6 sm:p-12 overflow-y-auto">
+        <div className="w-full max-w-3xl" key={step}>
           {step === 0 && <CompanyStep form={form} set={set} shake={shakeFields} />}
           {step === 1 && <ContactStep form={form} set={set} setSelect={setSelect} shake={shakeFields} />}
           {step === 2 && <AddressStep form={form} set={set} shake={shakeFields} />}
@@ -246,19 +222,6 @@ const PartnerReferralForm = () => {
     </div>
   );
 };
-
-/* ── Progress Bar ── */
-
-function ProgressBar({ value }: { value: number }) {
-  return (
-    <div className="h-1 w-full bg-border/50 shrink-0">
-      <div
-        className="h-full bg-primary transition-all duration-500 ease-out"
-        style={{ width: `${value}%` }}
-      />
-    </div>
-  );
-}
 
 /* ── Step Components ── */
 
