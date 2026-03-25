@@ -19,13 +19,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { Search, Loader2, ArrowUp, ArrowDown, ArrowUpDown, ChevronLeft, ChevronRight, UserCheck } from "lucide-react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
@@ -84,10 +81,6 @@ const AdminUsers = () => {
   const [sortKey, setSortKey] = useState<SortKey | null>(null);
   const [sortDir, setSortDir] = useState<SortDir>("asc");
 
-  const [editUser, setEditUser] = useState<AdminUser | null>(null);
-  const [editRole, setEditRole] = useState("");
-  const [editPartnerId, setEditPartnerId] = useState<string>("");
-
   const navigate = useNavigate();
   const { startImpersonating } = useAuth();
   const { data: users, isLoading, isError, error } = useAdminUsers();
@@ -110,41 +103,33 @@ const AdminUsers = () => {
     setPage(0);
   };
 
-  const openEdit = (user: AdminUser) => {
-    setEditUser(user);
-    setEditRole(getPrimaryRole(user));
-    setEditPartnerId(user.partner_id ?? "none");
-  };
-
-  const handleImpersonate = () => {
-    if (!editUser) return;
-    const partnerType = (editUser.partners?.type as PartnerType) ?? null;
+  const handleImpersonate = (u: AdminUser) => {
+    const partnerType = (u.partners?.type as PartnerType) ?? null;
     startImpersonating({
-      id: editUser.id,
-      email: editUser.email,
-      full_name: editUser.full_name,
+      id: u.id,
+      email: u.email,
+      full_name: u.full_name,
       partnerType,
     });
-    setEditUser(null);
-    toast.success(`Impersonating ${editUser.full_name || editUser.email}`);
+    toast.success(`Impersonating ${u.full_name || u.email}`);
     navigate(`/portal/${partnerType || "partner"}`, { replace: true });
   };
 
-  const handleSave = async () => {
-    if (!editUser) return;
+  const handleRoleChange = async (userId: string, role: string) => {
     try {
-      const currentRole = getPrimaryRole(editUser);
-      if (editRole !== currentRole) {
-        await updateRole.mutateAsync({ userId: editUser.id, role: editRole });
-      }
-      const newPartnerId = editPartnerId === "none" ? null : editPartnerId;
-      if (newPartnerId !== editUser.partner_id) {
-        await assignPartner.mutateAsync({ userId: editUser.id, partnerId: newPartnerId });
-      }
-      toast.success("User updated");
-      setEditUser(null);
+      await updateRole.mutateAsync({ userId, role });
+      toast.success("Role updated");
     } catch (err) {
-      toast.error((err as Error).message || "Failed to update user");
+      toast.error((err as Error).message || "Failed to update role");
+    }
+  };
+
+  const handlePartnerChange = async (userId: string, partnerId: string) => {
+    try {
+      await assignPartner.mutateAsync({ userId, partnerId: partnerId === "none" ? null : partnerId });
+      toast.success("Partner updated");
+    } catch (err) {
+      toast.error((err as Error).message || "Failed to update partner");
     }
   };
 
@@ -267,20 +252,58 @@ const AdminUsers = () => {
                 {paginated.map((u) => {
                   const role = getPrimaryRole(u);
                   return (
-                    <TableRow key={u.id} className="cursor-pointer hover:bg-muted/50 h-[52px]" onClick={() => openEdit(u)}>
+                    <TableRow key={u.id} className="hover:bg-muted/50 h-[52px]">
                       <TableCell className="py-2">
-                        <span className="text-sm font-medium">{u.full_name || "—"}</span>
+                        <div className="flex items-center gap-2">
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <button
+                                onClick={() => handleImpersonate(u)}
+                                className="p-1 rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors shrink-0"
+                              >
+                                <UserCheck className="h-3.5 w-3.5" />
+                              </button>
+                            </TooltipTrigger>
+                            <TooltipContent side="right">Impersonate</TooltipContent>
+                          </Tooltip>
+                          <span className="text-sm font-medium truncate">{u.full_name || "—"}</span>
+                        </div>
                       </TableCell>
                       <TableCell className="py-2 hidden md:table-cell">
                         <span className="text-sm text-muted-foreground">{u.email}</span>
                       </TableCell>
-                      <TableCell className="py-2">
-                        <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${getRoleColor(role)}`}>
-                          {getRoleLabel(role)}
-                        </span>
+                      <TableCell className="py-1">
+                        <Select
+                          value={role}
+                          onValueChange={(val) => handleRoleChange(u.id, val)}
+                        >
+                          <SelectTrigger className="h-8 w-[140px] text-xs border-0 bg-transparent hover:bg-muted/50 shadow-none focus:ring-0">
+                            <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${getRoleColor(role)}`}>
+                              {getRoleLabel(role)}
+                            </span>
+                          </SelectTrigger>
+                          <SelectContent>
+                            {ROLES.map((r) => (
+                              <SelectItem key={r} value={r}>{getRoleLabel(r)}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </TableCell>
-                      <TableCell className="py-2">
-                        <span className="text-sm">{u.partners?.name ?? "—"}</span>
+                      <TableCell className="py-1">
+                        <Select
+                          value={u.partner_id ?? "none"}
+                          onValueChange={(val) => handlePartnerChange(u.id, val)}
+                        >
+                          <SelectTrigger className="h-8 text-xs border-0 bg-transparent hover:bg-muted/50 shadow-none focus:ring-0">
+                            <span className="text-sm truncate">{u.partners?.name ?? "—"}</span>
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="none">No Partner</SelectItem>
+                            {partners?.map((p) => (
+                              <SelectItem key={p.id} value={p.id}>{p.name} ({p.type})</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </TableCell>
                       <TableCell className="py-2 text-right hidden sm:table-cell">
                         <span className="text-sm text-muted-foreground tabular-nums">
@@ -315,67 +338,6 @@ const AdminUsers = () => {
           </div>
         </div>
       )}
-
-      {/* Edit User Dialog */}
-      <Dialog open={!!editUser} onOpenChange={(open) => { if (!open) setEditUser(null); }}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Edit User</DialogTitle>
-          </DialogHeader>
-          {editUser && (
-            <div className="space-y-4 py-2">
-              <div>
-                <Label className="text-xs text-muted-foreground font-medium">Name</Label>
-                <p className="text-sm mt-1">{editUser.full_name || "—"}</p>
-              </div>
-              <div>
-                <Label className="text-xs text-muted-foreground font-medium">Email</Label>
-                <p className="text-sm mt-1">{editUser.email}</p>
-              </div>
-              <div className="space-y-1.5">
-                <Label className="text-xs text-muted-foreground font-medium">Role</Label>
-                <Select value={editRole} onValueChange={setEditRole}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {ROLES.map((r) => (
-                      <SelectItem key={r} value={r}>{getRoleLabel(r)}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-1.5">
-                <Label className="text-xs text-muted-foreground font-medium">Partner</Label>
-                <Select value={editPartnerId} onValueChange={setEditPartnerId}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">No Partner</SelectItem>
-                    {partners?.map((p) => (
-                      <SelectItem key={p.id} value={p.id}>{p.name} ({p.type})</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          )}
-          <DialogFooter className="sm:justify-between">
-            <Button variant="secondary" onClick={handleImpersonate} className="gap-1.5">
-              <UserCheck className="h-4 w-4" />
-              Impersonate
-            </Button>
-            <div className="flex gap-2">
-              <Button variant="outline" onClick={() => setEditUser(null)}>Cancel</Button>
-              <Button
-                onClick={handleSave}
-                disabled={updateRole.isPending || assignPartner.isPending}
-              >
-                {(updateRole.isPending || assignPartner.isPending) ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : "Save"}
-              </Button>
-            </div>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };
