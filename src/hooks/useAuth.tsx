@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, createContext, useContext, type ReactNode } from "react";
 import { supabase } from "@/lib/supabase";
 import type { User, Session } from "@supabase/supabase-js";
 
@@ -11,13 +11,21 @@ export interface ImpersonatedUser {
   partnerType: PartnerType | null;
 }
 
-interface AuthState {
+interface AuthContextValue {
   user: User | null;
   session: Session | null;
   partnerType: PartnerType | null;
+  /** The real admin's partner type (unaffected by impersonation) */
+  realPartnerType: PartnerType | null;
   isSuperAdmin: boolean;
   loading: boolean;
+  impersonating: ImpersonatedUser | null;
+  signOut: () => Promise<void>;
+  startImpersonating: (target: ImpersonatedUser) => void;
+  stopImpersonating: () => void;
 }
+
+const AuthContext = createContext<AuthContextValue | null>(null);
 
 const IMPERSONATE_KEY = "impersonate_user";
 
@@ -30,8 +38,14 @@ function getStoredImpersonation(): ImpersonatedUser | null {
   }
 }
 
-export function useAuth() {
-  const [state, setState] = useState<AuthState>({
+export function AuthProvider({ children }: { children: ReactNode }) {
+  const [state, setState] = useState<{
+    user: User | null;
+    session: Session | null;
+    partnerType: PartnerType | null;
+    isSuperAdmin: boolean;
+    loading: boolean;
+  }>({
     user: null,
     session: null,
     partnerType: null,
@@ -84,13 +98,11 @@ export function useAuth() {
     setImpersonating(null);
   }, []);
 
-  // When impersonating, override user metadata and partner type
-  // but keep isSuperAdmin true so admin nav stays accessible
-  const effectiveUser = impersonating
+  const effectiveUser = impersonating && state.user
     ? {
-        ...state.user!,
+        ...state.user,
         user_metadata: {
-          ...state.user?.user_metadata,
+          ...state.user.user_metadata,
           full_name: impersonating.full_name,
         },
       } as User
@@ -100,10 +112,11 @@ export function useAuth() {
     ? impersonating.partnerType
     : state.partnerType;
 
-  return {
+  const value: AuthContextValue = {
     user: effectiveUser,
     session: state.session,
     partnerType: effectivePartnerType,
+    realPartnerType: state.partnerType,
     isSuperAdmin: state.isSuperAdmin,
     loading: state.loading,
     impersonating,
@@ -111,6 +124,16 @@ export function useAuth() {
     startImpersonating,
     stopImpersonating,
   };
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+}
+
+export function useAuth(): AuthContextValue {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error("useAuth must be used within an AuthProvider");
+  }
+  return context;
 }
 
 async function fetchUserMeta(userId: string): Promise<{ partnerType: PartnerType | null; isSuperAdmin: boolean }> {

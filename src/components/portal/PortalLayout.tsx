@@ -13,14 +13,12 @@ const PortalLayout = () => {
   useSfdcLeads();
   useSfdcOpportunities();
 
-  const { impersonating, stopImpersonating, partnerType } = useAuth();
+  const { impersonating, stopImpersonating, realPartnerType } = useAuth();
   const navigate = useNavigate();
 
   const handleStop = () => {
     stopImpersonating();
-    navigate(`/portal/${partnerType || "partner"}/admin/users`, { replace: true });
-    // Force reload so the auth state fully resets
-    window.location.reload();
+    navigate(`/portal/${realPartnerType || "partner"}/admin/users`, { replace: true });
   };
 
   return (
@@ -29,9 +27,9 @@ const PortalLayout = () => {
       <SidebarInset>
         <div className="flex-1 min-h-0 flex flex-col">
           {impersonating && (
-            <div className="bg-amber-500 text-amber-950 px-4 py-1.5 flex items-center justify-between text-sm font-medium shrink-0">
+            <div className="bg-amber-500 text-amber-950 px-4 py-2 flex items-center justify-between text-sm font-medium shrink-0">
               <span>
-                Viewing as <strong>{impersonating.full_name || impersonating.email}</strong>
+                Currently impersonating <strong>{impersonating.full_name || impersonating.email}</strong>
                 {impersonating.partnerType && (
                   <span className="ml-1.5 opacity-70">({impersonating.partnerType})</span>
                 )}
@@ -39,11 +37,10 @@ const PortalLayout = () => {
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-6 px-2 text-amber-950 hover:bg-amber-600 hover:text-amber-950"
+                className="h-7 px-3 text-amber-950 hover:bg-amber-600 hover:text-amber-950 font-semibold"
                 onClick={handleStop}
               >
-                <X className="h-3.5 w-3.5 mr-1" />
-                Stop
+                Go Back
               </Button>
             </div>
           )}
