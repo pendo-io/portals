@@ -149,11 +149,13 @@ const PartnerReferralForm = () => {
     }
   };
 
+  const progress = submitted ? 100 : ((step + 1) / SECTIONS.length) * 100;
   const isLast = step === SECTIONS.length - 1;
 
   if (submitted) {
     return (
       <div className="flex-1 flex flex-col">
+        <ProgressBar value={100} />
         <div className="flex-1 flex items-center justify-center p-6">
           <div className="max-w-sm w-full text-center space-y-5">
             <div className="h-16 w-16 rounded-full bg-emerald-500/10 flex items-center justify-center mx-auto">
@@ -181,6 +183,8 @@ const PartnerReferralForm = () => {
 
   return (
     <div className="flex-1 flex flex-col" onKeyDown={handleKeyDown}>
+      <ProgressBar value={progress} />
+
       {/* Content */}
       <div className="flex-1 flex items-center justify-center p-6 sm:p-12 overflow-y-auto">
         <div className="w-full max-w-3xl" key={step}>
@@ -222,6 +226,19 @@ const PartnerReferralForm = () => {
     </div>
   );
 };
+
+/* ── Progress Bar ── */
+
+function ProgressBar({ value }: { value: number }) {
+  return (
+    <div className="h-1 w-full bg-border/50 shrink-0">
+      <div
+        className="h-full bg-primary transition-all duration-500 ease-out"
+        style={{ width: `${value}%` }}
+      />
+    </div>
+  );
+}
 
 /* ── Step Components ── */
 
