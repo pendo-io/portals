@@ -73,6 +73,7 @@ const AdminPartners = () => {
   const [showCreate, setShowCreate] = useState(false);
   const [newName, setNewName] = useState("");
   const [newType, setNewType] = useState<string>("partner");
+  const [newSfdcId, setNewSfdcId] = useState("");
 
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
 
@@ -100,11 +101,12 @@ const AdminPartners = () => {
       return;
     }
     try {
-      await createPartner.mutateAsync({ name: newName.trim(), type: newType });
+      await createPartner.mutateAsync({ name: newName.trim(), type: newType, sfdc_account_id: newSfdcId.trim() || undefined });
       toast.success("Partner created");
       setShowCreate(false);
       setNewName("");
       setNewType("partner");
+      setNewSfdcId("");
     } catch (err) {
       toast.error((err as Error).message || "Failed to create partner");
     }
@@ -216,6 +218,9 @@ const AdminPartners = () => {
                   <TableHead className={thClass} resizable onClick={() => handleSort("type")}>
                     <span className="inline-flex items-center">Type<SortIcon active={sortKey === "type"} dir={sortDir} /></span>
                   </TableHead>
+                  <TableHead className={`${thClass} hidden md:table-cell`} resizable>
+                    <span className="inline-flex items-center">SFDC Account ID</span>
+                  </TableHead>
                   <TableHead className={`${thClass} hidden sm:table-cell`} resizable onClick={() => handleSort("created")}>
                     <span className="inline-flex items-center">Created<SortIcon active={sortKey === "created"} dir={sortDir} /></span>
                   </TableHead>
@@ -232,6 +237,9 @@ const AdminPartners = () => {
                       <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${getTypeColor(p.type)}`}>
                         {getTypeLabel(p.type)}
                       </span>
+                    </TableCell>
+                    <TableCell className="py-2 hidden md:table-cell">
+                      <span className="text-sm text-muted-foreground font-mono">{p.sfdc_account_id || "—"}</span>
                     </TableCell>
                     <TableCell className="py-2 hidden sm:table-cell">
                       <span className="text-sm text-muted-foreground tabular-nums">
@@ -284,6 +292,15 @@ const AdminPartners = () => {
                   ))}
                 </SelectContent>
               </Select>
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs text-muted-foreground font-medium">SFDC Account ID</Label>
+              <Input
+                value={newSfdcId}
+                onChange={(e) => setNewSfdcId(e.target.value)}
+                placeholder="001Pf00000..."
+                className="font-mono"
+              />
             </div>
           </div>
           <DialogFooter>

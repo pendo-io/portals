@@ -16,6 +16,7 @@ export interface Partner {
   id: string;
   name: string;
   type: string;
+  sfdc_account_id: string | null;
   created_at: string;
 }
 
@@ -119,10 +120,10 @@ export function useCreatePartner() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ name, type }: { name: string; type: string }) => {
+    mutationFn: async ({ name, type, sfdc_account_id }: { name: string; type: string; sfdc_account_id?: string }) => {
       const { data, error } = await supabase
         .from("partners")
-        .insert({ name, type })
+        .insert({ name, type, ...(sfdc_account_id ? { sfdc_account_id } : {}) })
         .select()
         .single();
 
