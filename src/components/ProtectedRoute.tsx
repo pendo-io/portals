@@ -1,19 +1,15 @@
 import { ReactNode } from "react";
 import { Navigate } from "react-router-dom";
-import { useSalesforce } from "@/hooks/useSalesforce";
+import { useAuth } from "@/hooks/useAuth";
 
 const ProtectedRoute = ({ children }: { children: ReactNode }) => {
-  const { sfdcAccessToken, sfdcLoading, sfdcExpired } = useSalesforce();
+  const { user, loading } = useAuth();
 
-  if (sfdcLoading) {
+  if (loading) {
     return <div className="min-h-screen bg-background" />;
   }
 
-  if (sfdcExpired) {
-    return <Navigate to="/login?expired=true" replace />;
-  }
-
-  if (!sfdcAccessToken) {
+  if (!user) {
     return <Navigate to="/login" replace />;
   }
 

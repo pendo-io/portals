@@ -1,5 +1,5 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useSalesforce } from "./useSalesforce";
+import { useAuth } from "./useAuth";
 import { sfdcQuery, type SfdcQueryResult } from "@/lib/sfdc";
 
 export interface SfdcOpportunityDetail {
@@ -54,13 +54,13 @@ export const OPP_FIELDS = `Id, Name, Account.Name, Owner.Name, CreatedBy.Name,
                 Initial_Contact__c, Initial_Contact__r.Name, Initial_Contact_Role__c`;
 
 export function useSfdcOpportunityDetail(oppId: string | undefined) {
-  const { sfdcAccessToken, sfdcInstanceUrl, sfdcUserId } = useSalesforce();
+  const { user } = useAuth();
   const queryClient = useQueryClient();
 
   return useQuery({
     queryKey: ["sfdc-opportunity", oppId],
     queryFn: () => {
-      const cachedList = queryClient.getQueryData<SfdcQueryResult<SfdcOpportunityDetail>>(["sfdc-opportunities", sfdcUserId]);
+      const cachedList = queryClient.getQueryData<SfdcQueryResult<SfdcOpportunityDetail>>(["sfdc-opportunities", user?.id]);
       const cached = cachedList?.records?.find((o) => o.Id === oppId);
       if (cached) {
         return { totalSize: 1, done: true, records: [cached] } as SfdcQueryResult<SfdcOpportunityDetail>;
@@ -70,12 +70,10 @@ export function useSfdcOpportunityDetail(oppId: string | undefined) {
         `SELECT ${OPP_FIELDS}
          FROM Opportunity
          WHERE Id = '${oppId}'
-         LIMIT 1`,
-        sfdcInstanceUrl!,
-        sfdcAccessToken!
+         LIMIT 1`
       );
     },
-    enabled: !!sfdcAccessToken && !!sfdcInstanceUrl && !!oppId,
+    enabled: !!user && !!oppId,
     staleTime: 5 * 60_000,
     refetchOnWindowFocus: false,
   });

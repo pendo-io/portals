@@ -5,6 +5,41 @@ import path from "path";
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), "");
 
+  let cachedToken: { access_token: string; expires_at: number } | null = null;
+
+  async function getSfdcToken(): Promise<string> {
+    if (cachedToken && Date.now() < cachedToken.expires_at) {
+      return cachedToken.access_token;
+    }
+
+    const clientId = env.SFDC_CLIENT_ID;
+    const clientSecret = env.SFDC_CLIENT_SECRET;
+    const loginUrl = env.SFDC_LOGIN_URL || "https://login.salesforce.com";
+
+    const res = await fetch(`${loginUrl}/services/oauth2/token`, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        grant_type: "client_credentials",
+        client_id: clientId,
+        client_secret: clientSecret,
+      }),
+    });
+
+    if (!res.ok) {
+      const err = await res.text();
+      console.error("SFDC client_credentials token failed:", err);
+      throw new Error("Failed to obtain SFDC access token");
+    }
+
+    const data = await res.json();
+    cachedToken = {
+      access_token: data.access_token,
+      expires_at: Date.now() + 55 * 60 * 1000,
+    };
+    return data.access_token;
+  }
+
   return {
     server: {
       host: "::",
@@ -13,146 +48,70 @@ export default defineConfig(({ mode }) => {
     plugins: [
       react(),
       {
-        name: "sfdc-auth-api",
+        name: "sfdc-api",
         configureServer(server) {
-          // POST /api/sfdc-auth — exchange authorization code for tokens
-          server.middlewares.use("/api/sfdc-auth", async (req, res) => {
+          // POST /api/sfdc-proxy — proxy SOQL queries using client credentials
+          server.middlewares.use("/api/sfdc-proxy", async (req, res) => {
             if (req.method === "OPTIONS") { res.writeHead(204); res.end(); return; }
             if (req.method !== "POST") { res.writeHead(405); res.end(JSON.stringify({ error: "Method not allowed" })); return; }
 
             const body = await readBody(req);
-            const { code, redirectUri, codeVerifier } = body;
+            const { query: soql } = body;
+            const instanceUrl = env.SFDC_INSTANCE_URL;
 
-            const clientId = env.SFDC_CLIENT_ID;
-            const clientSecret = env.SFDC_CLIENT_SECRET;
-            const loginUrl = env.SFDC_LOGIN_URL || "https://login.salesforce.com";
-
-            if (!clientId || !clientSecret) {
-              res.writeHead(500, { "Content-Type": "application/json" });
-              res.end(JSON.stringify({ error: "SFDC credentials not configured in .env" }));
+            if (!soql || !instanceUrl) {
+              res.writeHead(400, { "Content-Type": "application/json" });
+              res.end(JSON.stringify({ error: "Missing query or SFDC_INSTANCE_URL" }));
               return;
             }
 
             try {
-              const tokenParams: Record<string, string> = {
-                grant_type: "authorization_code",
-                code,
-                client_id: clientId,
-                client_secret: clientSecret,
-                redirect_uri: redirectUri,
-              };
-              if (codeVerifier) {
-                tokenParams.code_verifier = codeVerifier;
-              }
+              const accessToken = await getSfdcToken();
+              const sfdcRes = await fetch(
+                `${instanceUrl}/services/data/v62.0/query?q=${encodeURIComponent(soql)}`,
+                { headers: { Authorization: `Bearer ${accessToken}` } }
+              );
 
-              const tokenRes = await fetch(`${loginUrl}/services/oauth2/token`, {
-                method: "POST",
-                headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                body: new URLSearchParams(tokenParams),
-              });
-
-              if (!tokenRes.ok) {
-                const err = await tokenRes.text();
-                console.error("SFDC token exchange failed:", err);
-                res.writeHead(400, { "Content-Type": "application/json" });
-                res.end(JSON.stringify({ error: "Failed to exchange authorization code", details: err }));
+              if (sfdcRes.status === 401) {
+                cachedToken = null;
+                const newToken = await getSfdcToken();
+                const retryRes = await fetch(
+                  `${instanceUrl}/services/data/v62.0/query?q=${encodeURIComponent(soql)}`,
+                  { headers: { Authorization: `Bearer ${newToken}` } }
+                );
+                const responseBody = await retryRes.text();
+                res.writeHead(retryRes.status, { "Content-Type": "application/json" });
+                res.end(responseBody);
                 return;
               }
 
-              const tokenData = await tokenRes.json();
-
-              const userInfoRes = await fetch(`${tokenData.instance_url}/services/oauth2/userinfo`, {
-                headers: { Authorization: `Bearer ${tokenData.access_token}` },
-              });
-
-              if (!userInfoRes.ok) {
-                res.writeHead(400, { "Content-Type": "application/json" });
-                res.end(JSON.stringify({ error: "Failed to fetch user info" }));
-                return;
-              }
-
-              const userInfo = await userInfoRes.json();
-
-              res.writeHead(200, { "Content-Type": "application/json" });
-              res.end(JSON.stringify({
-                access_token: tokenData.access_token,
-                refresh_token: tokenData.refresh_token,
-                instance_url: tokenData.instance_url,
-                issued_at: tokenData.issued_at,
-                user_id: userInfo.user_id,
-                org_id: userInfo.organization_id,
-                email: userInfo.email,
-                name: userInfo.name,
-              }));
+              const responseBody = await sfdcRes.text();
+              res.writeHead(sfdcRes.status, { "Content-Type": "application/json" });
+              res.end(responseBody);
             } catch (error: any) {
-              console.error("sfdc-auth error:", error);
+              console.error("sfdc-proxy error:", error);
               res.writeHead(500, { "Content-Type": "application/json" });
               res.end(JSON.stringify({ error: error.message }));
             }
           });
 
-          // POST /api/sfdc-refresh — refresh access token
-          server.middlewares.use("/api/sfdc-refresh", async (req, res) => {
-            if (req.method === "OPTIONS") { res.writeHead(204); res.end(); return; }
-            if (req.method !== "POST") { res.writeHead(405); res.end(JSON.stringify({ error: "Method not allowed" })); return; }
-
-            const body = await readBody(req);
-            const { refresh_token } = body;
-
-            const clientId = env.SFDC_CLIENT_ID;
-            const clientSecret = env.SFDC_CLIENT_SECRET;
-            const loginUrl = env.SFDC_LOGIN_URL || "https://login.salesforce.com";
-
-            if (!clientId || !clientSecret) {
-              res.writeHead(500, { "Content-Type": "application/json" });
-              res.end(JSON.stringify({ error: "SFDC credentials not configured" }));
-              return;
-            }
-
-            try {
-              const response = await fetch(`${loginUrl}/services/oauth2/token`, {
-                method: "POST",
-                headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                body: new URLSearchParams({
-                  grant_type: "refresh_token",
-                  refresh_token,
-                  client_id: clientId,
-                  client_secret: clientSecret,
-                }),
-              });
-
-              if (!response.ok) {
-                const err = await response.text();
-                console.error("SFDC refresh failed:", err);
-                res.writeHead(400, { "Content-Type": "application/json" });
-                res.end(JSON.stringify({ error: "Failed to refresh token" }));
-                return;
-              }
-
-              const data = await response.json();
-              res.writeHead(200, { "Content-Type": "application/json" });
-              res.end(JSON.stringify(data));
-            } catch (error: any) {
-              console.error("sfdc-refresh error:", error);
-              res.writeHead(500, { "Content-Type": "application/json" });
-              res.end(JSON.stringify({ error: error.message }));
-            }
-          });
-          // POST /api/sfdc-create — create an sObject record in Salesforce
+          // POST /api/sfdc-create — create an sObject record
           server.middlewares.use("/api/sfdc-create", async (req, res) => {
             if (req.method === "OPTIONS") { res.writeHead(204); res.end(); return; }
             if (req.method !== "POST") { res.writeHead(405); res.end(JSON.stringify({ error: "Method not allowed" })); return; }
 
             const body = await readBody(req);
-            const { sObject, fields, instanceUrl, accessToken } = body;
+            const { sObject, fields } = body;
+            const instanceUrl = env.SFDC_INSTANCE_URL;
 
-            if (!sObject || !fields || !instanceUrl || !accessToken) {
+            if (!sObject || !fields || !instanceUrl) {
               res.writeHead(400, { "Content-Type": "application/json" });
-              res.end(JSON.stringify({ error: "Missing sObject, fields, instanceUrl, or accessToken" }));
+              res.end(JSON.stringify({ error: "Missing sObject, fields, or SFDC_INSTANCE_URL" }));
               return;
             }
 
             try {
+              const accessToken = await getSfdcToken();
               const sfdcRes = await fetch(
                 `${instanceUrl}/services/data/v62.0/sobjects/${sObject}/`,
                 {
@@ -170,36 +129,6 @@ export default defineConfig(({ mode }) => {
               res.end(responseBody);
             } catch (error: any) {
               console.error("sfdc-create error:", error);
-              res.writeHead(500, { "Content-Type": "application/json" });
-              res.end(JSON.stringify({ error: error.message }));
-            }
-          });
-
-          // POST /api/sfdc-proxy — proxy SOQL queries to Salesforce
-          server.middlewares.use("/api/sfdc-proxy", async (req, res) => {
-            if (req.method === "OPTIONS") { res.writeHead(204); res.end(); return; }
-            if (req.method !== "POST") { res.writeHead(405); res.end(JSON.stringify({ error: "Method not allowed" })); return; }
-
-            const body = await readBody(req);
-            const { query: soql, instanceUrl, accessToken } = body;
-
-            if (!soql || !instanceUrl || !accessToken) {
-              res.writeHead(400, { "Content-Type": "application/json" });
-              res.end(JSON.stringify({ error: "Missing query, instanceUrl, or accessToken" }));
-              return;
-            }
-
-            try {
-              const sfdcRes = await fetch(
-                `${instanceUrl}/services/data/v62.0/query?q=${encodeURIComponent(soql)}`,
-                { headers: { Authorization: `Bearer ${accessToken}` } }
-              );
-
-              const responseBody = await sfdcRes.text();
-              res.writeHead(sfdcRes.status, { "Content-Type": "application/json" });
-              res.end(responseBody);
-            } catch (error: any) {
-              console.error("sfdc-proxy error:", error);
               res.writeHead(500, { "Content-Type": "application/json" });
               res.end(JSON.stringify({ error: error.message }));
             }

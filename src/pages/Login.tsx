@@ -1,64 +1,47 @@
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Loader2, AlertTriangle } from "lucide-react";
-import { useSalesforce } from "@/hooks/useSalesforce";
-
-const SFDC_CLIENT_ID = import.meta.env.VITE_SFDC_CLIENT_ID;
-const SFDC_REDIRECT_URI = import.meta.env.VITE_SFDC_REDIRECT_URI;
-const SFDC_LOGIN_URL = import.meta.env.VITE_SFDC_LOGIN_URL || "https://login.salesforce.com";
-
-function generateCodeVerifier(): string {
-  const array = new Uint8Array(32);
-  crypto.getRandomValues(array);
-  return btoa(String.fromCharCode(...array))
-    .replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
-}
-
-async function generateCodeChallenge(verifier: string): Promise<string> {
-  const encoded = new TextEncoder().encode(verifier);
-  const hash = await crypto.subtle.digest("SHA-256", encoded);
-  return btoa(String.fromCharCode(...new Uint8Array(hash)))
-    .replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
-}
 
 const Login = () => {
   useDocumentTitle("Sign In");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { sfdcAccessToken, sfdcLoading } = useSalesforce();
-  const expired = searchParams.get("expired") === "true";
+  const { user, loading: authLoading } = useAuth();
   const loggedOut = searchParams.get("logout") === "true";
 
   useEffect(() => {
-    if (!sfdcLoading && sfdcAccessToken) {
+    if (!authLoading && user) {
       navigate("/portals", { replace: true });
     }
-  }, [sfdcLoading, sfdcAccessToken, navigate]);
+  }, [authLoading, user, navigate]);
 
-  const handleSalesforceLogin = async () => {
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
     setLoading(true);
+    setError(null);
 
-    // Generate PKCE code verifier + challenge
-    const verifier = generateCodeVerifier();
-    const challenge = await generateCodeChallenge(verifier);
-    sessionStorage.setItem("sfdc_pkce_verifier", verifier);
+    const { error: signInError } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
 
-    const authUrl = new URL(`${SFDC_LOGIN_URL}/services/oauth2/authorize`);
-    authUrl.searchParams.set("response_type", "code");
-    authUrl.searchParams.set("client_id", SFDC_CLIENT_ID);
-    authUrl.searchParams.set("redirect_uri", SFDC_REDIRECT_URI);
-    authUrl.searchParams.set("code_challenge", challenge);
-    authUrl.searchParams.set("code_challenge_method", "S256");
-    if (loggedOut) {
-      authUrl.searchParams.set("prompt", "login");
+    if (signInError) {
+      setError(signInError.message);
+      setLoading(false);
     }
-    window.location.href = authUrl.toString();
   };
 
-  if (sfdcLoading) {
+  if (authLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -118,32 +101,62 @@ const Login = () => {
               Sign in
             </h2>
             <p className="text-muted-foreground text-sm mb-8">
-              Use your Salesforce account to continue
+              Enter your credentials to continue
             </p>
 
-            {expired && (
-              <div className="mb-6 flex items-center gap-2.5 rounded-lg bg-destructive/10 dark:bg-red-500/10 border border-destructive/20 dark:border-red-500/20 px-4 py-3 text-sm text-destructive dark:text-red-400">
-                <AlertTriangle className="h-4 w-4 shrink-0" />
-                <span>Session expired. Please sign in again.</span>
+            {loggedOut && (
+              <div className="mb-6 flex items-center gap-2.5 rounded-lg bg-muted/50 border border-border px-4 py-3 text-sm text-muted-foreground">
+                You have been signed out.
               </div>
             )}
 
-            <Button
-              onClick={handleSalesforceLogin}
-              disabled={loading}
-              className="w-full h-12 bg-[#00A1E0] hover:bg-[#0088C2] text-white border-0 shadow-sm transition-all duration-200 hover:shadow-md dark:shadow-none dark:ring-1 dark:ring-white/10 dark:hover:ring-white/20 rounded-lg text-sm font-medium"
-            >
-              {loading ? (
-                <Loader2 className="h-5 w-5 animate-spin" />
-              ) : (
-                <>
-                  <svg className="h-5 w-5 mr-2.5" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M10.006 5.415a4.195 4.195 0 0 1 3.045-1.306c1.56 0 2.954.9 3.69 2.205.63-.3 1.35-.45 2.1-.45 2.85 0 5.159 2.34 5.159 5.22s-2.31 5.22-5.16 5.22c-.45 0-.9-.06-1.32-.165a3.91 3.91 0 0 1-3.48 2.145c-.63 0-1.26-.165-1.8-.45a4.828 4.828 0 0 1-4.2 2.46A4.828 4.828 0 0 1 3.24 16.5c0-.345.03-.69.105-1.02A3.685 3.685 0 0 1 1 12.315 3.72 3.72 0 0 1 4.38 8.58c.075 0 .165 0 .24.015A4.17 4.17 0 0 1 8.46 5.82c.54 0 1.065.135 1.545.39v-.795z" />
-                  </svg>
-                  Sign in with Salesforce
-                </>
-              )}
-            </Button>
+            {error && (
+              <div className="mb-6 flex items-center gap-2.5 rounded-lg bg-destructive/10 dark:bg-red-500/10 border border-destructive/20 dark:border-red-500/20 px-4 py-3 text-sm text-destructive dark:text-red-400">
+                <AlertTriangle className="h-4 w-4 shrink-0" />
+                <span>{error}</span>
+              </div>
+            )}
+
+            <form onSubmit={handleLogin} className="space-y-4">
+              <div className="space-y-1.5">
+                <Label htmlFor="email" className="text-xs text-muted-foreground font-medium">
+                  Email
+                </Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="you@company.com"
+                  required
+                  autoFocus
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="password" className="text-xs text-muted-foreground font-medium">
+                  Password
+                </Label>
+                <Input
+                  id="password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Enter your password"
+                  required
+                />
+              </div>
+              <Button
+                type="submit"
+                disabled={loading}
+                className="w-full h-12 shadow-sm transition-all duration-200 hover:shadow-md dark:shadow-none rounded-lg text-sm font-medium"
+              >
+                {loading ? (
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                ) : (
+                  "Sign in"
+                )}
+              </Button>
+            </form>
           </div>
         </div>
       </div>

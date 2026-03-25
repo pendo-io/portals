@@ -1,5 +1,5 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useSalesforce } from "./useSalesforce";
+import { useAuth } from "./useAuth";
 import { sfdcQuery, type SfdcQueryResult } from "@/lib/sfdc";
 
 export interface SfdcLeadDetail {
@@ -45,30 +45,26 @@ const LEAD_FIELDS = `Id, Name, FirstName, LastName, Company, Email, Website,
 export { LEAD_FIELDS };
 
 export function useSfdcLeadDetail(leadId: string | undefined) {
-  const { sfdcAccessToken, sfdcInstanceUrl, sfdcUserId } = useSalesforce();
+  const { user } = useAuth();
   const queryClient = useQueryClient();
 
   return useQuery({
     queryKey: ["sfdc-lead", leadId],
     queryFn: () => {
-      // Try to find the lead in the cached list first
-      const cachedList = queryClient.getQueryData<SfdcQueryResult<SfdcLeadDetail>>(["sfdc-leads", sfdcUserId]);
+      const cachedList = queryClient.getQueryData<SfdcQueryResult<SfdcLeadDetail>>(["sfdc-leads", user?.id]);
       const cached = cachedList?.records?.find((l) => l.Id === leadId);
       if (cached) {
         return { totalSize: 1, done: true, records: [cached] } as SfdcQueryResult<SfdcLeadDetail>;
       }
 
-      // Fallback to individual fetch
       return sfdcQuery<SfdcLeadDetail>(
         `SELECT ${LEAD_FIELDS}
          FROM Lead
          WHERE Id = '${leadId}'
-         LIMIT 1`,
-        sfdcInstanceUrl!,
-        sfdcAccessToken!
+         LIMIT 1`
       );
     },
-    enabled: !!sfdcAccessToken && !!sfdcInstanceUrl && !!leadId,
+    enabled: !!user && !!leadId,
     staleTime: 5 * 60_000,
     refetchOnWindowFocus: false,
   });

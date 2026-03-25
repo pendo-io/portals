@@ -29,12 +29,19 @@ import {
   LogOut,
 } from "lucide-react";
 import { useTheme } from "next-themes";
+import { useAuth } from "@/hooks/useAuth";
 
 export function PortalSidebar() {
   const location = useLocation();
   const navigate = useNavigate();
   const { theme, setTheme } = useTheme();
   const { toggleSidebar } = useSidebar();
+  const { signOut } = useAuth();
+
+  const handleLogout = async () => {
+    await signOut();
+    navigate("/login?logout=true", { replace: true });
+  };
 
   const isActive = (path: string) =>
     location.pathname === path ||
@@ -100,7 +107,7 @@ export function PortalSidebar() {
               variant="ghost"
               size="icon"
               className="h-7 w-7 text-muted-foreground hover:text-destructive"
-              onClick={() => navigate("/portals")}
+              onClick={handleLogout}
               title="Log out"
             >
               <LogOut className="h-3.5 w-3.5" />
@@ -125,7 +132,7 @@ export function PortalSidebar() {
                 variant="ghost"
                 size="icon"
                 className="h-7 w-7 text-muted-foreground hover:text-destructive"
-                onClick={() => navigate("/portals")}
+                onClick={handleLogout}
               >
                 <LogOut className="h-3.5 w-3.5" />
               </Button>

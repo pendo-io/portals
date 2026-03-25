@@ -2,7 +2,7 @@ import { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
-import { useSalesforce } from "@/hooks/useSalesforce";
+import { useAuth } from "@/hooks/useAuth";
 import { sfdcCreate } from "@/lib/sfdc";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -54,7 +54,7 @@ const PartnerReferralForm = () => {
   useDocumentTitle("Lead Referral Form");
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { sfdcAccessToken, sfdcInstanceUrl } = useSalesforce();
+  const { user } = useAuth();
   const [step, setStep] = useState(0);
   const [submitted, setSubmitted] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -90,8 +90,8 @@ const PartnerReferralForm = () => {
 
   const handleSubmit = async () => {
     if (!validateStep()) return;
-    if (!sfdcAccessToken || !sfdcInstanceUrl) {
-      toast.error("Not connected to Salesforce");
+    if (!user) {
+      toast.error("Not authenticated");
       return;
     }
 
@@ -124,7 +124,7 @@ const PartnerReferralForm = () => {
         if (fields[key] === null) delete fields[key];
       }
 
-      await sfdcCreate("Lead", fields, sfdcInstanceUrl, sfdcAccessToken);
+      await sfdcCreate("Lead", fields);
 
       // Invalidate leads cache so the new lead shows up
       queryClient.invalidateQueries({ queryKey: ["sfdc-leads"] });

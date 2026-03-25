@@ -1,4 +1,5 @@
 import { useLocation, useNavigate } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -8,15 +9,11 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 
-function getHomeLabel(): string {
+function useHomeLabel(): string {
+  const { user } = useAuth();
   let firstName = "";
-  try {
-    const raw = localStorage.getItem("sfdc_dev_session");
-    if (raw) {
-      const session = JSON.parse(raw);
-      if (session.name) firstName = session.name.split(" ")[0];
-    }
-  } catch { /* ignore */ }
+  const name = user?.user_metadata?.full_name || user?.user_metadata?.name;
+  if (name) firstName = name.split(" ")[0];
   const hour = new Date().getHours();
   const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
   return firstName ? `${greeting}, ${firstName}` : greeting;
@@ -32,6 +29,7 @@ const ROUTE_LABELS: Record<string, string> = {
 export function PortalTopBar() {
   const location = useLocation();
   const navigate = useNavigate();
+  const homeLabel = useHomeLabel();
   const currentPath = location.pathname;
 
   const isLeadDetail = currentPath.startsWith("/portal/partner/leads/") && currentPath !== "/portal/partner/leads";
@@ -46,7 +44,7 @@ export function PortalTopBar() {
   } else {
     breadcrumbSegments = [{
       label: currentPath === "/portal/partner"
-        ? getHomeLabel()
+        ? homeLabel
         : ROUTE_LABELS[currentPath] || currentPath.split("/").filter(Boolean).pop() || "Home",
     }];
   }

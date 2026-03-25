@@ -5,20 +5,13 @@ export interface SfdcQueryResult<T> {
 }
 
 export async function sfdcQuery<T>(
-  query: string,
-  instanceUrl: string,
-  accessToken: string
+  query: string
 ): Promise<SfdcQueryResult<T>> {
   const res = await fetch("/api/sfdc-proxy", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ query, instanceUrl, accessToken }),
+    body: JSON.stringify({ query }),
   });
-
-  if (res.status === 401) {
-    window.dispatchEvent(new Event("sfdc-session-expired"));
-    throw new Error("SFDC session expired");
-  }
 
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
@@ -32,20 +25,13 @@ export async function sfdcQuery<T>(
 
 export async function sfdcCreate(
   sObject: string,
-  fields: Record<string, unknown>,
-  instanceUrl: string,
-  accessToken: string
+  fields: Record<string, unknown>
 ): Promise<{ id: string; success: boolean; errors: string[] }> {
   const res = await fetch("/api/sfdc-create", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ sObject, fields, instanceUrl, accessToken }),
+    body: JSON.stringify({ sObject, fields }),
   });
-
-  if (res.status === 401) {
-    window.dispatchEvent(new Event("sfdc-session-expired"));
-    throw new Error("SFDC session expired");
-  }
 
   const data = await res.json();
 

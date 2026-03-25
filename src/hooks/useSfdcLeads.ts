@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { useSalesforce } from "./useSalesforce";
+import { useAuth } from "./useAuth";
 import { sfdcQuery } from "@/lib/sfdc";
 import { LEAD_FIELDS } from "./useSfdcLeadDetail";
 import type { SfdcLeadDetail } from "./useSfdcLeadDetail";
@@ -7,20 +7,18 @@ import type { SfdcLeadDetail } from "./useSfdcLeadDetail";
 export type SfdcLead = SfdcLeadDetail;
 
 export function useSfdcLeads() {
-  const { sfdcAccessToken, sfdcInstanceUrl, sfdcUserId } = useSalesforce();
+  const { user } = useAuth();
 
   return useQuery({
-    queryKey: ["sfdc-leads", sfdcUserId],
+    queryKey: ["sfdc-leads", user?.id],
     queryFn: () =>
       sfdcQuery<SfdcLead>(
         `SELECT ${LEAD_FIELDS}
          FROM Lead
          WHERE LeadSource = 'Partner Referral'
-         ORDER BY CreatedDate DESC`,
-        sfdcInstanceUrl!,
-        sfdcAccessToken!
+         ORDER BY CreatedDate DESC`
       ),
-    enabled: !!sfdcAccessToken && !!sfdcInstanceUrl && !!sfdcUserId,
+    enabled: !!user,
     staleTime: 10 * 60_000,
     gcTime: 30 * 60_000,
     refetchOnWindowFocus: false,

@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { useSalesforce } from "./useSalesforce";
+import { useAuth } from "./useAuth";
 import { sfdcQuery } from "@/lib/sfdc";
 
 export interface SfdcApprovalStep {
@@ -12,7 +12,7 @@ export interface SfdcApprovalStep {
 }
 
 export function useSfdcApprovalHistory(targetObjectId: string | undefined) {
-  const { sfdcAccessToken, sfdcInstanceUrl } = useSalesforce();
+  const { user } = useAuth();
 
   return useQuery({
     queryKey: ["sfdc-approval-history", targetObjectId],
@@ -22,11 +22,9 @@ export function useSfdcApprovalHistory(targetObjectId: string | undefined) {
                 Actor.Name, OriginalActor.Name
          FROM ProcessInstanceStep
          WHERE ProcessInstance.TargetObjectId = '${targetObjectId}'
-         ORDER BY CreatedDate DESC`,
-        sfdcInstanceUrl!,
-        sfdcAccessToken!
+         ORDER BY CreatedDate DESC`
       ),
-    enabled: !!sfdcAccessToken && !!sfdcInstanceUrl && !!targetObjectId,
+    enabled: !!user && !!targetObjectId,
     staleTime: 5 * 60_000,
     refetchOnWindowFocus: false,
   });
