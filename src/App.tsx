@@ -14,6 +14,8 @@ import PartnerOpportunities from "./pages/partner/PartnerOpportunities";
 import PartnerReferralForm from "./pages/partner/PartnerReferralForm";
 import LeadDetail from "./pages/partner/LeadDetail";
 import OpportunityDetail from "./pages/partner/OpportunityDetail";
+import AdminUsers from "./pages/admin/AdminUsers";
+import AdminPartners from "./pages/admin/AdminPartners";
 
 const queryClient = new QueryClient();
 
@@ -38,6 +40,8 @@ const App = () => (
               <Route path="/portal/partner/opportunities" element={<PartnerOpportunities />} />
               <Route path="/portal/partner/opportunities/:oppId" element={<OpportunityDetail />} />
               <Route path="/portal/partner/referral" element={<PartnerReferralForm />} />
+              <Route path="/portal/partner/admin/users" element={<AdminUsers />} />
+              <Route path="/portal/partner/admin/partners" element={<AdminPartners />} />
             </Route>
 
             <Route path="*" element={<NotFound />} />

@@ -27,6 +27,8 @@ import {
   Sun,
   Menu,
   LogOut,
+  Shield,
+  Handshake,
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useAuth } from "@/hooks/useAuth";
@@ -36,7 +38,7 @@ export function PortalSidebar() {
   const navigate = useNavigate();
   const { theme, setTheme } = useTheme();
   const { toggleSidebar } = useSidebar();
-  const { signOut } = useAuth();
+  const { signOut, isSuperAdmin } = useAuth();
 
   const handleLogout = async () => {
     await signOut();
@@ -52,6 +54,11 @@ export function PortalSidebar() {
     { path: "/portal/partner/leads", label: "Leads", icon: Users },
     { path: "/portal/partner/opportunities", label: "Opportunities", icon: Target },
     { path: "/portal/partner/referral", label: "Submit Lead", icon: FileText },
+  ];
+
+  const adminItems = [
+    { path: "/portal/partner/admin/users", label: "Users", icon: Shield },
+    { path: "/portal/partner/admin/partners", label: "Partners", icon: Handshake },
   ];
 
   return (
@@ -98,6 +105,31 @@ export function PortalSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+
+        {isSuperAdmin && (
+          <SidebarGroup>
+            <div className="px-3 py-1.5 group-data-[collapsible=icon]:hidden">
+              <span className="text-[10px] uppercase tracking-widest text-muted-foreground/60 font-semibold">Admin</span>
+            </div>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {adminItems.map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <SidebarMenuItem key={item.path}>
+                      <SidebarMenuButton asChild isActive={isActive(item.path)} tooltip={item.label}>
+                        <Link to={item.path}>
+                          <Icon className="h-4 w-4" />
+                          <span>{item.label}</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  );
+                })}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
       </SidebarContent>
 
       <SidebarFooter className="p-2">

@@ -24,6 +24,8 @@ const ROUTE_LABELS: Record<string, string> = {
   "/portal/partner/leads": "Partner Leads",
   "/portal/partner/opportunities": "Partner Opportunities",
   "/portal/partner/referral": "Submit a Lead",
+  "/portal/partner/admin/users": "User Management",
+  "/portal/partner/admin/partners": "Partner Management",
 };
 
 export function PortalTopBar() {
