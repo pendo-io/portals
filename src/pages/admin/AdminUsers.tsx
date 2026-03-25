@@ -26,8 +26,10 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { Search, Loader2, ArrowUp, ArrowDown, ArrowUpDown, ChevronLeft, ChevronRight } from "lucide-react";
+import { Search, Loader2, ArrowUp, ArrowDown, ArrowUpDown, ChevronLeft, ChevronRight, UserCheck } from "lucide-react";
 import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
+import { useAuth, type PartnerType } from "@/hooks/useAuth";
 import {
   useAdminUsers,
   useAdminPartners,
@@ -86,6 +88,8 @@ const AdminUsers = () => {
   const [editRole, setEditRole] = useState("");
   const [editPartnerId, setEditPartnerId] = useState<string>("");
 
+  const navigate = useNavigate();
+  const { startImpersonating } = useAuth();
   const { data: users, isLoading, isError, error } = useAdminUsers();
   const { data: partners } = useAdminPartners();
   const updateRole = useUpdateUserRole();
@@ -110,6 +114,20 @@ const AdminUsers = () => {
     setEditUser(user);
     setEditRole(getPrimaryRole(user));
     setEditPartnerId(user.partner_id ?? "none");
+  };
+
+  const handleImpersonate = () => {
+    if (!editUser) return;
+    const partnerType = (editUser.partners?.type as PartnerType) ?? null;
+    startImpersonating({
+      id: editUser.id,
+      email: editUser.email,
+      full_name: editUser.full_name,
+      partnerType,
+    });
+    setEditUser(null);
+    toast.success(`Impersonating ${editUser.full_name || editUser.email}`);
+    navigate(`/portal/${partnerType || "partner"}`, { replace: true });
   };
 
   const handleSave = async () => {
@@ -339,16 +357,22 @@ const AdminUsers = () => {
               </div>
             </div>
           )}
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setEditUser(null)}>Cancel</Button>
-            <Button
-              onClick={handleSave}
-              disabled={updateRole.isPending || assignPartner.isPending}
-            >
-              {(updateRole.isPending || assignPartner.isPending) ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : "Save"}
+          <DialogFooter className="sm:justify-between">
+            <Button variant="secondary" onClick={handleImpersonate} className="gap-1.5">
+              <UserCheck className="h-4 w-4" />
+              Impersonate
             </Button>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => setEditUser(null)}>Cancel</Button>
+              <Button
+                onClick={handleSave}
+                disabled={updateRole.isPending || assignPartner.isPending}
+              >
+                {(updateRole.isPending || assignPartner.isPending) ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : "Save"}
+              </Button>
+            </div>
           </DialogFooter>
         </DialogContent>
       </Dialog>

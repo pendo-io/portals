@@ -4,12 +4,30 @@ import type { User, Session } from "@supabase/supabase-js";
 
 export type PartnerType = "partner" | "oem" | "japan";
 
+export interface ImpersonatedUser {
+  id: string;
+  email: string;
+  full_name: string | null;
+  partnerType: PartnerType | null;
+}
+
 interface AuthState {
   user: User | null;
   session: Session | null;
   partnerType: PartnerType | null;
   isSuperAdmin: boolean;
   loading: boolean;
+}
+
+const IMPERSONATE_KEY = "impersonate_user";
+
+function getStoredImpersonation(): ImpersonatedUser | null {
+  try {
+    const raw = localStorage.getItem(IMPERSONATE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
 }
 
 export function useAuth() {
@@ -20,6 +38,10 @@ export function useAuth() {
     isSuperAdmin: false,
     loading: true,
   });
+
+  const [impersonating, setImpersonating] = useState<ImpersonatedUser | null>(
+    getStoredImpersonation
+  );
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -48,16 +70,46 @@ export function useAuth() {
   }, []);
 
   const signOut = useCallback(async () => {
+    localStorage.removeItem(IMPERSONATE_KEY);
     await supabase.auth.signOut();
   }, []);
 
+  const startImpersonating = useCallback((target: ImpersonatedUser) => {
+    localStorage.setItem(IMPERSONATE_KEY, JSON.stringify(target));
+    setImpersonating(target);
+  }, []);
+
+  const stopImpersonating = useCallback(() => {
+    localStorage.removeItem(IMPERSONATE_KEY);
+    setImpersonating(null);
+  }, []);
+
+  // When impersonating, override user metadata and partner type
+  // but keep isSuperAdmin true so admin nav stays accessible
+  const effectiveUser = impersonating
+    ? {
+        ...state.user!,
+        user_metadata: {
+          ...state.user?.user_metadata,
+          full_name: impersonating.full_name,
+        },
+      } as User
+    : state.user;
+
+  const effectivePartnerType = impersonating
+    ? impersonating.partnerType
+    : state.partnerType;
+
   return {
-    user: state.user,
+    user: effectiveUser,
     session: state.session,
-    partnerType: state.partnerType,
+    partnerType: effectivePartnerType,
     isSuperAdmin: state.isSuperAdmin,
     loading: state.loading,
+    impersonating,
     signOut,
+    startImpersonating,
+    stopImpersonating,
   };
 }
 
