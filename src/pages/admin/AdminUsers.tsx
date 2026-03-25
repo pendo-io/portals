@@ -264,7 +264,7 @@ const AdminUsers = () => {
                                 <UserCheck className="h-3.5 w-3.5" />
                               </button>
                             </TooltipTrigger>
-                            <TooltipContent side="right">Impersonate</TooltipContent>
+                            <TooltipContent side="left">Impersonate</TooltipContent>
                           </Tooltip>
                           <span className="text-sm font-medium truncate">{u.full_name || "—"}</span>
                         </div>
