@@ -7,12 +7,13 @@ import type { SfdcOpportunityDetail } from "./useSfdcOpportunityDetail";
 export type SfdcOpportunity = SfdcOpportunityDetail;
 
 export function useSfdcOpportunities() {
-  const { user, sfdcAccountId } = useAuth();
+  const { user, sfdcAccountId, isSuperAdmin, impersonating } = useAuth();
+  const shouldFilter = !isSuperAdmin || !!impersonating;
 
   return useQuery({
-    queryKey: ["sfdc-opportunities", user?.id, sfdcAccountId],
+    queryKey: ["sfdc-opportunities", user?.id, sfdcAccountId, shouldFilter],
     queryFn: () => {
-      const where = sfdcAccountId
+      const where = shouldFilter && sfdcAccountId
         ? `WHERE Partner_Account__c = '${sfdcAccountId}'`
         : `WHERE LeadSource = 'Partner Referral'`;
 
