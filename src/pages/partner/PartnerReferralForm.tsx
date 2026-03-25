@@ -185,9 +185,8 @@ const PartnerReferralForm = () => {
     <div className="flex-1 flex flex-col" onKeyDown={handleKeyDown}>
       <ProgressBar value={progress} />
 
-      {/* Header */}
-      <div className="flex items-center justify-between px-6 py-4 shrink-0">
-        <h1 className="text-lg font-semibold tracking-tight">Lead Referral Registration</h1>
+      {/* Header — progress indicator only */}
+      <div className="flex items-center justify-end px-6 py-3 shrink-0">
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-1.5">
             {SECTIONS.map((_, i) => (
@@ -207,8 +206,8 @@ const PartnerReferralForm = () => {
       </div>
 
       {/* Content */}
-      <div className="flex-1 flex items-center justify-center p-6 overflow-y-auto">
-        <div className="w-full max-w-lg" key={step}>
+      <div className="flex-1 flex items-center justify-center p-6 sm:p-10 overflow-y-auto">
+        <div className="w-full max-w-2xl" key={step}>
           {step === 0 && <CompanyStep form={form} set={set} shake={shakeFields} />}
           {step === 1 && <ContactStep form={form} set={set} setSelect={setSelect} shake={shakeFields} />}
           {step === 2 && <AddressStep form={form} set={set} shake={shakeFields} />}
@@ -274,7 +273,7 @@ function CompanyStep({ form, set, shake }: StepProps) {
   return (
     <div className="space-y-8">
       <StepHeader title="Company Information" description="Tell us about the company you're referring." />
-      <div className="space-y-5">
+      <div className="space-y-6">
         <Field label="Company" required shake={shake.has("company")}>
           <Input value={form.company} onChange={set("company")} placeholder="Acme Inc" autoFocus />
         </Field>
@@ -290,7 +289,7 @@ function ContactStep({ form, set, setSelect, shake }: StepProps) {
   return (
     <div className="space-y-8">
       <StepHeader title="Contact Details" description="Who should we reach out to at this company?" />
-      <div className="space-y-5">
+      <div className="space-y-6">
         <div className="grid grid-cols-3 gap-4">
           <Field label="Salutation">
             <Select value={form.salutation} onValueChange={setSelect!("salutation")}>
@@ -327,7 +326,7 @@ function AddressStep({ form, set }: StepProps) {
   return (
     <div className="space-y-8">
       <StepHeader title="Address" description="Optional. Where is this company located?" />
-      <div className="space-y-5">
+      <div className="space-y-6">
         <Field label="Street">
           <Input value={form.street} onChange={set("street")} placeholder="123 Main St" autoFocus />
         </Field>
@@ -356,7 +355,7 @@ function OpportunityStep({ form, set, setSelect, shake }: StepProps) {
   return (
     <div className="space-y-8">
       <StepHeader title="Opportunity Details" description="Help us understand the prospect's needs and timeline." />
-      <div className="space-y-5">
+      <div className="space-y-6">
         <Field label="Number of Users" required shake={shake.has("numberOfUsers")}>
           <Input value={form.numberOfUsers} onChange={set("numberOfUsers")} placeholder="e.g. 500" autoFocus />
         </Field>
@@ -401,16 +400,16 @@ function OpportunityStep({ form, set, setSelect, shake }: StepProps) {
 function StepHeader({ title, description }: { title: string; description: string }) {
   return (
     <div>
-      <h2 className="text-2xl font-bold tracking-tight">{title}</h2>
-      <p className="text-sm text-muted-foreground mt-1.5">{description}</p>
+      <h2 className="text-3xl font-bold tracking-tight">{title}</h2>
+      <p className="text-base text-muted-foreground mt-2">{description}</p>
     </div>
   );
 }
 
 function Field({ label, required, shake, children }: { label: string; required?: boolean; shake?: boolean; children: React.ReactNode }) {
   return (
-    <div className={`space-y-1.5 ${shake ? "animate-shake" : ""}`}>
-      <Label className="text-xs text-muted-foreground font-medium">
+    <div className={`space-y-2 ${shake ? "animate-shake" : ""}`}>
+      <Label className="text-sm text-muted-foreground font-medium">
         {label}
         {required && <span className="text-primary ml-0.5">*</span>}
       </Label>
