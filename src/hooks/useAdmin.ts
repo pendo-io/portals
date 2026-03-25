@@ -25,13 +25,30 @@ export function useAdminUsers() {
   return useQuery({
     queryKey: ["admin-users"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("id, email, full_name, partner_id, created_at, partners(id, name, type), user_roles(role)")
-        .order("created_at", { ascending: false });
+      const [profilesRes, rolesRes] = await Promise.all([
+        supabase
+          .from("profiles")
+          .select("id, email, full_name, partner_id, created_at, partners(id, name, type)")
+          .order("created_at", { ascending: false }),
+        supabase
+          .from("user_roles")
+          .select("user_id, role"),
+      ]);
 
-      if (error) throw error;
-      return data as unknown as AdminUser[];
+      if (profilesRes.error) throw profilesRes.error;
+      if (rolesRes.error) throw rolesRes.error;
+
+      const rolesByUser = new Map<string, { role: string }[]>();
+      for (const r of rolesRes.data) {
+        const existing = rolesByUser.get(r.user_id) ?? [];
+        existing.push({ role: r.role });
+        rolesByUser.set(r.user_id, existing);
+      }
+
+      return (profilesRes.data as any[]).map((p) => ({
+        ...p,
+        user_roles: rolesByUser.get(p.id) ?? [],
+      })) as AdminUser[];
     },
     enabled: !!user,
   });
