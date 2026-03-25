@@ -32,6 +32,7 @@ import {
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useAuth } from "@/hooks/useAuth";
+import { usePortalType } from "@/hooks/usePortalType";
 
 export function PortalSidebar() {
   const location = useLocation();
@@ -39,6 +40,7 @@ export function PortalSidebar() {
   const { theme, setTheme } = useTheme();
   const { toggleSidebar } = useSidebar();
   const { signOut, isSuperAdmin } = useAuth();
+  const { basePath } = usePortalType();
 
   const handleLogout = async () => {
     await signOut();
@@ -47,25 +49,25 @@ export function PortalSidebar() {
 
   const isActive = (path: string) =>
     location.pathname === path ||
-    (path !== "/portal/partner" && location.pathname.startsWith(path));
+    (path !== basePath && location.pathname.startsWith(path));
 
   const navItems = [
-    { path: "/portal/partner", label: "Home", icon: Home },
-    { path: "/portal/partner/leads", label: "Leads", icon: Users },
-    { path: "/portal/partner/opportunities", label: "Opportunities", icon: Target },
-    { path: "/portal/partner/referral", label: "Submit Lead", icon: FileText },
+    { path: basePath, label: "Home", icon: Home },
+    { path: `${basePath}/leads`, label: "Leads", icon: Users },
+    { path: `${basePath}/opportunities`, label: "Opportunities", icon: Target },
+    { path: `${basePath}/referral`, label: "Submit Lead", icon: FileText },
   ];
 
   const adminItems = [
-    { path: "/portal/partner/admin/users", label: "Users", icon: Shield },
-    { path: "/portal/partner/admin/partners", label: "Partners", icon: Handshake },
+    { path: `${basePath}/admin/users`, label: "Users", icon: Shield },
+    { path: `${basePath}/admin/partners`, label: "Partners", icon: Handshake },
   ];
 
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader className="px-3 pt-3 pb-4">
         <div className="flex items-center gap-2 group-data-[collapsible=icon]:hidden">
-          <Link to="/portal/partner" className="flex items-center justify-center w-5 h-5">
+          <Link to={basePath} className="flex items-center justify-center w-5 h-5">
             <img src="/logo.png" alt="Pendo" className="w-5 h-5 min-w-5 min-h-5" />
           </Link>
           <button

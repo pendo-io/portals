@@ -21,7 +21,7 @@ const Login = () => {
 
   useEffect(() => {
     if (!authLoading && user) {
-      navigate("/portal/partner", { replace: true });
+      navigate("/", { replace: true });
     }
   }, [authLoading, user, navigate]);
 

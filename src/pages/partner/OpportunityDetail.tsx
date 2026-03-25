@@ -1,5 +1,6 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
+import { usePortalType } from "@/hooks/usePortalType";
 import { useSfdcOpportunityDetail } from "@/hooks/useSfdcOpportunityDetail";
 import { useSfdcApprovalHistory } from "@/hooks/useSfdcApprovalHistory";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -44,6 +45,7 @@ const fmtDate = (d: string | null): string | null => {
 export default function OpportunityDetail() {
   const { oppId } = useParams<{ oppId: string }>();
   const navigate = useNavigate();
+  const { basePath } = usePortalType();
   const { data, isLoading, isError, error } = useSfdcOpportunityDetail(oppId);
   const { data: approvalData, isLoading: approvalsLoading } = useSfdcApprovalHistory(oppId);
 
@@ -73,7 +75,7 @@ export default function OpportunityDetail() {
           {isError && (
             <p className="text-sm text-muted-foreground">{(error as Error)?.message}</p>
           )}
-          <Button variant="outline" size="sm" onClick={() => navigate("/portal/partner/opportunities")}>
+          <Button variant="outline" size="sm" onClick={() => navigate(`${basePath}/opportunities`)}>
             <ArrowLeft className="h-4 w-4 mr-1.5" />
             Back to Opportunities
           </Button>
@@ -112,7 +114,7 @@ export default function OpportunityDetail() {
             <span className={`inline-flex items-center rounded-full px-3 py-1 text-sm font-medium ${getOppStageColor(opp.StageName)}`}>
               {opp.StageName}
             </span>
-            <Button variant="outline" size="sm" onClick={() => navigate("/portal/partner/opportunities")}>
+            <Button variant="outline" size="sm" onClick={() => navigate(`${basePath}/opportunities`)}>
               <ArrowLeft className="h-4 w-4 mr-1.5" />
               Back
             </Button>

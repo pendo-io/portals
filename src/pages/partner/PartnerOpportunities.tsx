@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
+import { usePortalType } from "@/hooks/usePortalType";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -47,6 +48,7 @@ const PartnerOpportunities = () => {
   const [sortKey, setSortKey] = useState<SortKey | null>(null);
   const [sortDir, setSortDir] = useState<SortDir>("asc");
   const navigate = useNavigate();
+  const { basePath } = usePortalType();
   const { data, isLoading, isError, error } = useSfdcOpportunities();
 
   const opps = data?.records ?? [];
@@ -195,7 +197,7 @@ const PartnerOpportunities = () => {
               </TableHeader>
               <TableBody>
                 {paginated.map((opp) => (
-                  <TableRow key={opp.Id} className="cursor-pointer hover:bg-muted/50 h-[52px]" onClick={() => navigate(`/portal/partner/opportunities/${opp.Id}`)}>
+                  <TableRow key={opp.Id} className="cursor-pointer hover:bg-muted/50 h-[52px]" onClick={() => navigate(`${basePath}/opportunities/${opp.Id}`)}>
                     <TableCell className="py-2">
                       <p className="font-medium text-sm leading-tight truncate min-w-[140px] sm:min-w-[180px]">{opp.Name}</p>
                     </TableCell>

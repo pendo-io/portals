@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
+import { usePortalType } from "@/hooks/usePortalType";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -41,6 +42,7 @@ const PartnerLeads = () => {
   const [sortKey, setSortKey] = useState<SortKey | null>(null);
   const [sortDir, setSortDir] = useState<SortDir>("asc");
   const navigate = useNavigate();
+  const { basePath } = usePortalType();
   const { data, isLoading, isError, error } = useSfdcLeads();
 
   const leads = data?.records ?? [];
@@ -187,7 +189,7 @@ const PartnerLeads = () => {
               </TableHeader>
               <TableBody>
                 {paginated.map((lead) => (
-                  <TableRow key={lead.Id} className="cursor-pointer hover:bg-muted/50 h-[52px]" onClick={() => navigate(`/portal/partner/leads/${lead.Id}`)}>
+                  <TableRow key={lead.Id} className="cursor-pointer hover:bg-muted/50 h-[52px]" onClick={() => navigate(`${basePath}/leads/${lead.Id}`)}>
                     <TableCell className="py-2">
                       <span className="text-sm font-medium">{lead.Name}</span>
                     </TableCell>

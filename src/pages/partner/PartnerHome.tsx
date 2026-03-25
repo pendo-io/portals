@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
+import { usePortalType } from "@/hooks/usePortalType";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -17,6 +18,7 @@ const formatCurrency = (value: number) => {
 const PartnerHome = () => {
   useDocumentTitle("Home");
   const navigate = useNavigate();
+  const { basePath } = usePortalType();
   const { data: leadsData, isLoading: leadsLoading } = useSfdcLeads();
   const { data: oppsData, isLoading: oppsLoading } = useSfdcOpportunities();
 
@@ -49,7 +51,7 @@ const PartnerHome = () => {
     for (const lead of leads.slice(0, 10)) {
       items.push({
         id: lead.Id,
-        path: `/portal/partner/leads/${lead.Id}`,
+        path: `${basePath}/leads/${lead.Id}`,
         description: `New lead: ${lead.Company} (${lead.Name})`,
         time: new Date(lead.CreatedDate).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
         date: new Date(lead.CreatedDate),
@@ -59,7 +61,7 @@ const PartnerHome = () => {
       const amount = opp.Amount != null ? ` - ${formatCurrency(opp.Amount)}` : "";
       items.push({
         id: opp.Id,
-        path: `/portal/partner/opportunities/${opp.Id}`,
+        path: `${basePath}/opportunities/${opp.Id}`,
         description: `Opportunity: ${opp.Name}${amount} (${opp.StageName})`,
         time: new Date(opp.CloseDate).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
         date: new Date(opp.CloseDate),
@@ -75,7 +77,7 @@ const PartnerHome = () => {
           <h1 className="text-2xl font-bold tracking-tight">Overview</h1>
           <p className="text-sm text-muted-foreground mt-1">Welcome back. Here's your partnership overview.</p>
         </div>
-        <Button onClick={() => navigate("/portal/partner/referral")}>
+        <Button onClick={() => navigate(`${basePath}/referral`)}>
           <FileText className="h-4 w-4 mr-1.5" />
           New Referral
         </Button>
@@ -115,7 +117,7 @@ const PartnerHome = () => {
 
       {/* Quick Links — always visible immediately */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <Card className="hover:border-primary/50 transition-colors cursor-pointer" onClick={() => navigate("/portal/partner/leads")}>
+        <Card className="hover:border-primary/50 transition-colors cursor-pointer" onClick={() => navigate(`${basePath}/leads`)}>
           <CardContent className="p-5 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="h-9 w-9 rounded-lg bg-blue-500/10 flex items-center justify-center">
@@ -130,7 +132,7 @@ const PartnerHome = () => {
           </CardContent>
         </Card>
 
-        <Card className="hover:border-primary/50 transition-colors cursor-pointer" onClick={() => navigate("/portal/partner/opportunities")}>
+        <Card className="hover:border-primary/50 transition-colors cursor-pointer" onClick={() => navigate(`${basePath}/opportunities`)}>
           <CardContent className="p-5 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="h-9 w-9 rounded-lg bg-emerald-500/10 flex items-center justify-center">
@@ -145,7 +147,7 @@ const PartnerHome = () => {
           </CardContent>
         </Card>
 
-        <Card className="hover:border-primary/50 transition-colors cursor-pointer" onClick={() => navigate("/portal/partner/referral")}>
+        <Card className="hover:border-primary/50 transition-colors cursor-pointer" onClick={() => navigate(`${basePath}/referral`)}>
           <CardContent className="p-5 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center">

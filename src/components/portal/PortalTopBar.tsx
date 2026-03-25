@@ -1,5 +1,6 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import { usePortalType } from "@/hooks/usePortalType";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -19,33 +20,34 @@ function useHomeLabel(): string {
   return firstName ? `${greeting}, ${firstName}` : greeting;
 }
 
-const ROUTE_LABELS: Record<string, string> = {
-  "/portal/partner": "",
-  "/portal/partner/leads": "Partner Leads",
-  "/portal/partner/opportunities": "Partner Opportunities",
-  "/portal/partner/referral": "Submit a Lead",
-  "/portal/partner/admin/users": "User Management",
-  "/portal/partner/admin/partners": "Partner Management",
-};
-
 export function PortalTopBar() {
   const location = useLocation();
   const navigate = useNavigate();
   const homeLabel = useHomeLabel();
+  const { basePath, label: portalLabel } = usePortalType();
   const currentPath = location.pathname;
 
-  const isLeadDetail = currentPath.startsWith("/portal/partner/leads/") && currentPath !== "/portal/partner/leads";
-  const isOppDetail = currentPath.startsWith("/portal/partner/opportunities/") && currentPath !== "/portal/partner/opportunities";
+  const ROUTE_LABELS: Record<string, string> = {
+    [`${basePath}`]: "",
+    [`${basePath}/leads`]: `${portalLabel} Leads`,
+    [`${basePath}/opportunities`]: `${portalLabel} Opportunities`,
+    [`${basePath}/referral`]: "Submit a Lead",
+    [`${basePath}/admin/users`]: "User Management",
+    [`${basePath}/admin/partners`]: "Partner Management",
+  };
+
+  const isLeadDetail = currentPath.startsWith(`${basePath}/leads/`) && currentPath !== `${basePath}/leads`;
+  const isOppDetail = currentPath.startsWith(`${basePath}/opportunities/`) && currentPath !== `${basePath}/opportunities`;
 
   let breadcrumbSegments: { label: string; path?: string }[];
 
   if (isLeadDetail) {
-    breadcrumbSegments = [{ label: "Partner Leads", path: "/portal/partner/leads" }, { label: "Lead Detail" }];
+    breadcrumbSegments = [{ label: `${portalLabel} Leads`, path: `${basePath}/leads` }, { label: "Lead Detail" }];
   } else if (isOppDetail) {
-    breadcrumbSegments = [{ label: "Partner Opportunities", path: "/portal/partner/opportunities" }, { label: "Opportunity Detail" }];
+    breadcrumbSegments = [{ label: `${portalLabel} Opportunities`, path: `${basePath}/opportunities` }, { label: "Opportunity Detail" }];
   } else {
     breadcrumbSegments = [{
-      label: currentPath === "/portal/partner"
+      label: currentPath === basePath
         ? homeLabel
         : ROUTE_LABELS[currentPath] || currentPath.split("/").filter(Boolean).pop() || "Home",
     }];

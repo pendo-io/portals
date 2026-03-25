@@ -2,6 +2,7 @@ import { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
+import { usePortalType } from "@/hooks/usePortalType";
 import { useAuth } from "@/hooks/useAuth";
 import { sfdcCreate } from "@/lib/sfdc";
 import { Button } from "@/components/ui/button";
@@ -55,6 +56,7 @@ const PartnerReferralForm = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { user } = useAuth();
+  const { basePath } = usePortalType();
   const [step, setStep] = useState(0);
   const [submitted, setSubmitted] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -171,7 +173,7 @@ const PartnerReferralForm = () => {
               <Button variant="outline" onClick={() => { setSubmitted(false); setForm(initial); setStep(0); }}>
                 Submit Another
               </Button>
-              <Button onClick={() => navigate("/portal/partner")}>
+              <Button onClick={() => navigate(basePath)}>
                 Back to Home
               </Button>
             </div>

@@ -1,5 +1,6 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
+import { usePortalType } from "@/hooks/usePortalType";
 import { useSfdcLeadDetail } from "@/hooks/useSfdcLeadDetail";
 import { useSfdcApprovalHistory } from "@/hooks/useSfdcApprovalHistory";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -54,6 +55,7 @@ function Row({ label, value, href, wrap }: { label: string; value: string | numb
 export default function LeadDetail() {
   const { leadId } = useParams<{ leadId: string }>();
   const navigate = useNavigate();
+  const { basePath } = usePortalType();
   const { data, isLoading, isError, error } = useSfdcLeadDetail(leadId);
   const { data: approvalData, isLoading: approvalsLoading } = useSfdcApprovalHistory(leadId);
 
@@ -83,7 +85,7 @@ export default function LeadDetail() {
           {isError && (
             <p className="text-sm text-muted-foreground">{(error as Error)?.message}</p>
           )}
-          <Button variant="outline" size="sm" onClick={() => navigate("/portal/partner/leads")}>
+          <Button variant="outline" size="sm" onClick={() => navigate(`${basePath}/leads`)}>
             <ArrowLeft className="h-4 w-4 mr-1.5" />
             Back to Leads
           </Button>
@@ -142,7 +144,7 @@ export default function LeadDetail() {
             <span className={`inline-flex items-center rounded-full px-3 py-1 text-sm font-medium ${getLeadStatusColor(lead.Status)}`}>
               {lead.Status}
             </span>
-            <Button variant="outline" size="sm" onClick={() => navigate("/portal/partner/leads")}>
+            <Button variant="outline" size="sm" onClick={() => navigate(`${basePath}/leads`)}>
               <ArrowLeft className="h-4 w-4 mr-1.5" />
               Back
             </Button>
