@@ -39,7 +39,8 @@ export function PortalSidebar() {
   const navigate = useNavigate();
   const { theme, setTheme } = useTheme();
   const { toggleSidebar } = useSidebar();
-  const { signOut, isSuperAdmin } = useAuth();
+  const { signOut, isSuperAdmin, impersonating } = useAuth();
+  const showAdmin = isSuperAdmin && !impersonating;
   const { basePath } = usePortalType();
 
   const handleLogout = async () => {
@@ -108,7 +109,7 @@ export function PortalSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {isSuperAdmin && (
+        {showAdmin && (
           <SidebarGroup>
             <div className="px-3 py-1.5 group-data-[collapsible=icon]:hidden">
               <span className="text-[10px] uppercase tracking-widest text-muted-foreground/60 font-semibold">Admin</span>
