@@ -32,7 +32,6 @@ import {
   useAdminUsers,
   useAdminPartners,
   useUpdateUserRole,
-  useAssignPartner,
   type AdminUser,
 } from "@/hooks/useAdmin";
 
@@ -85,8 +84,6 @@ const AdminUsers = () => {
   const { data: users, isLoading, isError, error } = useAdminUsers();
   const { data: partners } = useAdminPartners();
   const updateRole = useUpdateUserRole();
-  const assignPartner = useAssignPartner();
-
   const allUsers = users ?? [];
 
   const handleSearchChange = (value: string) => { setSearch(value); setPage(0); };
@@ -123,15 +120,6 @@ const AdminUsers = () => {
       toast.success("Role updated");
     } catch (err) {
       toast.error((err as Error).message || "Failed to update role");
-    }
-  };
-
-  const handlePartnerChange = async (userId: string, partnerId: string) => {
-    try {
-      await assignPartner.mutateAsync({ userId, partnerId: partnerId === "none" ? null : partnerId });
-      toast.success("Partner updated");
-    } catch (err) {
-      toast.error((err as Error).message || "Failed to update partner");
     }
   };
 
@@ -310,21 +298,19 @@ const AdminUsers = () => {
                           </SelectContent>
                         </Select>
                       </TableCell>
-                      <TableCell className="py-1">
-                        <Select
-                          value={u.partner_id ?? "none"}
-                          onValueChange={(val) => handlePartnerChange(u.id, val)}
-                        >
-                          <SelectTrigger className="h-8 text-xs border-0 bg-transparent hover:bg-muted/50 shadow-none focus:ring-0">
-                            <span className="text-sm truncate">{u.partners?.name ?? "—"}</span>
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="none">No Partner</SelectItem>
-                            {partners?.map((p) => (
-                              <SelectItem key={p.id} value={p.id}>{p.name} ({p.type})</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                      <TableCell className="py-2">
+                        {u.partners?.sfdc_account_id ? (
+                          <a
+                            href={`https://pendo.lightning.force.com/lightning/r/Account/${u.partners.sfdc_account_id}/view`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-sm text-primary hover:underline truncate block"
+                          >
+                            {u.partners.name}
+                          </a>
+                        ) : (
+                          <span className="text-sm">{u.partners?.name ?? "—"}</span>
+                        )}
                       </TableCell>
                       <TableCell className="py-2 hidden sm:table-cell">
                         <span className="text-sm text-muted-foreground tabular-nums">
