@@ -181,8 +181,8 @@ const PartnerLeads = () => {
                   <TableHead className={thClass} resizable onClick={() => handleSort("status")}>
                     <span className="inline-flex items-center">Status<SortIcon active={sortKey === "status"} dir={sortDir} /></span>
                   </TableHead>
-                  <TableHead className={`${thClass} text-right hidden sm:table-cell`} resizable onClick={() => handleSort("created")}>
-                    <span className="inline-flex items-center justify-end">Created Date<SortIcon active={sortKey === "created"} dir={sortDir} /></span>
+                  <TableHead className={`${thClass} hidden sm:table-cell`} resizable onClick={() => handleSort("created")}>
+                    <span className="inline-flex items-center">Created Date<SortIcon active={sortKey === "created"} dir={sortDir} /></span>
                   </TableHead>
                 </TableRow>
               </TableHeader>
@@ -207,7 +207,7 @@ const PartnerLeads = () => {
                         <span className="text-muted-foreground text-xs">—</span>
                       )}
                     </TableCell>
-                    <TableCell className="py-2 text-right hidden sm:table-cell">
+                    <TableCell className="py-2 hidden sm:table-cell">
                       <span className="text-sm text-muted-foreground tabular-nums">
                         {new Date(lead.CreatedDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" })}
                       </span>

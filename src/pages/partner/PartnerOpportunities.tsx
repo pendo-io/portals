@@ -186,8 +186,8 @@ const PartnerOpportunities = () => {
                   <TableHead className={thClass} resizable onClick={() => handleSort("stage")}>
                     <span className="inline-flex items-center">Stage<SortIcon active={sortKey === "stage"} dir={sortDir} /></span>
                   </TableHead>
-                  <TableHead className={`${thClass} text-right hidden sm:table-cell`} resizable onClick={() => handleSort("closeDate")}>
-                    <span className="inline-flex items-center justify-end">Close Date<SortIcon active={sortKey === "closeDate"} dir={sortDir} /></span>
+                  <TableHead className={`${thClass} hidden sm:table-cell`} resizable onClick={() => handleSort("closeDate")}>
+                    <span className="inline-flex items-center">Close Date<SortIcon active={sortKey === "closeDate"} dir={sortDir} /></span>
                   </TableHead>
                   <TableHead className={`${thClass} text-right`} resizable onClick={() => handleSort("amount")}>
                     <span className="inline-flex items-center justify-end">TCV<SortIcon active={sortKey === "amount"} dir={sortDir} /></span>
@@ -212,7 +212,7 @@ const PartnerOpportunities = () => {
                         <span className="text-muted-foreground text-xs">—</span>
                       )}
                     </TableCell>
-                    <TableCell className="py-2 text-right hidden sm:table-cell">
+                    <TableCell className="py-2 hidden sm:table-cell">
                       <span className="text-sm text-muted-foreground tabular-nums">
                         {new Date(opp.CloseDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
                       </span>
