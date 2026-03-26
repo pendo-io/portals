@@ -1,10 +1,20 @@
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "./useAuth";
 import { sfdcQuery, isSafeSfdcId } from "@/lib/sfdc";
-import { LEAD_FIELDS } from "./useSfdcLeadDetail";
-import type { SfdcLeadDetail } from "./useSfdcLeadDetail";
 
-export type SfdcLead = SfdcLeadDetail;
+export interface SfdcLead {
+  Id: string;
+  Name: string;
+  FirstName: string | null;
+  LastName: string;
+  Company: string;
+  Email: string | null;
+  Status: string;
+  LeadSource: string | null;
+  CreatedDate: string;
+}
+
+const LEAD_LIST_FIELDS = `Id, Name, FirstName, LastName, Company, Email, Status, LeadSource, CreatedDate`;
 
 export function useSfdcLeads() {
   const { user, sfdcAccountId, isSuperAdmin, impersonating } = useAuth();
@@ -18,7 +28,7 @@ export function useSfdcLeads() {
         : `WHERE LeadSource = 'Partner Referral'`;
 
       return sfdcQuery<SfdcLead>(
-        `SELECT ${LEAD_FIELDS}
+        `SELECT ${LEAD_LIST_FIELDS}
          FROM Lead
          ${where}
          ORDER BY CreatedDate DESC`

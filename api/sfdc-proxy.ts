@@ -62,17 +62,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method === "OPTIONS") return res.status(204).end();
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
-  const user = await verifyAuth(req);
-  if (!user) return res.status(401).json({ error: "Unauthorized" });
-
   const { query } = req.body;
   if (!query) return res.status(400).json({ error: "Missing query" });
 
   const instanceUrl = process.env.SFDC_INSTANCE_URL;
   if (!instanceUrl) return res.status(500).json({ error: "SFDC_INSTANCE_URL not configured" });
 
+  // Run auth verification and SFDC token fetch in parallel
+  const [user, accessToken] = await Promise.all([verifyAuth(req), getSfdcToken()]);
+  if (!user) return res.status(401).json({ error: "Unauthorized" });
+
   try {
-    const accessToken = await getSfdcToken();
     const sfdcRes = await fetch(
       `${instanceUrl}/services/data/v62.0/query?q=${encodeURIComponent(query)}`,
       { headers: { Authorization: `Bearer ${accessToken}` } }
