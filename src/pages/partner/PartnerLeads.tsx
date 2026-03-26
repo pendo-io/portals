@@ -22,7 +22,6 @@ import {
 } from "@/components/ui/select";
 import { Search, Loader2, ArrowUp, ArrowDown, ArrowUpDown, ChevronLeft, ChevronRight } from "lucide-react";
 import { useSfdcLeads } from "@/hooks/useSfdcLeads";
-import { getLeadStatusColor } from "@/lib/status-colors";
 
 type SortKey = "company" | "contact" | "email" | "status" | "source" | "created";
 type SortDir = "asc" | "desc";
@@ -201,7 +200,7 @@ const PartnerLeads = () => {
                     </TableCell>
                     <TableCell className="py-2">
                       {lead.Status ? (
-                        <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${getLeadStatusColor(lead.Status)}`}>
+                        <span className="inline-flex items-center rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
                           {lead.Status}
                         </span>
                       ) : (

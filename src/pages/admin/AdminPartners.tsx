@@ -30,15 +30,8 @@ type SortDir = "asc" | "desc";
 
 const PARTNER_TYPES = ["partner", "oem", "japan"] as const;
 
-function getTypeColor(type: string) {
-  switch (type) {
-    case "oem":
-      return "bg-purple-500/10 text-purple-700 dark:text-purple-400";
-    case "japan":
-      return "bg-rose-500/10 text-rose-700 dark:text-rose-400";
-    default:
-      return "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400";
-  }
+function getTypeColor() {
+  return "bg-muted text-muted-foreground";
 }
 
 function getTypeLabel(type: string) {
@@ -207,7 +200,7 @@ const AdminPartners = () => {
                       )}
                     </TableCell>
                     <TableCell className="py-2">
-                      <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${getTypeColor(p.type)}`}>
+                      <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${getTypeColor()}`}>
                         {getTypeLabel(p.type)}
                       </span>
                     </TableCell>

@@ -23,7 +23,6 @@ import {
 } from "@/components/ui/select";
 import { Search, Loader2, ArrowUp, ArrowDown, ArrowUpDown, ChevronLeft, ChevronRight } from "lucide-react";
 import { useSfdcOpportunities } from "@/hooks/useSfdcOpportunities";
-import { getOppStageColor } from "@/lib/status-colors";
 
 type SortKey = "name" | "account" | "stage" | "amount" | "probability" | "closeDate";
 type SortDir = "asc" | "desc";
@@ -206,7 +205,7 @@ const PartnerOpportunities = () => {
                     </TableCell>
                     <TableCell className="py-2">
                       {opp.StageName ? (
-                        <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${getOppStageColor(opp.StageName)}`}>
+                        <span className="inline-flex items-center rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
                           {opp.StageName}
                         </span>
                       ) : (

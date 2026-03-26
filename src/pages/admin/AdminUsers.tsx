@@ -45,9 +45,9 @@ const ROLES = ["user", "super_admin"] as const;
 function getRoleColor(role: string) {
   switch (role) {
     case "super_admin":
-      return "bg-red-500/10 text-red-700 dark:text-red-400";
+      return "bg-primary/10 text-primary";
     default:
-      return "bg-blue-500/10 text-blue-700 dark:text-blue-400";
+      return "bg-muted text-muted-foreground";
   }
 }
 

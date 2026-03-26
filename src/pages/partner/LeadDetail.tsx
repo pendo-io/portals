@@ -28,7 +28,6 @@ import {
   XCircle,
   CircleDot,
 } from "lucide-react";
-import { getLeadStatusColor } from "@/lib/status-colors";
 
 function Row({ label, value, href, wrap }: { label: string; value: string | number | null | undefined; href?: string; wrap?: boolean }) {
   if (value == null || value === "") return null;
@@ -141,7 +140,7 @@ export default function LeadDetail() {
             </div>
           </div>
           <div className="flex items-center gap-2 shrink-0">
-            <span className={`inline-flex items-center rounded-full px-3 py-1 text-sm font-medium ${getLeadStatusColor(lead.Status)}`}>
+            <span className="inline-flex items-center rounded-full bg-muted px-3 py-1 text-sm font-medium text-muted-foreground">
               {lead.Status}
             </span>
             <Button variant="outline" size="sm" onClick={() => navigate(`${basePath}/leads`)}>

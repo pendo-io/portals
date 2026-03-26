@@ -20,7 +20,6 @@ import {
   XCircle,
   CircleDot,
 } from "lucide-react";
-import { getOppStageColor } from "@/lib/status-colors";
 
 function Row({ label, value, wrap }: { label: string; value: string | number | null | undefined; wrap?: boolean }) {
   const display = value == null || value === "" ? "—" : typeof value === "number" ? value.toLocaleString() : value;
@@ -111,7 +110,7 @@ export default function OpportunityDetail() {
             </div>
           </div>
           <div className="flex items-center gap-2 shrink-0">
-            <span className={`inline-flex items-center rounded-full px-3 py-1 text-sm font-medium ${getOppStageColor(opp.StageName)}`}>
+            <span className="inline-flex items-center rounded-full bg-muted px-3 py-1 text-sm font-medium text-muted-foreground">
               {opp.StageName}
             </span>
             <Button variant="outline" size="sm" onClick={() => navigate(`${basePath}/opportunities`)}>

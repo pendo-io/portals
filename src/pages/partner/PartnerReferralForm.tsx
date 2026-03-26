@@ -161,8 +161,8 @@ const PartnerReferralForm = () => {
         <ProgressBar value={100} />
         <div className="flex-1 flex items-center justify-center p-6">
           <div className="max-w-sm w-full text-center space-y-5">
-            <div className="h-16 w-16 rounded-full bg-emerald-500/10 flex items-center justify-center mx-auto">
-              <CheckCircle2 className="h-8 w-8 text-emerald-600" />
+            <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
+              <CheckCircle2 className="h-8 w-8 text-primary" />
             </div>
             <div>
               <h2 className="text-2xl font-bold">{t("Referral Submitted")}</h2>
