@@ -34,8 +34,9 @@ import {
   useCreatePartner,
   useDeletePartner,
 } from "@/hooks/useAdmin";
+import { useSfdcUserNames } from "@/hooks/useSfdcUserNames";
 
-type SortKey = "name" | "type" | "created";
+type SortKey = "name" | "type" | "owner" | "created";
 type SortDir = "asc" | "desc";
 
 const PARTNER_TYPES = ["partner", "oem", "japan"] as const;
@@ -84,6 +85,8 @@ const AdminPartners = () => {
   const deletePartner = useDeletePartner();
 
   const allPartners = partners ?? [];
+  const ownerIds = useMemo(() => allPartners.map((p) => p.owner_id).filter(Boolean) as string[], [allPartners]);
+  const { data: ownerNames } = useSfdcUserNames(ownerIds);
 
   const handleSearchChange = (value: string) => { setSearch(value); };
   const handleTypeFilterChange = (value: string) => { setTypeFilter(value); };
@@ -141,6 +144,7 @@ const AdminPartners = () => {
       switch (sortKey) {
         case "name": aVal = a.name; bVal = b.name; break;
         case "type": aVal = a.type; bVal = b.type; break;
+        case "owner": aVal = (a.owner_id && ownerNames?.get(a.owner_id)) || ""; bVal = (b.owner_id && ownerNames?.get(b.owner_id)) || ""; break;
         case "created": aVal = a.created_at; bVal = b.created_at; break;
       }
       const cmp = aVal.localeCompare(bVal);
@@ -220,6 +224,9 @@ const AdminPartners = () => {
                   <TableHead className={thClass} resizable onClick={() => handleSort("type")}>
                     <span className="inline-flex items-center">Type<SortIcon active={sortKey === "type"} dir={sortDir} /></span>
                   </TableHead>
+                  <TableHead className={`${thClass} hidden lg:table-cell`} resizable onClick={() => handleSort("owner")}>
+                    <span className="inline-flex items-center">Owner<SortIcon active={sortKey === "owner"} dir={sortDir} /></span>
+                  </TableHead>
                   <TableHead className={`${thClass} hidden md:table-cell`} resizable>
                     <span className="inline-flex items-center">SFDC Account ID</span>
                   </TableHead>
@@ -244,6 +251,9 @@ const AdminPartners = () => {
                       <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${getTypeColor(p.type)}`}>
                         {getTypeLabel(p.type)}
                       </span>
+                    </TableCell>
+                    <TableCell className="py-2 hidden lg:table-cell">
+                      <span className="text-sm">{(p.owner_id && ownerNames?.get(p.owner_id)) || "—"}</span>
                     </TableCell>
                     <TableCell className="py-2 hidden md:table-cell">
                       <span className="text-sm text-muted-foreground font-mono">{p.sfdc_account_id || "—"}</span>
