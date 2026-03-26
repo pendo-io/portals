@@ -10,6 +10,7 @@ export interface ImpersonatedUser {
   full_name: string | null;
   partnerType: PartnerType | null;
   sfdcAccountId: string | null;
+  partnerOwnerId: string | null;
 }
 
 interface AuthContextValue {
@@ -17,6 +18,7 @@ interface AuthContextValue {
   session: Session | null;
   partnerType: PartnerType | null;
   sfdcAccountId: string | null;
+  partnerOwnerId: string | null;
   /** The real admin's partner type (unaffected by impersonation) */
   realPartnerType: PartnerType | null;
   isSuperAdmin: boolean;
@@ -43,6 +45,7 @@ function getStoredImpersonation(): ImpersonatedUser | null {
 interface UserMeta {
   partnerType: PartnerType | null;
   sfdcAccountId: string | null;
+  partnerOwnerId: string | null;
   isSuperAdmin: boolean;
 }
 
@@ -71,7 +74,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setState({ user: session.user, session, ...meta, loading: false });
         });
       } else {
-        setState({ user: null, session: null, partnerType: null, sfdcAccountId: null, isSuperAdmin: false, loading: false });
+        setState({ user: null, session: null, partnerType: null, sfdcAccountId: null, partnerOwnerId: null, isSuperAdmin: false, loading: false });
       }
     });
 
@@ -82,7 +85,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             setState({ user: session.user, session, ...meta, loading: false });
           });
         } else {
-          setState({ user: null, session: null, partnerType: null, sfdcAccountId: null, isSuperAdmin: false, loading: false });
+          setState({ user: null, session: null, partnerType: null, sfdcAccountId: null, partnerOwnerId: null, isSuperAdmin: false, loading: false });
         }
       }
     );
@@ -123,11 +126,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     ? impersonating.sfdcAccountId
     : state.sfdcAccountId;
 
+  const effectivePartnerOwnerId = impersonating
+    ? impersonating.partnerOwnerId
+    : state.partnerOwnerId;
+
   const value: AuthContextValue = {
     user: effectiveUser,
     session: state.session,
     partnerType: effectivePartnerType,
     sfdcAccountId: effectiveSfdcAccountId,
+    partnerOwnerId: effectivePartnerOwnerId,
     realPartnerType: state.partnerType,
     isSuperAdmin: state.isSuperAdmin,
     loading: state.loading,
@@ -152,7 +160,7 @@ async function fetchUserMeta(userId: string): Promise<UserMeta> {
   const [profileRes, rolesRes] = await Promise.all([
     supabase
       .from("profiles")
-      .select("partners(type, sfdc_account_id)")
+      .select("partners(type, sfdc_account_id, owner_id)")
       .eq("id", userId)
       .single(),
     supabase
@@ -164,8 +172,9 @@ async function fetchUserMeta(userId: string): Promise<UserMeta> {
   const partner = (profileRes.data as any)?.partners;
   const partnerType = partner?.type ?? null;
   const sfdcAccountId = partner?.sfdc_account_id ?? null;
+  const partnerOwnerId = partner?.owner_id ?? null;
   const roles = rolesRes.data?.map((r: any) => r.role) ?? [];
   const isSuperAdmin = roles.includes("super_admin");
 
-  return { partnerType, sfdcAccountId, isSuperAdmin };
+  return { partnerType, sfdcAccountId, partnerOwnerId, isSuperAdmin };
 }

@@ -108,6 +108,7 @@ const AdminUsers = () => {
       full_name: u.full_name,
       partnerType,
       sfdcAccountId: u.partners?.sfdc_account_id ?? null,
+      partnerOwnerId: u.partners?.owner_id ?? null,
     });
     toast.success(`Impersonating ${u.full_name || u.email}`);
     window.scrollTo(0, 0);

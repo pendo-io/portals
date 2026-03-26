@@ -8,7 +8,7 @@ export interface AdminUser {
   full_name: string | null;
   partner_id: string | null;
   created_at: string;
-  partners: { id: string; name: string; type: string; sfdc_account_id: string | null } | null;
+  partners: { id: string; name: string; type: string; sfdc_account_id: string | null; owner_id: string | null } | null;
   user_roles: { role: string }[];
 }
 
@@ -30,7 +30,7 @@ export function useAdminUsers() {
       const [profilesRes, rolesRes] = await Promise.all([
         supabase
           .from("profiles")
-          .select("id, email, full_name, partner_id, created_at, partners(id, name, type, sfdc_account_id)")
+          .select("id, email, full_name, partner_id, created_at, partners(id, name, type, sfdc_account_id, owner_id)")
           .order("created_at", { ascending: false }),
         supabase
           .from("user_roles")
