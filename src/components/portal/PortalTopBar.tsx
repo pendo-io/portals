@@ -59,13 +59,13 @@ export function PortalTopBar() {
               {i > 0 && <BreadcrumbSeparator className="text-lg" />}
               {seg.path && i < breadcrumbSegments.length - 1 ? (
                 <BreadcrumbLink
-                  className="text-lg cursor-pointer hover:underline"
+                  className="text-base sm:text-lg cursor-pointer hover:underline truncate max-w-[200px] sm:max-w-none"
                   onClick={() => navigate(seg.path!)}
                 >
                   {seg.label}
                 </BreadcrumbLink>
               ) : (
-                <BreadcrumbPage className="text-lg font-semibold text-foreground">
+                <BreadcrumbPage className="text-base sm:text-lg font-semibold text-foreground truncate max-w-[240px] sm:max-w-none">
                   {seg.label}
                 </BreadcrumbPage>
               )}

@@ -71,7 +71,7 @@ const PartnerHome = () => {
   }, [leads, opps]);
 
   return (
-    <div className="flex-1 p-6 space-y-8">
+    <div className="flex-1 p-4 sm:p-6 space-y-6 sm:space-y-8">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">{t("Overview")}</h1>

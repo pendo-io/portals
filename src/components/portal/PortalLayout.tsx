@@ -28,7 +28,7 @@ const PortalLayout = () => {
       <SidebarInset>
         <div className="flex-1 min-h-0 flex flex-col">
           {impersonating && (
-            <div className="bg-amber-500 text-amber-950 px-4 py-2 flex items-center justify-between text-sm font-medium shrink-0">
+            <div className="bg-amber-500 text-amber-950 px-3 sm:px-4 py-2 flex items-center justify-between text-xs sm:text-sm font-medium shrink-0">
               <span>
                 {t("Currently impersonating")} <strong>{impersonating.full_name || impersonating.email}</strong>
                 {impersonating.partnerType && (

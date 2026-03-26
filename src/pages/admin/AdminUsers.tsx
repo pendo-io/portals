@@ -292,7 +292,7 @@ const AdminUsers = () => {
                           value={role}
                           onValueChange={(val) => handleRoleChange(u.id, val)}
                         >
-                          <SelectTrigger className="h-8 w-[140px] text-xs border-0 bg-transparent hover:bg-muted/50 shadow-none focus:ring-0">
+                          <SelectTrigger className="h-8 w-full sm:w-[140px] text-xs border-0 bg-transparent hover:bg-muted/50 shadow-none focus:ring-0">
                             <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${getRoleColor(role)}`}>
                               {getRoleLabel(role)}
                             </span>

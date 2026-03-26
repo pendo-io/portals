@@ -190,14 +190,14 @@ const PartnerLeads = () => {
               <TableBody>
                 {paginated.map((lead) => (
                   <TableRow key={lead.Id} className="cursor-pointer hover:bg-muted/50 h-[52px]" onClick={() => navigate(`${basePath}/leads/${lead.Id}`)}>
-                    <TableCell className="py-2">
-                      <span className="text-sm font-medium">{lead.Name}</span>
+                    <TableCell className="py-2 max-w-[160px] sm:max-w-none">
+                      <span className="text-sm font-medium truncate block">{lead.Name}</span>
                     </TableCell>
                     <TableCell className="py-2 hidden md:table-cell">
                       <span className="text-sm text-muted-foreground">{lead.Email ?? "—"}</span>
                     </TableCell>
-                    <TableCell className="py-2">
-                      <span className="text-sm">{lead.Company}</span>
+                    <TableCell className="py-2 max-w-[140px] sm:max-w-none">
+                      <span className="text-sm truncate block">{lead.Company}</span>
                     </TableCell>
                     <TableCell className="py-2">
                       {lead.Status ? (

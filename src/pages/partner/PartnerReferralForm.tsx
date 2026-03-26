@@ -273,7 +273,7 @@ function ContactStep({ form, set, setSelect, shake, t }: StepProps) {
     <div className="space-y-8">
       <StepHeader title={t("Contact Details")} description={t("Who should we reach out to at this company?")} />
       <div className="space-y-6">
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <Field label="Salutation">
             <Select value={form.salutation} onValueChange={setSelect!("salutation")}>
               <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
@@ -292,7 +292,7 @@ function ContactStep({ form, set, setSelect, shake, t }: StepProps) {
             <Input value={form.lastName} onChange={set("lastName")} placeholder="Last name" />
           </Field>
         </div>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Field label="Email" required shake={shake.has("email")}>
             <Input type="email" value={form.email} onChange={set("email")} placeholder="name@company.com" />
           </Field>
@@ -313,7 +313,7 @@ function AddressStep({ form, set, t }: StepProps) {
         <Field label="Street">
           <Input value={form.street} onChange={set("street")} placeholder="123 Main St" autoFocus />
         </Field>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Field label="City">
             <Input value={form.city} onChange={set("city")} placeholder="City" />
           </Field>
@@ -321,7 +321,7 @@ function AddressStep({ form, set, t }: StepProps) {
             <Input value={form.state} onChange={set("state")} placeholder="State" />
           </Field>
         </div>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Field label="Zip / Postal Code">
             <Input value={form.zip} onChange={set("zip")} placeholder="12345" />
           </Field>
@@ -378,8 +378,8 @@ function OpportunityStep({ form, set, setSelect, shake, t }: StepProps) {
 function StepHeader({ title, description }: { title: string; description: string }) {
   return (
     <div>
-      <h2 className="text-3xl font-bold tracking-tight">{title}</h2>
-      <p className="text-base text-muted-foreground mt-2">{description}</p>
+      <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">{title}</h2>
+      <p className="text-sm sm:text-base text-muted-foreground mt-2">{description}</p>
     </div>
   );
 }
