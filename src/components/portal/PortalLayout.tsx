@@ -1,7 +1,8 @@
+import { useRef, useEffect } from "react";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { PortalSidebar } from "@/components/portal/PortalSidebar";
 import { PortalTopBar } from "@/components/portal/PortalTopBar";
-import { Outlet, useNavigate } from "react-router-dom";
+import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import { useSfdcLeads } from "@/hooks/useSfdcLeads";
 import { useSfdcOpportunities } from "@/hooks/useSfdcOpportunities";
 import { useAuth } from "@/hooks/useAuth";
@@ -16,6 +17,13 @@ const PortalLayout = () => {
   const { impersonating, stopImpersonating } = useAuth();
   const { t } = usePortalType();
   const navigate = useNavigate();
+  const { pathname } = useLocation();
+  const contentRef = useRef<HTMLDivElement>(null);
+
+  // Reset scroll position on route change — instant, no visible scroll
+  useEffect(() => {
+    contentRef.current?.scrollTo(0, 0);
+  }, [pathname]);
 
   const handleStop = () => {
     stopImpersonating();
@@ -25,7 +33,7 @@ const PortalLayout = () => {
   return (
     <SidebarProvider>
       <PortalSidebar />
-      <SidebarInset>
+      <SidebarInset ref={contentRef}>
         <div className="flex-1 min-h-0 flex flex-col">
           {impersonating && (
             <div className="bg-primary text-primary-foreground px-3 sm:px-4 py-2 flex items-center justify-between text-xs sm:text-sm font-medium shrink-0">
