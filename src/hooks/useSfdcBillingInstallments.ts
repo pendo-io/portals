@@ -11,7 +11,8 @@ export interface SfdcBillingInstallment {
   Referral_Commission_Payment_Status__c: string | null;
 }
 
-const BI_FIELDS = `Id, Name, Installment_Date__c, Installments_Total_Amount__c, Referral_Commission_Amount__c, Referral_Commission_Payment_Status__c`;
+// TODO: Add Referral_Commission_Amount__c and Referral_Commission_Payment_Status__c once Surya creates them
+const BI_FIELDS = `Id, Name, Installment_Date__c, Installments_Total_Amount__c`;
 
 export function useSfdcBillingInstallments(oppId: string | undefined) {
   const { user } = useAuth();
