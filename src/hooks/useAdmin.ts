@@ -17,6 +17,7 @@ export interface Partner {
   name: string;
   type: string;
   sfdc_account_id: string | null;
+  owner_id: string | null;
   created_at: string;
 }
 

@@ -105,6 +105,7 @@ const PartnerReferralForm = () => {
         LastName: form.lastName,
         Email: form.email,
         LeadSource: "Partner Referral",
+        Status: "Pending",
         Referral_Partner_Account__c: sfdcAccountId || null,
         // Address fields
         Street: form.street || null,
