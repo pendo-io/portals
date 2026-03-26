@@ -55,7 +55,7 @@ const PartnerReferralForm = () => {
   useDocumentTitle("Lead Referral Form");
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { user } = useAuth();
+  const { user, sfdcAccountId } = useAuth();
   const { basePath } = usePortalType();
   const [step, setStep] = useState(0);
   const [submitted, setSubmitted] = useState(false);
@@ -106,6 +106,7 @@ const PartnerReferralForm = () => {
         LastName: form.lastName,
         Email: form.email,
         LeadSource: "Partner Referral",
+        Referral_Partner_Account__c: sfdcAccountId || null,
         // Address fields
         Street: form.street || null,
         City: form.city || null,
