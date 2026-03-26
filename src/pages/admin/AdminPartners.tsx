@@ -19,20 +19,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { Search, Loader2, ArrowUp, ArrowDown, ArrowUpDown, Plus, Trash2 } from "lucide-react";
-import { toast } from "sonner";
+import { Search, ArrowUp, ArrowDown, ArrowUpDown } from "lucide-react";
 import {
   useAdminPartners,
-  useCreatePartner,
-  useDeletePartner,
 } from "@/hooks/useAdmin";
 import { useSfdcUserNames } from "@/hooks/useSfdcUserNames";
 
@@ -72,17 +61,8 @@ const AdminPartners = () => {
   const [sortKey, setSortKey] = useState<SortKey | null>(null);
   const [sortDir, setSortDir] = useState<SortDir>("asc");
 
-  const [showCreate, setShowCreate] = useState(false);
-  const [newName, setNewName] = useState("");
-  const [newType, setNewType] = useState<string>("partner");
-  const [newSfdcId, setNewSfdcId] = useState("");
-
-  const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
-
   const navigate = useNavigate();
   const { data: partners, isLoading, isError, error } = useAdminPartners();
-  const createPartner = useCreatePartner();
-  const deletePartner = useDeletePartner();
 
   const allPartners = partners ?? [];
   const ownerIds = useMemo(() => allPartners.map((p) => p.owner_id).filter(Boolean) as string[], [allPartners]);
@@ -97,34 +77,6 @@ const AdminPartners = () => {
     } else {
       setSortKey(key);
       setSortDir("asc");
-    }
-  };
-
-  const handleCreate = async () => {
-    if (!newName.trim()) {
-      toast.error("Partner name is required");
-      return;
-    }
-    try {
-      await createPartner.mutateAsync({ name: newName.trim(), type: newType, sfdc_account_id: newSfdcId.trim() || undefined });
-      toast.success("Partner created");
-      setShowCreate(false);
-      setNewName("");
-      setNewType("partner");
-      setNewSfdcId("");
-    } catch (err) {
-      toast.error((err as Error).message || "Failed to create partner");
-    }
-  };
-
-  const handleDelete = async () => {
-    if (!deleteTarget) return;
-    try {
-      await deletePartner.mutateAsync(deleteTarget.id);
-      toast.success("Partner deleted");
-      setDeleteTarget(null);
-    } catch (err) {
-      toast.error((err as Error).message || "Failed to delete partner");
     }
   };
 
@@ -180,17 +132,11 @@ const AdminPartners = () => {
           </SelectContent>
         </Select>
 
-        <div className="ml-auto flex items-center gap-2">
-          <Badge variant="secondary">
-            {filtered.length === allPartners.length
-              ? `${allPartners.length} partners`
-              : `${filtered.length} of ${allPartners.length} partners`}
-          </Badge>
-          <Button size="sm" onClick={() => setShowCreate(true)}>
-            <Plus className="h-4 w-4 mr-1" />
-            Add Partner
-          </Button>
-        </div>
+        <Badge variant="secondary" className="ml-auto">
+          {filtered.length === allPartners.length
+            ? `${allPartners.length} partners`
+            : `${filtered.length} of ${allPartners.length} partners`}
+        </Badge>
       </div>
 
       {/* Content */}
@@ -233,7 +179,6 @@ const AdminPartners = () => {
                   <TableHead className={`${thClass} hidden sm:table-cell`} resizable onClick={() => handleSort("created")}>
                     <span className="inline-flex items-center">Created<SortIcon active={sortKey === "created"} dir={sortDir} /></span>
                   </TableHead>
-                  <TableHead className="w-[60px]" />
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -274,16 +219,6 @@ const AdminPartners = () => {
                         {new Date(p.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
                       </span>
                     </TableCell>
-                    <TableCell className="py-2">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-7 w-7 text-muted-foreground hover:text-destructive"
-                        onClick={() => setDeleteTarget({ id: p.id, name: p.name })}
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </Button>
-                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -292,71 +227,6 @@ const AdminPartners = () => {
         )}
       </div>
 
-      {/* Create Partner Dialog */}
-      <Dialog open={showCreate} onOpenChange={setShowCreate}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Add Partner</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 py-2">
-            <div className="space-y-1.5">
-              <Label className="text-xs text-muted-foreground font-medium">
-                Name <span className="text-primary">*</span>
-              </Label>
-              <Input
-                value={newName}
-                onChange={(e) => setNewName(e.target.value)}
-                placeholder="Partner name"
-                autoFocus
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label className="text-xs text-muted-foreground font-medium">Type</Label>
-              <Select value={newType} onValueChange={setNewType}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {PARTNER_TYPES.map((t) => (
-                    <SelectItem key={t} value={t}>{getTypeLabel(t)}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-1.5">
-              <Label className="text-xs text-muted-foreground font-medium">SFDC Account ID</Label>
-              <Input
-                value={newSfdcId}
-                onChange={(e) => setNewSfdcId(e.target.value)}
-                placeholder="001Pf00000..."
-                className="font-mono"
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowCreate(false)}>Cancel</Button>
-            <Button onClick={handleCreate} disabled={createPartner.isPending}>
-              {createPartner.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Create"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Delete Confirmation Dialog */}
-      <Dialog open={!!deleteTarget} onOpenChange={(open) => { if (!open) setDeleteTarget(null); }}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Delete Partner</DialogTitle>
-          </DialogHeader>
-          <p className="text-sm text-muted-foreground">
-            Are you sure you want to delete <span className="font-medium text-foreground">{deleteTarget?.name}</span>? Users assigned to this partner will be unlinked.
-          </p>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setDeleteTarget(null)}>Cancel</Button>
-            <Button variant="destructive" onClick={handleDelete} disabled={deletePartner.isPending}>
-              {deletePartner.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Delete"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };

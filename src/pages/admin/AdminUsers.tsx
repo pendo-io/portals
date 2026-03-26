@@ -258,8 +258,8 @@ const AdminUsers = () => {
                   <TableHead className={thClass} resizable onClick={() => handleSort("partner")}>
                     <span className="inline-flex items-center">Partner<SortIcon active={sortKey === "partner"} dir={sortDir} /></span>
                   </TableHead>
-                  <TableHead className={`${thClass} text-right hidden sm:table-cell`} resizable onClick={() => handleSort("created")}>
-                    <span className="inline-flex items-center justify-end">Created<SortIcon active={sortKey === "created"} dir={sortDir} /></span>
+                  <TableHead className={`${thClass} hidden sm:table-cell`} resizable onClick={() => handleSort("created")}>
+                    <span className="inline-flex items-center">Created<SortIcon active={sortKey === "created"} dir={sortDir} /></span>
                   </TableHead>
                 </TableRow>
               </TableHeader>
@@ -320,7 +320,7 @@ const AdminUsers = () => {
                           </SelectContent>
                         </Select>
                       </TableCell>
-                      <TableCell className="py-2 text-right hidden sm:table-cell">
+                      <TableCell className="py-2 hidden sm:table-cell">
                         <span className="text-sm text-muted-foreground tabular-nums">
                           {new Date(u.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
                         </span>
