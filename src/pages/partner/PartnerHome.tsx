@@ -5,7 +5,7 @@ import { usePortalType } from "@/hooks/usePortalType";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ArrowRight, Users, Target, FileText, Clock } from "lucide-react";
+import { ArrowRight, Users, Target, FileText } from "lucide-react";
 import { useSfdcLeads } from "@/hooks/useSfdcLeads";
 import { useSfdcOpportunities } from "@/hooks/useSfdcOpportunities";
 
@@ -29,10 +29,7 @@ const PartnerHome = () => {
     const active = leads.filter(
       (l) => !l.Status.toLowerCase().includes("closed") && !l.Status.toLowerCase().includes("disqualified")
     );
-    const newLeads = leads.filter(
-      (l) => l.Status === "Open - Not Contacted" || l.Status === "New"
-    );
-    return { active: active.length, total: leads.length, newCount: newLeads.length };
+    return { active: active.length, total: leads.length };
   }, [leads]);
 
   const oppStats = useMemo(() => {
@@ -43,8 +40,11 @@ const PartnerHome = () => {
     };
   }, [opps]);
 
-  const recentLeads = leads.slice(0, 5);
-  const recentOpps = opps.slice(0, 5);
+  const newestLeads = useMemo(() => {
+    return [...leads]
+      .sort((a, b) => new Date(b.CreatedDate).getTime() - new Date(a.CreatedDate).getTime())
+      .slice(0, 8);
+  }, [leads]);
 
   const upcomingOpps = useMemo(() => {
     const now = new Date();
@@ -68,7 +68,7 @@ const PartnerHome = () => {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <StatCard
           label={t("Active Leads")}
           value={leadsLoading ? null : String(leadStats.active)}
@@ -80,12 +80,6 @@ const PartnerHome = () => {
           value={oppsLoading ? null : String(oppStats.openCount)}
           sub={oppsLoading ? null : `${formatCurrency(oppStats.pipeline)} ${t("pipeline")}`}
           icon={Target}
-        />
-        <StatCard
-          label={t("New Leads")}
-          value={leadsLoading ? null : String(leadStats.newCount)}
-          sub={leadsLoading ? null : t("Awaiting outreach")}
-          icon={Clock}
         />
       </div>
 
@@ -137,12 +131,12 @@ const PartnerHome = () => {
         </Card>
       </div>
 
-      {/* Recent Leads & Opportunities */}
+      {/* Leads by Created Date & Opportunities by Close Date */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Recent Leads */}
+        {/* Leads by Created Date */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-3">
-            <CardTitle className="text-base">{t("Leads")}</CardTitle>
+            <CardTitle className="text-base">Leads by Created Date</CardTitle>
             <Button variant="ghost" size="sm" className="text-xs text-muted-foreground" onClick={() => navigate(`${basePath}/leads`)}>
               {t("View Leads")}
               <ArrowRight className="h-3 w-3 ml-1" />
@@ -155,11 +149,11 @@ const PartnerHome = () => {
                   <Skeleton key={i} className="h-10 w-full" />
                 ))}
               </div>
-            ) : recentLeads.length === 0 ? (
+            ) : newestLeads.length === 0 ? (
               <p className="text-sm text-muted-foreground text-center py-6">{t("No leads found")}</p>
             ) : (
               <div className="space-y-1">
-                {recentLeads.map((lead) => (
+                {newestLeads.map((lead) => (
                   <div
                     key={lead.Id}
                     className="flex items-center justify-between gap-3 cursor-pointer hover:bg-muted/50 -mx-2 px-2 py-2 rounded-md transition-colors"
@@ -169,9 +163,11 @@ const PartnerHome = () => {
                       <p className="text-sm font-medium truncate">{lead.Company}</p>
                       <p className="text-xs text-muted-foreground truncate">{lead.Name} {lead.Email ? `- ${lead.Email}` : ""}</p>
                     </div>
-                    <span className="inline-flex items-center rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground shrink-0">
-                      {lead.Status}
-                    </span>
+                    <div className="text-right shrink-0">
+                      <p className="text-xs text-muted-foreground tabular-nums">
+                        {new Date(lead.CreatedDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                      </p>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -179,10 +175,10 @@ const PartnerHome = () => {
           </CardContent>
         </Card>
 
-        {/* Recent Opportunities */}
+        {/* Opportunities by Close Date */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-3">
-            <CardTitle className="text-base">{t("Opportunities")}</CardTitle>
+            <CardTitle className="text-base">Opportunities by Close Date</CardTitle>
             <Button variant="ghost" size="sm" className="text-xs text-muted-foreground" onClick={() => navigate(`${basePath}/opportunities`)}>
               {t("View Opportunities")}
               <ArrowRight className="h-3 w-3 ml-1" />
@@ -195,80 +191,40 @@ const PartnerHome = () => {
                   <Skeleton key={i} className="h-10 w-full" />
                 ))}
               </div>
-            ) : recentOpps.length === 0 ? (
+            ) : upcomingOpps.length === 0 ? (
               <p className="text-sm text-muted-foreground text-center py-6">{t("No opportunities found")}</p>
             ) : (
               <div className="space-y-1">
-                {recentOpps.map((opp) => (
-                  <div
-                    key={opp.Id}
-                    className="flex items-center justify-between gap-3 cursor-pointer hover:bg-muted/50 -mx-2 px-2 py-2 rounded-md transition-colors"
-                    onClick={() => navigate(`${basePath}/opportunities/${opp.Id}`)}
-                  >
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm font-medium truncate">{opp.Name}</p>
-                      <p className="text-xs text-muted-foreground truncate">{opp.Account?.Name ?? "—"} - {opp.StageName}</p>
+                {upcomingOpps.map((opp) => {
+                  const closeDate = new Date(opp.CloseDate);
+                  const now = new Date();
+                  const daysUntil = Math.ceil((closeDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+                  return (
+                    <div
+                      key={opp.Id}
+                      className="flex items-center justify-between gap-3 cursor-pointer hover:bg-muted/50 -mx-2 px-2 py-2 rounded-md transition-colors"
+                      onClick={() => navigate(`${basePath}/opportunities/${opp.Id}`)}
+                    >
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-medium truncate">{opp.Name}</p>
+                        <p className="text-xs text-muted-foreground truncate">{opp.Account?.Name ?? "—"} - {opp.StageName}</p>
+                      </div>
+                      <div className="text-right shrink-0">
+                        <p className="text-sm font-medium tabular-nums">
+                          {closeDate.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {daysUntil === 0 ? "Today" : daysUntil === 1 ? "Tomorrow" : `${daysUntil} days`}
+                        </p>
+                      </div>
                     </div>
-                    <span className="text-sm font-medium tabular-nums shrink-0">
-                      {opp.Amount != null ? formatCurrency(opp.Amount) : "—"}
-                    </span>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </CardContent>
         </Card>
       </div>
-
-      {/* Upcoming Close Dates */}
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between pb-3">
-          <CardTitle className="text-base">{t("Opportunities")} — {t("Close Date")}</CardTitle>
-          <Button variant="ghost" size="sm" className="text-xs text-muted-foreground" onClick={() => navigate(`${basePath}/opportunities`)}>
-            {t("View Opportunities")}
-            <ArrowRight className="h-3 w-3 ml-1" />
-          </Button>
-        </CardHeader>
-        <CardContent>
-          {oppsLoading ? (
-            <div className="space-y-3">
-              {Array.from({ length: 4 }).map((_, i) => (
-                <Skeleton key={i} className="h-10 w-full" />
-              ))}
-            </div>
-          ) : upcomingOpps.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-6">{t("No opportunities found")}</p>
-          ) : (
-            <div className="space-y-1">
-              {upcomingOpps.map((opp) => {
-                const closeDate = new Date(opp.CloseDate);
-                const now = new Date();
-                const daysUntil = Math.ceil((closeDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-                return (
-                  <div
-                    key={opp.Id}
-                    className="flex items-center justify-between gap-3 cursor-pointer hover:bg-muted/50 -mx-2 px-2 py-2 rounded-md transition-colors"
-                    onClick={() => navigate(`${basePath}/opportunities/${opp.Id}`)}
-                  >
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm font-medium truncate">{opp.Name}</p>
-                      <p className="text-xs text-muted-foreground truncate">{opp.Account?.Name ?? "—"} - {opp.StageName}</p>
-                    </div>
-                    <div className="text-right shrink-0">
-                      <p className="text-sm font-medium tabular-nums">
-                        {closeDate.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {daysUntil === 0 ? "Today" : daysUntil === 1 ? "Tomorrow" : `${daysUntil} days`}
-                      </p>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </CardContent>
-      </Card>
     </div>
   );
 };
