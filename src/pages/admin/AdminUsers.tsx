@@ -40,14 +40,12 @@ type SortDir = "asc" | "desc";
 
 const PAGE_SIZE = 50;
 
-const ROLES = ["user", "editor", "super_admin"] as const;
+const ROLES = ["user", "super_admin"] as const;
 
 function getRoleColor(role: string) {
   switch (role) {
     case "super_admin":
       return "bg-red-500/10 text-red-700 dark:text-red-400";
-    case "editor":
-      return "bg-amber-500/10 text-amber-700 dark:text-amber-400";
     default:
       return "bg-blue-500/10 text-blue-700 dark:text-blue-400";
   }
@@ -56,7 +54,6 @@ function getRoleColor(role: string) {
 function getRoleLabel(role: string) {
   switch (role) {
     case "super_admin": return "Super Admin";
-    case "editor": return "Editor";
     default: return "User";
   }
 }
@@ -69,7 +66,6 @@ function SortIcon({ active, dir }: { active: boolean; dir?: SortDir }) {
 function getPrimaryRole(user: AdminUser): string {
   const roles = user.user_roles?.map((r) => r.role) ?? [];
   if (roles.includes("super_admin")) return "super_admin";
-  if (roles.includes("editor")) return "editor";
   return "user";
 }
 
