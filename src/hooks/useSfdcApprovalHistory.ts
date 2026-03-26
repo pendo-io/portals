@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "./useAuth";
-import { sfdcQuery } from "@/lib/sfdc";
+import { sfdcQuery, isSafeSfdcId } from "@/lib/sfdc";
 
 export interface SfdcApprovalStep {
   Id: string;
@@ -24,7 +24,7 @@ export function useSfdcApprovalHistory(targetObjectId: string | undefined) {
          WHERE ProcessInstance.TargetObjectId = '${targetObjectId}'
          ORDER BY CreatedDate DESC`
       ),
-    enabled: !!user && !!targetObjectId,
+    enabled: !!user && !!targetObjectId && isSafeSfdcId(targetObjectId),
     staleTime: 5 * 60_000,
     refetchOnWindowFocus: false,
   });

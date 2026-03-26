@@ -1,4 +1,5 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
+import { verifyAuth } from "./_auth";
 
 let cachedToken: { access_token: string; expires_at: number } | null = null;
 
@@ -41,9 +42,10 @@ async function getSfdcToken(): Promise<string> {
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Origin", req.headers.origin || "");
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "content-type");
+  res.setHeader("Access-Control-Allow-Headers", "content-type, authorization");
+  res.setHeader("Access-Control-Allow-Credentials", "true");
 
   if (req.method === "OPTIONS") {
     return res.status(204).end();
@@ -51,6 +53,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
+  }
+
+  // Verify authenticated user
+  const user = await verifyAuth(req);
+  if (!user) {
+    return res.status(401).json({ error: "Unauthorized" });
   }
 
   const { sObject, fields } = req.body;
@@ -82,6 +90,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(sfdcRes.status).setHeader("Content-Type", "application/json").send(body);
   } catch (error: any) {
     console.error("sfdc-create error:", error);
-    return res.status(500).json({ error: error.message });
+    return res.status(500).json({ error: "Internal server error" });
   }
 }

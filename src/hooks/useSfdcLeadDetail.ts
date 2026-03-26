@@ -1,6 +1,6 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "./useAuth";
-import { sfdcQuery, type SfdcQueryResult } from "@/lib/sfdc";
+import { sfdcQuery, isSafeSfdcId, type SfdcQueryResult } from "@/lib/sfdc";
 
 export interface SfdcLeadDetail {
   Id: string;
@@ -64,7 +64,7 @@ export function useSfdcLeadDetail(leadId: string | undefined) {
          LIMIT 1`
       );
     },
-    enabled: !!user && !!leadId,
+    enabled: !!user && !!leadId && isSafeSfdcId(leadId),
     staleTime: 5 * 60_000,
     refetchOnWindowFocus: false,
   });

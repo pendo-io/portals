@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import ThemeWrapper from "@/components/ThemeWrapper";
 import { AuthProvider } from "@/hooks/useAuth";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import AdminRoute from "@/components/AdminRoute";
 import PortalLayout from "@/components/portal/PortalLayout";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
@@ -39,9 +40,9 @@ const App = () => (
               <Route path="/opportunities" element={<PartnerOpportunities />} />
               <Route path="/opportunities/:oppId" element={<OpportunityDetail />} />
               <Route path="/referral" element={<PartnerReferralForm />} />
-              <Route path="/admin/users" element={<AdminUsers />} />
-              <Route path="/admin/users/new" element={<AdminCreateUser />} />
-              <Route path="/admin/partners" element={<AdminPartners />} />
+              <Route path="/admin/users" element={<AdminRoute><AdminUsers /></AdminRoute>} />
+              <Route path="/admin/users/new" element={<AdminRoute><AdminCreateUser /></AdminRoute>} />
+              <Route path="/admin/partners" element={<AdminRoute><AdminPartners /></AdminRoute>} />
             </Route>
 
             <Route path="*" element={<NotFound />} />

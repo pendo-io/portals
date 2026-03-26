@@ -1,15 +1,32 @@
+import { supabase } from "./supabase";
+
 export interface SfdcQueryResult<T> {
   totalSize: number;
   done: boolean;
   records: T[];
 }
 
+/** Validates a Salesforce ID (15 or 18 alphanumeric chars) */
+export function isSafeSfdcId(id: string): boolean {
+  return /^[a-zA-Z0-9]{15,18}$/.test(id);
+}
+
+async function getAuthHeaders(): Promise<Record<string, string>> {
+  const { data: { session } } = await supabase.auth.getSession();
+  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  if (session?.access_token) {
+    headers["Authorization"] = `Bearer ${session.access_token}`;
+  }
+  return headers;
+}
+
 export async function sfdcQuery<T>(
   query: string
 ): Promise<SfdcQueryResult<T>> {
+  const headers = await getAuthHeaders();
   const res = await fetch("/api/sfdc-proxy", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers,
     body: JSON.stringify({ query }),
   });
 
@@ -27,9 +44,10 @@ export async function sfdcCreate(
   sObject: string,
   fields: Record<string, unknown>
 ): Promise<{ id: string; success: boolean; errors: string[] }> {
+  const headers = await getAuthHeaders();
   const res = await fetch("/api/sfdc-create", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers,
     body: JSON.stringify({ sObject, fields }),
   });
 

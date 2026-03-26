@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/select";
 import { Loader2, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
+import { supabase } from "@/lib/supabase";
 import { useAdminPartners } from "@/hooks/useAdmin";
 
 const ROLES = ["user", "super_admin"] as const;
@@ -51,9 +52,13 @@ const AdminCreateUser = () => {
 
     setSaving(true);
     try {
+      const { data: { session } } = await supabase.auth.getSession();
       const res = await fetch("/api/create-user", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${session?.access_token}`,
+        },
         body: JSON.stringify({
           email: email.trim(),
           password: password.trim(),

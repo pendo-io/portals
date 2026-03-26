@@ -1,10 +1,12 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { createClient } from "@supabase/supabase-js";
+import { verifyAuth, isSuperAdmin } from "./_auth";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Origin", req.headers.origin || "");
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "content-type");
+  res.setHeader("Access-Control-Allow-Headers", "content-type, authorization");
+  res.setHeader("Access-Control-Allow-Credentials", "true");
 
   if (req.method === "OPTIONS") {
     return res.status(204).end();
@@ -14,10 +16,25 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
+  // Verify authenticated user is super_admin
+  const user = await verifyAuth(req);
+  if (!user) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+
+  const isAdmin = await isSuperAdmin(user.id);
+  if (!isAdmin) {
+    return res.status(403).json({ error: "Forbidden — super_admin required" });
+  }
+
   const { email, password, fullName, role, partnerId } = req.body;
 
   if (!email || !password || !fullName) {
     return res.status(400).json({ error: "Missing email, password, or fullName" });
+  }
+
+  if (typeof password !== "string" || password.length < 8) {
+    return res.status(400).json({ error: "Password must be at least 8 characters" });
   }
 
   const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
@@ -30,7 +47,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const supabase = createClient(supabaseUrl, serviceRoleKey);
 
   try {
-    // 1. Create auth user with password
     const { data: authData, error: authError } = await supabase.auth.admin.createUser({
       email,
       password,
@@ -44,32 +60,22 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     const userId = authData.user.id;
 
-    // 2. Assign partner if provided
     if (partnerId) {
-      const { error: profileError } = await supabase
+      await supabase
         .from("profiles")
         .update({ partner_id: partnerId })
         .eq("id", userId);
-
-      if (profileError) {
-        console.error("Failed to assign partner:", profileError);
-      }
     }
 
-    // 3. Assign super_admin role if requested
     if (role === "super_admin") {
-      const { error: roleError } = await supabase
+      await supabase
         .from("user_roles")
         .insert({ user_id: userId, role: "super_admin" });
-
-      if (roleError) {
-        console.error("Failed to assign role:", roleError);
-      }
     }
 
     return res.status(200).json({ id: userId, email });
   } catch (error: any) {
     console.error("create-user error:", error);
-    return res.status(500).json({ error: error.message || "Internal server error" });
+    return res.status(500).json({ error: "Internal server error" });
   }
 }

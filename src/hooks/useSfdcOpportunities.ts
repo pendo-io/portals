@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "./useAuth";
-import { sfdcQuery } from "@/lib/sfdc";
+import { sfdcQuery, isSafeSfdcId } from "@/lib/sfdc";
 import { OPP_FIELDS } from "./useSfdcOpportunityDetail";
 import type { SfdcOpportunityDetail } from "./useSfdcOpportunityDetail";
 
@@ -13,7 +13,7 @@ export function useSfdcOpportunities() {
   return useQuery({
     queryKey: ["sfdc-opportunities", user?.id, sfdcAccountId, shouldFilter],
     queryFn: () => {
-      const where = shouldFilter && sfdcAccountId
+      const where = shouldFilter && sfdcAccountId && isSafeSfdcId(sfdcAccountId)
         ? `WHERE LeadSource = 'Partner Referral' AND PartnerAccountId = '${sfdcAccountId}'`
         : `WHERE LeadSource = 'Partner Referral'`;
 

@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "./useAuth";
-import { sfdcQuery } from "@/lib/sfdc";
+import { sfdcQuery, isSafeSfdcId } from "@/lib/sfdc";
 
 interface SfdcUser {
   Id: string;
@@ -16,7 +16,9 @@ export function useSfdcUserNames(userIds: string[]) {
     queryFn: async () => {
       if (uniqueIds.length === 0) return new Map<string, string>();
 
-      const inClause = uniqueIds.map((id) => `'${id}'`).join(",");
+      const safeIds = uniqueIds.filter(isSafeSfdcId);
+      if (safeIds.length === 0) return new Map<string, string>();
+      const inClause = safeIds.map((id) => `'${id}'`).join(",");
       const result = await sfdcQuery<SfdcUser>(
         `SELECT Id, Name FROM User WHERE Id IN (${inClause})`
       );

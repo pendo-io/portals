@@ -1,6 +1,6 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "./useAuth";
-import { sfdcQuery, type SfdcQueryResult } from "@/lib/sfdc";
+import { sfdcQuery, isSafeSfdcId, type SfdcQueryResult } from "@/lib/sfdc";
 
 export interface SfdcOpportunityDetail {
   Id: string;
@@ -73,7 +73,7 @@ export function useSfdcOpportunityDetail(oppId: string | undefined) {
          LIMIT 1`
       );
     },
-    enabled: !!user && !!oppId,
+    enabled: !!user && !!oppId && isSafeSfdcId(oppId),
     staleTime: 5 * 60_000,
     refetchOnWindowFocus: false,
   });
