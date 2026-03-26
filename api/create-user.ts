@@ -1,6 +1,29 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { createClient } from "@supabase/supabase-js";
-import { verifyAuth, isSuperAdmin } from "./_auth";
+
+async function verifyAdmin(req: VercelRequest) {
+  const authHeader = req.headers.authorization;
+  if (!authHeader?.startsWith("Bearer ")) return null;
+
+  const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!supabaseUrl || !serviceKey) return null;
+
+  const supabase = createClient(supabaseUrl, serviceKey);
+  const { data: { user }, error } = await supabase.auth.getUser(authHeader.slice(7));
+  if (error || !user) return null;
+
+  // Check super_admin role
+  const { data: roles } = await supabase
+    .from("user_roles")
+    .select("role")
+    .eq("user_id", user.id)
+    .eq("role", "super_admin")
+    .limit(1);
+
+  if (!roles?.length) return null;
+  return user;
+}
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   res.setHeader("Access-Control-Allow-Origin", req.headers.origin || "");
@@ -8,24 +31,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   res.setHeader("Access-Control-Allow-Headers", "content-type, authorization");
   res.setHeader("Access-Control-Allow-Credentials", "true");
 
-  if (req.method === "OPTIONS") {
-    return res.status(204).end();
-  }
+  if (req.method === "OPTIONS") return res.status(204).end();
+  if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
-  if (req.method !== "POST") {
-    return res.status(405).json({ error: "Method not allowed" });
-  }
-
-  // Verify authenticated user is super_admin
-  const user = await verifyAuth(req);
-  if (!user) {
-    return res.status(401).json({ error: "Unauthorized" });
-  }
-
-  const isAdmin = await isSuperAdmin(user.id);
-  if (!isAdmin) {
-    return res.status(403).json({ error: "Forbidden — super_admin required" });
-  }
+  const admin = await verifyAdmin(req);
+  if (!admin) return res.status(403).json({ error: "Forbidden" });
 
   const { email, password, fullName, role, partnerId } = req.body;
 
@@ -37,9 +47,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(400).json({ error: "Password must be at least 8 characters" });
   }
 
-  const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
+  const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
   if (!supabaseUrl || !serviceRoleKey) {
     return res.status(500).json({ error: "Supabase credentials not configured" });
   }
@@ -61,16 +70,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const userId = authData.user.id;
 
     if (partnerId) {
-      await supabase
-        .from("profiles")
-        .update({ partner_id: partnerId })
-        .eq("id", userId);
+      await supabase.from("profiles").update({ partner_id: partnerId }).eq("id", userId);
     }
 
     if (role === "super_admin") {
-      await supabase
-        .from("user_roles")
-        .insert({ user_id: userId, role: "super_admin" });
+      await supabase.from("user_roles").insert({ user_id: userId, role: "super_admin" });
     }
 
     return res.status(200).json({ id: userId, email });
