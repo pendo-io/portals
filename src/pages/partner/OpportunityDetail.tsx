@@ -3,7 +3,16 @@ import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { usePortalType } from "@/hooks/usePortalType";
 import { useSfdcOpportunityDetail } from "@/hooks/useSfdcOpportunityDetail";
 import { useSfdcApprovalHistory } from "@/hooks/useSfdcApprovalHistory";
+import { useSfdcBillingInstallments } from "@/hooks/useSfdcBillingInstallments";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import {
   Loader2,
@@ -47,6 +56,7 @@ export default function OpportunityDetail() {
   const { basePath } = usePortalType();
   const { data, isLoading, isError, error } = useSfdcOpportunityDetail(oppId);
   const { data: approvalData, isLoading: approvalsLoading } = useSfdcApprovalHistory(oppId);
+  const { data: biData, isLoading: biLoading } = useSfdcBillingInstallments(oppId);
 
   const opp = data?.records?.[0];
   const approvals = approvalData?.records ?? [];
@@ -316,6 +326,70 @@ export default function OpportunityDetail() {
               </CardContent>
             </Card>
           </div>
+
+          {/* Billing Installments */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-sm font-medium flex items-center gap-2">
+                <DollarSign className="h-4 w-4" />
+                Billing Installments
+                {(biData?.records?.length ?? 0) > 0 && (
+                  <span className="inline-flex items-center justify-center h-5 min-w-5 px-1.5 rounded-full bg-muted text-[11px] font-medium text-muted-foreground">
+                    {biData!.records.length}
+                  </span>
+                )}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {biLoading ? (
+                <div className="flex items-center gap-2 py-4 justify-center">
+                  <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                  <span className="text-sm text-muted-foreground">Loading billing installments...</span>
+                </div>
+              ) : !biData?.records?.length ? (
+                <p className="text-sm text-muted-foreground text-center py-4">No billing installments</p>
+              ) : (
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="bg-muted/30 hover:bg-muted/30">
+                        <TableHead className="font-semibold text-xs uppercase tracking-wider">Installment Name</TableHead>
+                        <TableHead className="font-semibold text-xs uppercase tracking-wider">Date</TableHead>
+                        <TableHead className="font-semibold text-xs uppercase tracking-wider">Referral Commission</TableHead>
+                        <TableHead className="font-semibold text-xs uppercase tracking-wider">Payment Status</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {biData.records.map((bi) => (
+                        <TableRow key={bi.Id} className="h-[44px]">
+                          <TableCell className="text-sm font-medium">{bi.Name}</TableCell>
+                          <TableCell className="text-sm text-muted-foreground tabular-nums">
+                            {bi.Installment_Date__c
+                              ? new Date(bi.Installment_Date__c).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
+                              : "—"}
+                          </TableCell>
+                          <TableCell className="text-sm tabular-nums">
+                            {bi.Referral_Commission_Amount__c != null
+                              ? `$${bi.Referral_Commission_Amount__c.toLocaleString()}`
+                              : "—"}
+                          </TableCell>
+                          <TableCell>
+                            {bi.Referral_Commission_Payment_Status__c ? (
+                              <span className="inline-flex items-center rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
+                                {bi.Referral_Commission_Payment_Status__c}
+                              </span>
+                            ) : (
+                              <span className="text-sm text-muted-foreground">—</span>
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>
