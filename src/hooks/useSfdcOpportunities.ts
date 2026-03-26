@@ -14,7 +14,7 @@ export function useSfdcOpportunities() {
     queryKey: ["sfdc-opportunities", user?.id, sfdcAccountId, shouldFilter],
     queryFn: () => {
       const where = shouldFilter && sfdcAccountId
-        ? `WHERE PartnerAccountId = '${sfdcAccountId}'`
+        ? `WHERE LeadSource = 'Partner Referral' AND PartnerAccountId = '${sfdcAccountId}'`
         : `WHERE LeadSource = 'Partner Referral'`;
 
       return sfdcQuery<SfdcOpportunity>(
