@@ -23,7 +23,7 @@ export function useSfdcBillingInstallments(oppId: string | undefined) {
       sfdcQuery<SfdcBillingInstallment>(
         `SELECT ${BI_FIELDS}
          FROM Billing_Installment__c
-         WHERE Quote__r.SBQQ__Opportunity2__c = '${oppId}'
+         WHERE Quote__r.SBQQ__Opportunity2__c = '${oppId}' AND Quote__r.SBQQ__Primary__c = true
          ORDER BY Installment_Date__c ASC`
       ),
     enabled: !!user && !!oppId && isSafeSfdcId(oppId),
