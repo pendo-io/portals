@@ -46,6 +46,14 @@ const PartnerHome = () => {
   const recentLeads = leads.slice(0, 5);
   const recentOpps = opps.slice(0, 5);
 
+  const upcomingOpps = useMemo(() => {
+    const now = new Date();
+    return opps
+      .filter((o) => o.StageName !== "Closed Won" && o.StageName !== "Closed Lost" && new Date(o.CloseDate) >= now)
+      .sort((a, b) => new Date(a.CloseDate).getTime() - new Date(b.CloseDate).getTime())
+      .slice(0, 8);
+  }, [opps]);
+
   return (
     <div className="flex-1 p-4 sm:p-6 space-y-6 sm:space-y-8 overflow-y-auto">
       <div className="flex items-center justify-between">
@@ -211,6 +219,56 @@ const PartnerHome = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Upcoming Close Dates */}
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between pb-3">
+          <CardTitle className="text-base">{t("Opportunities")} — {t("Close Date")}</CardTitle>
+          <Button variant="ghost" size="sm" className="text-xs text-muted-foreground" onClick={() => navigate(`${basePath}/opportunities`)}>
+            {t("View Opportunities")}
+            <ArrowRight className="h-3 w-3 ml-1" />
+          </Button>
+        </CardHeader>
+        <CardContent>
+          {oppsLoading ? (
+            <div className="space-y-3">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <Skeleton key={i} className="h-10 w-full" />
+              ))}
+            </div>
+          ) : upcomingOpps.length === 0 ? (
+            <p className="text-sm text-muted-foreground text-center py-6">{t("No opportunities found")}</p>
+          ) : (
+            <div className="space-y-1">
+              {upcomingOpps.map((opp) => {
+                const closeDate = new Date(opp.CloseDate);
+                const now = new Date();
+                const daysUntil = Math.ceil((closeDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+                return (
+                  <div
+                    key={opp.Id}
+                    className="flex items-center justify-between gap-3 cursor-pointer hover:bg-muted/50 -mx-2 px-2 py-2 rounded-md transition-colors"
+                    onClick={() => navigate(`${basePath}/opportunities/${opp.Id}`)}
+                  >
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-medium truncate">{opp.Name}</p>
+                      <p className="text-xs text-muted-foreground truncate">{opp.Account?.Name ?? "—"} - {opp.StageName}</p>
+                    </div>
+                    <div className="text-right shrink-0">
+                      <p className="text-sm font-medium tabular-nums">
+                        {closeDate.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {daysUntil === 0 ? "Today" : daysUntil === 1 ? "Tomorrow" : `${daysUntil} days`}
+                      </p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 };
