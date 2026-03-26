@@ -70,15 +70,14 @@ const PartnerHome = () => {
       {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <StatCard
-          label={t("Active Leads")}
-          value={leadsLoading ? null : String(leadStats.active)}
-          sub={leadsLoading ? null : `${leadStats.total} ${t("total")}`}
+          label={t("All Leads")}
+          value={leadsLoading ? null : String(leads.length)}
           icon={Users}
         />
         <StatCard
-          label={t("Open Opportunities")}
-          value={oppsLoading ? null : String(oppStats.openCount)}
-          sub={oppsLoading ? null : `${formatCurrency(oppStats.pipeline)} ${t("pipeline")}`}
+          label={t("All Opportunities")}
+          value={oppsLoading ? null : String(opps.length)}
+          sub={oppsLoading ? null : `${formatCurrency(opps.reduce((sum, o) => sum + (o.Amount ?? 0), 0))} ${t("pipeline")}`}
           icon={Target}
         />
       </div>
