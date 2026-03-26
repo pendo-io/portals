@@ -1,6 +1,7 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { usePortalType } from "@/hooks/usePortalType";
+import { useAuth } from "@/hooks/useAuth";
 import { useSfdcOpportunityDetail } from "@/hooks/useSfdcOpportunityDetail";
 import { useSfdcApprovalHistory } from "@/hooks/useSfdcApprovalHistory";
 import { useSfdcBillingInstallments } from "@/hooks/useSfdcBillingInstallments";
@@ -28,6 +29,7 @@ import {
   CheckCircle2,
   XCircle,
   CircleDot,
+  ExternalLink,
 } from "lucide-react";
 
 function Row({ label, value, wrap }: { label: string; value: string | number | null | undefined; wrap?: boolean }) {
@@ -54,6 +56,8 @@ export default function OpportunityDetail() {
   const { oppId } = useParams<{ oppId: string }>();
   const navigate = useNavigate();
   const { basePath } = usePortalType();
+  const { isSuperAdmin, impersonating } = useAuth();
+  const showSfdcLink = isSuperAdmin && !impersonating;
   const { data, isLoading, isError, error } = useSfdcOpportunityDetail(oppId);
   const { data: approvalData, isLoading: approvalsLoading } = useSfdcApprovalHistory(oppId);
   const { data: biData, isLoading: biLoading } = useSfdcBillingInstallments(oppId);
@@ -123,6 +127,18 @@ export default function OpportunityDetail() {
             <span className="inline-flex items-center rounded-full bg-muted px-3 py-1 text-sm font-medium text-muted-foreground">
               {opp.StageName}
             </span>
+            {showSfdcLink && (
+              <Button variant="outline" size="sm" asChild>
+                <a
+                  href={`https://pendo.lightning.force.com/lightning/r/Opportunity/${opp.Id}/view`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <ExternalLink className="h-4 w-4 mr-1.5" />
+                  View in Salesforce
+                </a>
+              </Button>
+            )}
             <Button variant="outline" size="sm" onClick={() => navigate(`${basePath}/opportunities`)}>
               <ArrowLeft className="h-4 w-4 mr-1.5" />
               Back

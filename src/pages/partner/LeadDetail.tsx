@@ -1,6 +1,7 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { usePortalType } from "@/hooks/usePortalType";
+import { useAuth } from "@/hooks/useAuth";
 import { useSfdcLeadDetail } from "@/hooks/useSfdcLeadDetail";
 import { useSfdcApprovalHistory } from "@/hooks/useSfdcApprovalHistory";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -55,6 +56,8 @@ export default function LeadDetail() {
   const { leadId } = useParams<{ leadId: string }>();
   const navigate = useNavigate();
   const { basePath } = usePortalType();
+  const { isSuperAdmin, impersonating } = useAuth();
+  const showSfdcLink = isSuperAdmin && !impersonating;
   const { data, isLoading, isError, error } = useSfdcLeadDetail(leadId);
   const { data: approvalData, isLoading: approvalsLoading } = useSfdcApprovalHistory(leadId);
 
@@ -143,6 +146,18 @@ export default function LeadDetail() {
             <span className="inline-flex items-center rounded-full bg-muted px-3 py-1 text-sm font-medium text-muted-foreground">
               {lead.Status}
             </span>
+            {showSfdcLink && (
+              <Button variant="outline" size="sm" asChild>
+                <a
+                  href={`https://pendo.lightning.force.com/lightning/r/Lead/${lead.Id}/view`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <ExternalLink className="h-4 w-4 mr-1.5" />
+                  View in Salesforce
+                </a>
+              </Button>
+            )}
             <Button variant="outline" size="sm" onClick={() => navigate(`${basePath}/leads`)}>
               <ArrowLeft className="h-4 w-4 mr-1.5" />
               Back
