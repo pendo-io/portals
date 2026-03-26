@@ -133,6 +133,65 @@ export default defineConfig(({ mode }) => {
               res.end(JSON.stringify({ error: error.message }));
             }
           });
+
+          // POST /api/create-user — provision a new user (requires service role)
+          server.middlewares.use("/api/create-user", async (req, res) => {
+            if (req.method === "OPTIONS") { res.writeHead(204); res.end(); return; }
+            if (req.method !== "POST") { res.writeHead(405); res.end(JSON.stringify({ error: "Method not allowed" })); return; }
+
+            const body = await readBody(req);
+            const { email, password, fullName, role, partnerId } = body;
+
+            if (!email || !password || !fullName) {
+              res.writeHead(400, { "Content-Type": "application/json" });
+              res.end(JSON.stringify({ error: "Missing email, password, or fullName" }));
+              return;
+            }
+
+            const supabaseUrl = env.VITE_SUPABASE_URL;
+            const serviceRoleKey = env.SUPABASE_SERVICE_ROLE_KEY;
+
+            if (!supabaseUrl || !serviceRoleKey) {
+              res.writeHead(500, { "Content-Type": "application/json" });
+              res.end(JSON.stringify({ error: "Supabase credentials not configured" }));
+              return;
+            }
+
+            try {
+              const { createClient } = await import("@supabase/supabase-js");
+              const supabase = createClient(supabaseUrl, serviceRoleKey);
+
+              const { data: authData, error: authError } = await supabase.auth.admin.createUser({
+                email,
+                password,
+                email_confirm: true,
+                user_metadata: { full_name: fullName },
+              });
+
+              if (authError) {
+                res.writeHead(400, { "Content-Type": "application/json" });
+                res.end(JSON.stringify({ error: authError.message }));
+                return;
+              }
+
+              const userId = authData.user.id;
+
+              if (partnerId) {
+                await supabase.from("profiles").update({ partner_id: partnerId }).eq("id", userId);
+              }
+
+              if (role === "super_admin") {
+                await supabase.from("user_roles").insert({ user_id: userId, role: "super_admin" });
+              }
+
+              res.writeHead(200, { "Content-Type": "application/json" });
+              res.end(JSON.stringify({ id: userId, email }));
+            } catch (error: any) {
+              console.error("create-user error:", error);
+              res.writeHead(500, { "Content-Type": "application/json" });
+              res.end(JSON.stringify({ error: error.message }));
+            }
+          });
         },
       },
     ],

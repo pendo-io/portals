@@ -13,7 +13,6 @@ import {
 } from "@/components/ui/select";
 import { Loader2, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
-import { supabase } from "@/lib/supabase";
 import { useAdminPartners } from "@/hooks/useAdmin";
 
 const ROLES = ["user", "super_admin"] as const;
@@ -52,31 +51,20 @@ const AdminCreateUser = () => {
 
     setSaving(true);
     try {
-      // 1. Create the auth user via Supabase Auth admin endpoint
-      const { data: authData, error: authError } = await supabase.auth.admin.createUser({
-        email: email.trim(),
-        password: password.trim(),
-        email_confirm: true,
-        user_metadata: { full_name: fullName.trim() },
+      const res = await fetch("/api/create-user", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: email.trim(),
+          password: password.trim(),
+          fullName: fullName.trim(),
+          role,
+          partnerId: partnerId !== "none" ? partnerId : null,
+        }),
       });
 
-      if (authError) throw authError;
-      const userId = authData.user.id;
-
-      // 2. Assign partner if selected
-      if (partnerId !== "none") {
-        await supabase
-          .from("profiles")
-          .update({ partner_id: partnerId })
-          .eq("id", userId);
-      }
-
-      // 3. Assign role if super_admin
-      if (role === "super_admin") {
-        await supabase
-          .from("user_roles")
-          .insert({ user_id: userId, role: "super_admin" });
-      }
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to create user");
 
       toast.success(`User ${fullName.trim()} created successfully`);
       navigate("/admin/users");
