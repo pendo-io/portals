@@ -24,7 +24,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Search, Loader2, ArrowUp, ArrowDown, ArrowUpDown, ChevronLeft, ChevronRight, UserCheck } from "lucide-react";
+import { Search, Loader2, ArrowUp, ArrowDown, ArrowUpDown, ChevronLeft, ChevronRight, UserCheck, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { useAuth, type PartnerType } from "@/hooks/useAuth";
@@ -214,11 +214,17 @@ const AdminUsers = () => {
           </SelectContent>
         </Select>
 
-        <Badge variant="secondary" className="ml-auto">
-          {filtered.length === allUsers.length
-            ? `${allUsers.length} users`
-            : `${filtered.length} of ${allUsers.length} users`}
-        </Badge>
+        <div className="ml-auto flex items-center gap-2">
+          <Badge variant="secondary">
+            {filtered.length === allUsers.length
+              ? `${allUsers.length} users`
+              : `${filtered.length} of ${allUsers.length} users`}
+          </Badge>
+          <Button size="sm" onClick={() => navigate("/admin/users/new")}>
+            <Plus className="h-4 w-4 mr-1" />
+            Create User
+          </Button>
+        </div>
       </div>
 
       {/* Content */}

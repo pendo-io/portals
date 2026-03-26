@@ -30,6 +30,7 @@ export function PortalTopBar() {
     "/opportunities": t("Opportunities"),
     "/referral": t("Submit a Lead"),
     "/admin/users": t("User Management"),
+    "/admin/users/new": "Create User",
     "/admin/partners": t("Partner Management"),
   };
 
