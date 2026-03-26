@@ -36,7 +36,6 @@ const initial = {
   numberOfUsers: "",
   departments: "",
   currentTechStack: "",
-  startDate: "",
   useCase: "",
   competitors: "",
   additionalInfo: "",
@@ -48,7 +47,7 @@ const requiredBySection: Record<number, (keyof FormData)[]> = {
   0: ["company", "website"],
   1: ["lastName", "email", "departments"],
   2: [],
-  3: ["numberOfUsers", "currentTechStack", "startDate", "useCase"],
+  3: ["numberOfUsers", "currentTechStack", "useCase"],
 };
 
 const PartnerReferralForm = () => {
@@ -345,28 +344,23 @@ function OpportunityStep({ form, set, setSelect, shake }: StepProps) {
         <Field label="Current Tech Stack / Solutions" required shake={shake.has("currentTechStack")}>
           <Textarea value={form.currentTechStack} onChange={set("currentTechStack")} placeholder="What tools are they currently using?" rows={2} />
         </Field>
-        <div className="grid grid-cols-2 gap-4">
-          <Field label="Start Date" required shake={shake.has("startDate")}>
-            <Input type="date" value={form.startDate} onChange={set("startDate")} />
-          </Field>
-          <Field label="Use Case" required shake={shake.has("useCase")}>
-            <Select value={form.useCase} onValueChange={setSelect!("useCase")}>
-              <SelectTrigger><SelectValue placeholder="Select use case" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Pendo for Customers">Pendo for Customers</SelectItem>
-                <SelectItem value="Pendo for Employees">Pendo for Employees</SelectItem>
-                <SelectItem value="User Onboarding">User Onboarding</SelectItem>
-                <SelectItem value="Feature Adoption">Feature Adoption</SelectItem>
-                <SelectItem value="Retention / Churn">Retention / Churn</SelectItem>
-                <SelectItem value="Product Analytics">Product Analytics</SelectItem>
-                <SelectItem value="Customer Feedback">Customer Feedback</SelectItem>
-                <SelectItem value="Product Planning">Product Planning</SelectItem>
-                <SelectItem value="Change Management">Change Management</SelectItem>
-                <SelectItem value="Other">Other</SelectItem>
-              </SelectContent>
-            </Select>
-          </Field>
-        </div>
+        <Field label="Use Case" required shake={shake.has("useCase")}>
+          <Select value={form.useCase} onValueChange={setSelect!("useCase")}>
+            <SelectTrigger><SelectValue placeholder="Select use case" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="Pendo for Customers">Pendo for Customers</SelectItem>
+              <SelectItem value="Pendo for Employees">Pendo for Employees</SelectItem>
+              <SelectItem value="User Onboarding">User Onboarding</SelectItem>
+              <SelectItem value="Feature Adoption">Feature Adoption</SelectItem>
+              <SelectItem value="Retention / Churn">Retention / Churn</SelectItem>
+              <SelectItem value="Product Analytics">Product Analytics</SelectItem>
+              <SelectItem value="Customer Feedback">Customer Feedback</SelectItem>
+              <SelectItem value="Product Planning">Product Planning</SelectItem>
+              <SelectItem value="Change Management">Change Management</SelectItem>
+              <SelectItem value="Other">Other</SelectItem>
+            </SelectContent>
+          </Select>
+        </Field>
         <Field label="Competitors Considered or Incumbent">
           <Textarea value={form.competitors} onChange={set("competitors")} placeholder="Any competing or existing solutions?" rows={2} />
         </Field>
