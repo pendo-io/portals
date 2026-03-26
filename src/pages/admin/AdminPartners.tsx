@@ -218,17 +218,17 @@ const AdminPartners = () => {
             <Table className="table-fixed [&_th]:border-r [&_th:last-child]:border-r-0 [&_td]:border-r [&_td:last-child]:border-r-0">
               <TableHeader>
                 <TableRow className="bg-muted/30 hover:bg-muted/30">
-                  <TableHead className={thClass} resizable style={{ width: "45%" }} onClick={() => handleSort("name")}>
+                  <TableHead className={thClass} resizable onClick={() => handleSort("name")}>
                     <span className="inline-flex items-center">Name<SortIcon active={sortKey === "name"} dir={sortDir} /></span>
+                  </TableHead>
+                  <TableHead className={`${thClass} hidden sm:table-cell`} resizable>
+                    <span className="inline-flex items-center">SFDC Account</span>
                   </TableHead>
                   <TableHead className={thClass} resizable onClick={() => handleSort("type")}>
                     <span className="inline-flex items-center">Type<SortIcon active={sortKey === "type"} dir={sortDir} /></span>
                   </TableHead>
                   <TableHead className={`${thClass} hidden lg:table-cell`} resizable onClick={() => handleSort("owner")}>
                     <span className="inline-flex items-center">Owner<SortIcon active={sortKey === "owner"} dir={sortDir} /></span>
-                  </TableHead>
-                  <TableHead className={`${thClass} hidden md:table-cell`} resizable>
-                    <span className="inline-flex items-center">SFDC Account ID</span>
                   </TableHead>
                   <TableHead className={`${thClass} hidden sm:table-cell`} resizable onClick={() => handleSort("created")}>
                     <span className="inline-flex items-center">Created<SortIcon active={sortKey === "created"} dir={sortDir} /></span>
@@ -247,6 +247,20 @@ const AdminPartners = () => {
                         {p.name}
                       </button>
                     </TableCell>
+                    <TableCell className="py-2 hidden sm:table-cell">
+                      {p.sfdc_account_id ? (
+                        <a
+                          href={`https://pendo.lightning.force.com/lightning/r/Account/${p.sfdc_account_id}/view`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-sm font-mono text-primary hover:underline"
+                        >
+                          {p.sfdc_account_id}
+                        </a>
+                      ) : (
+                        <span className="text-sm text-muted-foreground">—</span>
+                      )}
+                    </TableCell>
                     <TableCell className="py-2">
                       <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${getTypeColor(p.type)}`}>
                         {getTypeLabel(p.type)}
@@ -254,9 +268,6 @@ const AdminPartners = () => {
                     </TableCell>
                     <TableCell className="py-2 hidden lg:table-cell">
                       <span className="text-sm">{(p.owner_id && ownerNames?.get(p.owner_id)) || "—"}</span>
-                    </TableCell>
-                    <TableCell className="py-2 hidden md:table-cell">
-                      <span className="text-sm text-muted-foreground font-mono">{p.sfdc_account_id || "—"}</span>
                     </TableCell>
                     <TableCell className="py-2 hidden sm:table-cell">
                       <span className="text-sm text-muted-foreground tabular-nums">
