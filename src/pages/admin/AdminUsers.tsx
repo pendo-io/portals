@@ -203,15 +203,15 @@ const AdminUsers = () => {
         </Select>
 
         <div className="ml-auto flex items-center gap-2">
+          <Button size="sm" onClick={() => navigate("/admin/users/new")}>
+            <Plus className="h-4 w-4 mr-1" />
+            Create User
+          </Button>
           <Badge variant="secondary">
             {filtered.length === allUsers.length
               ? `${allUsers.length} users`
               : `${filtered.length} of ${allUsers.length} users`}
           </Badge>
-          <Button size="sm" onClick={() => navigate("/admin/users/new")}>
-            <Plus className="h-4 w-4 mr-1" />
-            Create User
-          </Button>
         </div>
       </div>
 
