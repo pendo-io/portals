@@ -32,7 +32,6 @@ import {
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useAuth } from "@/hooks/useAuth";
-import { usePortalType } from "@/hooks/usePortalType";
 
 export function PortalSidebar() {
   const location = useLocation();
@@ -41,7 +40,6 @@ export function PortalSidebar() {
   const { toggleSidebar } = useSidebar();
   const { signOut, isSuperAdmin, impersonating } = useAuth();
   const showAdmin = isSuperAdmin && !impersonating;
-  const { basePath } = usePortalType();
 
   const handleLogout = async () => {
     await signOut();
@@ -50,25 +48,25 @@ export function PortalSidebar() {
 
   const isActive = (path: string) =>
     location.pathname === path ||
-    (path !== basePath && location.pathname.startsWith(path));
+    (path !== "/" && location.pathname.startsWith(path));
 
   const navItems = [
-    { path: basePath, label: "Home", icon: Home },
-    { path: `${basePath}/leads`, label: "Leads", icon: Users },
-    { path: `${basePath}/opportunities`, label: "Opportunities", icon: Target },
-    { path: `${basePath}/referral`, label: "Submit Lead", icon: FileText },
+    { path: "/", label: "Home", icon: Home },
+    { path: "/leads", label: "Leads", icon: Users },
+    { path: "/opportunities", label: "Opportunities", icon: Target },
+    { path: "/referral", label: "Submit Lead", icon: FileText },
   ];
 
   const adminItems = [
-    { path: `${basePath}/admin/users`, label: "Users", icon: Shield },
-    { path: `${basePath}/admin/partners`, label: "Partners", icon: Handshake },
+    { path: "/admin/users", label: "Users", icon: Shield },
+    { path: "/admin/partners", label: "Partners", icon: Handshake },
   ];
 
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader className="px-3 pt-3 pb-4">
         <div className="flex items-center gap-2 group-data-[collapsible=icon]:hidden">
-          <Link to={basePath} className="flex items-center justify-center w-5 h-5">
+          <Link to="/" className="flex items-center justify-center w-5 h-5">
             <img src="/logo.png" alt="Pendo" className="w-5 h-5 min-w-5 min-h-5" />
           </Link>
           <button

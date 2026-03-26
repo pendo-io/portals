@@ -7,7 +7,6 @@ import ThemeWrapper from "@/components/ThemeWrapper";
 import { AuthProvider } from "@/hooks/useAuth";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import PortalLayout from "@/components/portal/PortalLayout";
-import PortalRedirect from "@/components/PortalRedirect";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 import PartnerHome from "./pages/partner/PartnerHome";
@@ -32,19 +31,15 @@ const App = () => (
           <Routes>
             <Route path="/login" element={<Login />} />
 
-            {/* Redirect root to user's portal based on partner type */}
-            <Route path="/" element={<PortalRedirect />} />
-
-            {/* All portal types share the same layout and pages */}
             <Route element={<ProtectedRoute><PortalLayout /></ProtectedRoute>}>
-              <Route path="/portal/:portalType" element={<PartnerHome />} />
-              <Route path="/portal/:portalType/leads" element={<PartnerLeads />} />
-              <Route path="/portal/:portalType/leads/:leadId" element={<LeadDetail />} />
-              <Route path="/portal/:portalType/opportunities" element={<PartnerOpportunities />} />
-              <Route path="/portal/:portalType/opportunities/:oppId" element={<OpportunityDetail />} />
-              <Route path="/portal/:portalType/referral" element={<PartnerReferralForm />} />
-              <Route path="/portal/:portalType/admin/users" element={<AdminUsers />} />
-              <Route path="/portal/:portalType/admin/partners" element={<AdminPartners />} />
+              <Route path="/" element={<PartnerHome />} />
+              <Route path="/leads" element={<PartnerLeads />} />
+              <Route path="/leads/:leadId" element={<LeadDetail />} />
+              <Route path="/opportunities" element={<PartnerOpportunities />} />
+              <Route path="/opportunities/:oppId" element={<OpportunityDetail />} />
+              <Route path="/referral" element={<PartnerReferralForm />} />
+              <Route path="/admin/users" element={<AdminUsers />} />
+              <Route path="/admin/partners" element={<AdminPartners />} />
             </Route>
 
             <Route path="*" element={<NotFound />} />

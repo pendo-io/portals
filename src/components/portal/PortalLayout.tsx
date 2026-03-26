@@ -13,12 +13,12 @@ const PortalLayout = () => {
   useSfdcLeads();
   useSfdcOpportunities();
 
-  const { impersonating, stopImpersonating, realPartnerType } = useAuth();
+  const { impersonating, stopImpersonating } = useAuth();
   const navigate = useNavigate();
 
   const handleStop = () => {
     stopImpersonating();
-    navigate(`/portal/${realPartnerType || "partner"}/admin/users`, { replace: true });
+    navigate("/admin/users", { replace: true });
   };
 
   return (

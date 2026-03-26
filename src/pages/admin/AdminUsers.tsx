@@ -110,7 +110,7 @@ const AdminUsers = () => {
     });
     toast.success(`Impersonating ${u.full_name || u.email}`);
     window.scrollTo(0, 0);
-    navigate(`/portal/${partnerType || "partner"}`, { replace: true });
+    navigate("/", { replace: true });
   };
 
   const handleRoleChange = async (userId: string, role: string) => {

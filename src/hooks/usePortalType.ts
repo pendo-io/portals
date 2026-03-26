@@ -1,4 +1,4 @@
-import { useParams } from "react-router-dom";
+import { useAuth } from "./useAuth";
 
 export type PortalType = "partner" | "oem" | "japan";
 
@@ -9,10 +9,9 @@ const PORTAL_LABELS: Record<PortalType, string> = {
 };
 
 export function usePortalType() {
-  const { portalType } = useParams<{ portalType: string }>();
-  const type = (portalType as PortalType) || "partner";
-  const basePath = `/portal/${type}`;
+  const { partnerType } = useAuth();
+  const type = partnerType || "partner";
   const label = PORTAL_LABELS[type] || type;
 
-  return { portalType: type, basePath, label };
+  return { portalType: type, basePath: "", label };
 }

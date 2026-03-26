@@ -173,7 +173,7 @@ const PartnerReferralForm = () => {
               <Button variant="outline" onClick={() => { setSubmitted(false); setForm(initial); setStep(0); }}>
                 Submit Another
               </Button>
-              <Button onClick={() => navigate(basePath)}>
+              <Button onClick={() => navigate("/")}>
                 Back to Home
               </Button>
             </div>
