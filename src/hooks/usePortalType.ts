@@ -1,4 +1,6 @@
 import { useAuth } from "./useAuth";
+import { useCallback } from "react";
+import { t } from "@/lib/i18n";
 
 export type PortalType = "partner" | "oem" | "japan";
 
@@ -12,6 +14,7 @@ export function usePortalType() {
   const { partnerType } = useAuth();
   const type = partnerType || "partner";
   const label = PORTAL_LABELS[type] || type;
+  const translate = useCallback((key: string) => t(key, type), [type]);
 
-  return { portalType: type, basePath: "", label };
+  return { portalType: type, basePath: "", label, t: translate };
 }

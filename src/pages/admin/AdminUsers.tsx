@@ -1,4 +1,5 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -71,8 +72,10 @@ function getPrimaryRole(user: AdminUser): string {
 
 const AdminUsers = () => {
   useDocumentTitle("User Management");
+  const [searchParams] = useSearchParams();
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState<string>("all");
+  const [partnerFilter, setPartnerFilter] = useState<string>(searchParams.get("partner") || "all");
   const [page, setPage] = useState(0);
   const [sortKey, setSortKey] = useState<SortKey | null>(null);
   const [sortDir, setSortDir] = useState<SortDir>("asc");
@@ -88,6 +91,7 @@ const AdminUsers = () => {
 
   const handleSearchChange = (value: string) => { setSearch(value); setPage(0); };
   const handleRoleFilterChange = (value: string) => { setRoleFilter(value); setPage(0); };
+  const handlePartnerFilterChange = (value: string) => { setPartnerFilter(value); setPage(0); };
 
   const handleSort = (key: SortKey) => {
     if (sortKey === key) {
@@ -139,9 +143,10 @@ const AdminUsers = () => {
         u.full_name?.toLowerCase().includes(search.toLowerCase()) ||
         u.partners?.name?.toLowerCase().includes(search.toLowerCase());
       const matchesRole = roleFilter === "all" || getPrimaryRole(u) === roleFilter;
-      return matchesSearch && matchesRole;
+      const matchesPartner = partnerFilter === "all" || u.partner_id === partnerFilter;
+      return matchesSearch && matchesRole && matchesPartner;
     });
-  }, [allUsers, search, roleFilter]);
+  }, [allUsers, search, roleFilter, partnerFilter]);
 
   const sorted = useMemo(() => {
     if (!sortKey) return filtered;
@@ -193,6 +198,18 @@ const AdminUsers = () => {
             <SelectItem value="all">All Roles</SelectItem>
             {ROLES.map((r) => (
               <SelectItem key={r} value={r}>{getRoleLabel(r)}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <Select value={partnerFilter} onValueChange={handlePartnerFilterChange}>
+          <SelectTrigger className="w-full sm:w-[200px] h-9">
+            <SelectValue placeholder="Partner" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Partners</SelectItem>
+            {partners?.map((p) => (
+              <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
             ))}
           </SelectContent>
         </Select>

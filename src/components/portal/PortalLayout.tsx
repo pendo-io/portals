@@ -5,8 +5,8 @@ import { Outlet, useNavigate } from "react-router-dom";
 import { useSfdcLeads } from "@/hooks/useSfdcLeads";
 import { useSfdcOpportunities } from "@/hooks/useSfdcOpportunities";
 import { useAuth } from "@/hooks/useAuth";
+import { usePortalType } from "@/hooks/usePortalType";
 import { Button } from "@/components/ui/button";
-import { X } from "lucide-react";
 
 const PortalLayout = () => {
   // Prefetch data at layout level so it's warm when pages render
@@ -14,6 +14,7 @@ const PortalLayout = () => {
   useSfdcOpportunities();
 
   const { impersonating, stopImpersonating } = useAuth();
+  const { t } = usePortalType();
   const navigate = useNavigate();
 
   const handleStop = () => {
@@ -29,7 +30,7 @@ const PortalLayout = () => {
           {impersonating && (
             <div className="bg-amber-500 text-amber-950 px-4 py-2 flex items-center justify-between text-sm font-medium shrink-0">
               <span>
-                Currently impersonating <strong>{impersonating.full_name || impersonating.email}</strong>
+                {t("Currently impersonating")} <strong>{impersonating.full_name || impersonating.email}</strong>
                 {impersonating.partnerType && (
                   <span className="ml-1.5 opacity-70">({impersonating.partnerType})</span>
                 )}
@@ -40,7 +41,7 @@ const PortalLayout = () => {
                 className="h-7 px-3 text-amber-950 hover:bg-amber-600 hover:text-amber-950 font-semibold"
                 onClick={handleStop}
               >
-                Go Back
+                {t("Go Back")}
               </Button>
             </div>
           )}

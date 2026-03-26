@@ -10,30 +10,28 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 
-function useHomeLabel(): string {
-  const { user } = useAuth();
+export function PortalTopBar() {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { user, partnerType } = useAuth();
+  const { t } = usePortalType();
+  const currentPath = location.pathname;
+
+  // Greeting
   let firstName = "";
   const name = user?.user_metadata?.full_name || user?.user_metadata?.name;
   if (name) firstName = name.split(" ")[0];
   const hour = new Date().getHours();
-  const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
-  return firstName ? `${greeting}, ${firstName}` : greeting;
-}
+  const greeting = hour < 12 ? t("Good morning") : hour < 17 ? t("Good afternoon") : t("Good evening");
+  const homeLabel = firstName ? `${greeting}, ${firstName}` : greeting;
 
-const ROUTE_LABELS: Record<string, string> = {
-  "/leads": "Leads",
-  "/opportunities": "Opportunities",
-  "/referral": "Submit a Lead",
-  "/admin/users": "User Management",
-  "/admin/partners": "Partner Management",
-};
-
-export function PortalTopBar() {
-  const location = useLocation();
-  const navigate = useNavigate();
-  const homeLabel = useHomeLabel();
-  const { label: portalLabel } = usePortalType();
-  const currentPath = location.pathname;
+  const ROUTE_LABELS: Record<string, string> = {
+    "/leads": t("Leads"),
+    "/opportunities": t("Opportunities"),
+    "/referral": t("Submit a Lead"),
+    "/admin/users": t("User Management"),
+    "/admin/partners": t("Partner Management"),
+  };
 
   const isLeadDetail = currentPath.startsWith("/leads/") && currentPath !== "/leads";
   const isOppDetail = currentPath.startsWith("/opportunities/") && currentPath !== "/opportunities";
@@ -41,17 +39,14 @@ export function PortalTopBar() {
   let breadcrumbSegments: { label: string; path?: string }[];
 
   if (isLeadDetail) {
-    breadcrumbSegments = [{ label: `${portalLabel} Leads`, path: "/leads" }, { label: "Lead Detail" }];
+    breadcrumbSegments = [{ label: t("Leads"), path: "/leads" }, { label: t("Lead Detail") }];
   } else if (isOppDetail) {
-    breadcrumbSegments = [{ label: `${portalLabel} Opportunities`, path: "/opportunities" }, { label: "Opportunity Detail" }];
+    breadcrumbSegments = [{ label: t("Opportunities"), path: "/opportunities" }, { label: t("Opportunity Detail") }];
   } else if (currentPath === "/") {
     breadcrumbSegments = [{ label: homeLabel }];
   } else {
-    const label = ROUTE_LABELS[currentPath];
     breadcrumbSegments = [{
-      label: label
-        ? (currentPath === "/leads" || currentPath === "/opportunities" ? `${portalLabel} ${label}` : label)
-        : currentPath.split("/").filter(Boolean).pop() || "Home",
+      label: ROUTE_LABELS[currentPath] || currentPath.split("/").filter(Boolean).pop() || t("Home"),
     }];
   }
 

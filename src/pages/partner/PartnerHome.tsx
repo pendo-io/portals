@@ -18,7 +18,7 @@ const formatCurrency = (value: number) => {
 const PartnerHome = () => {
   useDocumentTitle("Home");
   const navigate = useNavigate();
-  const { basePath } = usePortalType();
+  const { basePath, t } = usePortalType();
   const { data: leadsData, isLoading: leadsLoading } = useSfdcLeads();
   const { data: oppsData, isLoading: oppsLoading } = useSfdcOpportunities();
 
@@ -74,42 +74,42 @@ const PartnerHome = () => {
     <div className="flex-1 p-6 space-y-8">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Overview</h1>
-          <p className="text-sm text-muted-foreground mt-1">Welcome back. Here's your partnership overview.</p>
+          <h1 className="text-2xl font-bold tracking-tight">{t("Overview")}</h1>
+          <p className="text-sm text-muted-foreground mt-1">{t("Welcome back. Here's your partnership overview.")}</p>
         </div>
         <Button onClick={() => navigate(`${basePath}/referral`)}>
           <FileText className="h-4 w-4 mr-1.5" />
-          New Referral
+          {t("New Referral")}
         </Button>
       </div>
 
       {/* Stats Grid — each card renders independently */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
-          label="Active Leads"
+          label={t("Active Leads")}
           value={leadsLoading ? null : String(leadStats.active)}
-          sub={leadsLoading ? null : `${leadStats.total} total`}
+          sub={leadsLoading ? null : `${leadStats.total} ${t("total")}`}
           icon={Users}
           color="text-blue-600"
         />
         <StatCard
-          label="Open Opportunities"
+          label={t("Open Opportunities")}
           value={oppsLoading ? null : String(oppStats.openCount)}
-          sub={oppsLoading ? null : `${formatCurrency(oppStats.pipeline)} pipeline`}
+          sub={oppsLoading ? null : `${formatCurrency(oppStats.pipeline)} ${t("pipeline")}`}
           icon={Target}
           color="text-emerald-600"
         />
         <StatCard
-          label="New Leads"
+          label={t("New Leads")}
           value={leadsLoading ? null : String(leadStats.newCount)}
-          sub={leadsLoading ? null : "Awaiting outreach"}
+          sub={leadsLoading ? null : t("Awaiting outreach")}
           icon={Clock}
           color="text-amber-600"
         />
         <StatCard
-          label="Closed Won"
+          label={t("Closed Won")}
           value={oppsLoading ? null : String(oppStats.wonCount)}
-          sub={oppsLoading ? null : `${formatCurrency(oppStats.wonTotal)} revenue`}
+          sub={oppsLoading ? null : `${formatCurrency(oppStats.wonTotal)} ${t("revenue")}`}
           icon={CheckCircle2}
           color="text-primary"
         />
@@ -124,8 +124,8 @@ const PartnerHome = () => {
                 <Users className="h-4 w-4 text-blue-600" />
               </div>
               <div>
-                <p className="font-medium text-sm">View Leads</p>
-                <p className="text-xs text-muted-foreground">Manage your lead pipeline</p>
+                <p className="font-medium text-sm">{t("View Leads")}</p>
+                <p className="text-xs text-muted-foreground">{t("Manage your lead pipeline")}</p>
               </div>
             </div>
             <ArrowRight className="h-4 w-4 text-muted-foreground" />
@@ -139,8 +139,8 @@ const PartnerHome = () => {
                 <Target className="h-4 w-4 text-emerald-600" />
               </div>
               <div>
-                <p className="font-medium text-sm">View Opportunities</p>
-                <p className="text-xs text-muted-foreground">Track deal progress</p>
+                <p className="font-medium text-sm">{t("View Opportunities")}</p>
+                <p className="text-xs text-muted-foreground">{t("Track deal progress")}</p>
               </div>
             </div>
             <ArrowRight className="h-4 w-4 text-muted-foreground" />
@@ -154,8 +154,8 @@ const PartnerHome = () => {
                 <FileText className="h-4 w-4 text-primary" />
               </div>
               <div>
-                <p className="font-medium text-sm">Submit Referral</p>
-                <p className="text-xs text-muted-foreground">Register a new lead referral</p>
+                <p className="font-medium text-sm">{t("Submit Referral")}</p>
+                <p className="text-xs text-muted-foreground">{t("Register a new lead referral")}</p>
               </div>
             </div>
             <ArrowRight className="h-4 w-4 text-muted-foreground" />
@@ -166,7 +166,7 @@ const PartnerHome = () => {
       {/* Recent Activity */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Recent Activity</CardTitle>
+          <CardTitle className="text-base">{t("Recent Activity")}</CardTitle>
         </CardHeader>
         <CardContent>
           {leadsLoading && oppsLoading ? (
@@ -176,7 +176,7 @@ const PartnerHome = () => {
               ))}
             </div>
           ) : recentActivity.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-4">No recent activity</p>
+            <p className="text-sm text-muted-foreground text-center py-4">{t("No recent activity")}</p>
           ) : (
             <div className="space-y-4">
               {recentActivity.map((activity) => (

@@ -48,7 +48,7 @@ const PartnerOpportunities = () => {
   const [sortKey, setSortKey] = useState<SortKey | null>(null);
   const [sortDir, setSortDir] = useState<SortDir>("asc");
   const navigate = useNavigate();
-  const { basePath } = usePortalType();
+  const { basePath, t } = usePortalType();
   const { data, isLoading, isError, error } = useSfdcOpportunities();
 
   const opps = data?.records ?? [];
@@ -127,7 +127,7 @@ const PartnerOpportunities = () => {
         <div className="relative w-full sm:w-auto sm:flex-1 sm:min-w-[200px] sm:max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Search opportunities..."
+            placeholder={t("Search opportunities...")}
             value={search}
             onChange={(e) => handleSearchChange(e.target.value)}
             className="pl-9 h-9"
@@ -139,7 +139,7 @@ const PartnerOpportunities = () => {
             <SelectValue placeholder="Stage" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Stages</SelectItem>
+            <SelectItem value="all">{t("All Stages")}</SelectItem>
             {stages.map((s) => (
               <SelectItem key={s} value={s}>{s}</SelectItem>
             ))}
@@ -158,7 +158,7 @@ const PartnerOpportunities = () => {
         {isError ? (
           <div className="flex items-center justify-center p-8">
             <div className="text-center space-y-2">
-              <p className="text-destructive font-medium">Failed to load opportunities</p>
+              <p className="text-destructive font-medium">{t("Failed to load opportunities")}</p>
               <p className="text-sm text-muted-foreground">{(error as Error)?.message || "Please try refreshing."}</p>
             </div>
           </div>
@@ -166,12 +166,12 @@ const PartnerOpportunities = () => {
           <div className="flex items-center justify-center p-12">
             <div className="flex flex-col items-center gap-3">
               <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-              <p className="text-sm text-muted-foreground">Loading opportunities...</p>
+              <p className="text-sm text-muted-foreground">{t("Loading opportunities...")}</p>
             </div>
           </div>
         ) : paginated.length === 0 ? (
           <div className="flex items-center justify-center py-20 text-muted-foreground">
-            No opportunities found
+            {t("No opportunities found")}
           </div>
         ) : (
           <div className="w-full overflow-x-auto border-b">

@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -77,6 +78,7 @@ const AdminPartners = () => {
 
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
 
+  const navigate = useNavigate();
   const { data: partners, isLoading, isError, error } = useAdminPartners();
   const createPartner = useCreatePartner();
   const deletePartner = useDeletePartner();
@@ -231,7 +233,12 @@ const AdminPartners = () => {
                 {sorted.map((p) => (
                   <TableRow key={p.id} className="hover:bg-muted/50 h-[52px]">
                     <TableCell className="py-2">
-                      <span className="text-sm font-medium">{p.name}</span>
+                      <button
+                        className="text-sm font-medium text-foreground hover:text-primary hover:underline transition-colors text-left"
+                        onClick={() => navigate(`/admin/users?partner=${p.id}`)}
+                      >
+                        {p.name}
+                      </button>
                     </TableCell>
                     <TableCell className="py-2">
                       <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${getTypeColor(p.type)}`}>

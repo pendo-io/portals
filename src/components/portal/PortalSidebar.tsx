@@ -32,6 +32,7 @@ import {
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useAuth } from "@/hooks/useAuth";
+import { usePortalType } from "@/hooks/usePortalType";
 
 export function PortalSidebar() {
   const location = useLocation();
@@ -39,6 +40,7 @@ export function PortalSidebar() {
   const { theme, setTheme } = useTheme();
   const { toggleSidebar } = useSidebar();
   const { signOut, isSuperAdmin, impersonating } = useAuth();
+  const { t } = usePortalType();
   const showAdmin = isSuperAdmin && !impersonating;
 
   const handleLogout = async () => {
@@ -51,15 +53,15 @@ export function PortalSidebar() {
     (path !== "/" && location.pathname.startsWith(path));
 
   const navItems = [
-    { path: "/", label: "Home", icon: Home },
-    { path: "/leads", label: "Leads", icon: Users },
-    { path: "/opportunities", label: "Opportunities", icon: Target },
-    { path: "/referral", label: "Submit Lead", icon: FileText },
+    { path: "/", label: t("Home"), icon: Home },
+    { path: "/leads", label: t("Leads"), icon: Users },
+    { path: "/opportunities", label: t("Opportunities"), icon: Target },
+    { path: "/referral", label: t("Submit Lead"), icon: FileText },
   ];
 
   const adminItems = [
-    { path: "/admin/users", label: "Users", icon: Shield },
-    { path: "/admin/partners", label: "Partners", icon: Handshake },
+    { path: "/admin/users", label: t("Users"), icon: Shield },
+    { path: "/admin/partners", label: t("Partners"), icon: Handshake },
   ];
 
   return (
@@ -110,7 +112,7 @@ export function PortalSidebar() {
         {showAdmin && (
           <SidebarGroup>
             <div className="px-3 py-1.5 group-data-[collapsible=icon]:hidden">
-              <span className="text-[10px] uppercase tracking-widest text-muted-foreground/60 font-semibold">Admin</span>
+              <span className="text-[10px] uppercase tracking-widest text-muted-foreground/60 font-semibold">{t("Admin")}</span>
             </div>
             <SidebarGroupContent>
               <SidebarMenu>

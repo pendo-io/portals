@@ -55,7 +55,7 @@ const PartnerReferralForm = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { user, sfdcAccountId } = useAuth();
-  const { basePath } = usePortalType();
+  const { t } = usePortalType();
   const [step, setStep] = useState(0);
   const [submitted, setSubmitted] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -164,17 +164,17 @@ const PartnerReferralForm = () => {
               <CheckCircle2 className="h-8 w-8 text-emerald-600" />
             </div>
             <div>
-              <h2 className="text-2xl font-bold">Referral Submitted</h2>
+              <h2 className="text-2xl font-bold">{t("Referral Submitted")}</h2>
               <p className="text-sm text-muted-foreground mt-3 leading-relaxed">
-                Thank you for your partnership with Pendo! We will review and strive to respond within 2 business days.
+                {t("Thank you for your partnership with Pendo! We will review and strive to respond within 2 business days.")}
               </p>
             </div>
             <div className="flex gap-3 justify-center pt-2">
               <Button variant="outline" onClick={() => { setSubmitted(false); setForm(initial); setStep(0); }}>
-                Submit Another
+                {t("Submit Another")}
               </Button>
               <Button onClick={() => navigate("/")}>
-                Back to Home
+                {t("Back to Home")}
               </Button>
             </div>
           </div>
@@ -190,10 +190,10 @@ const PartnerReferralForm = () => {
       {/* Content */}
       <div className="flex-1 flex items-center justify-center p-6 sm:p-12 overflow-y-auto">
         <div className="w-full max-w-3xl" key={step}>
-          {step === 0 && <CompanyStep form={form} set={set} shake={shakeFields} />}
-          {step === 1 && <ContactStep form={form} set={set} setSelect={setSelect} shake={shakeFields} />}
-          {step === 2 && <AddressStep form={form} set={set} shake={shakeFields} />}
-          {step === 3 && <OpportunityStep form={form} set={set} setSelect={setSelect} shake={shakeFields} />}
+          {step === 0 && <CompanyStep form={form} set={set} shake={shakeFields} t={t} />}
+          {step === 1 && <ContactStep form={form} set={set} setSelect={setSelect} shake={shakeFields} t={t} />}
+          {step === 2 && <AddressStep form={form} set={set} shake={shakeFields} t={t} />}
+          {step === 3 && <OpportunityStep form={form} set={set} setSelect={setSelect} shake={shakeFields} t={t} />}
         </div>
       </div>
 
@@ -203,7 +203,7 @@ const PartnerReferralForm = () => {
           {step > 0 && (
             <Button variant="ghost" onClick={prev} className="gap-1.5">
               <ArrowLeft className="h-4 w-4" />
-              Back
+              {t("Back")}
             </Button>
           )}
         </div>
@@ -215,11 +215,11 @@ const PartnerReferralForm = () => {
           {isLast ? (
             <Button onClick={handleSubmit} disabled={saving} className="gap-1.5 min-w-[140px]">
               {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-              {saving ? "Submitting..." : "Submit Referral"}
+              {saving ? t("Submitting...") : t("Submit Referral")}
             </Button>
           ) : (
             <Button onClick={next} className="gap-1.5">
-              Continue
+              {t("Continue")}
               <ArrowRight className="h-4 w-4" />
             </Button>
           )}
@@ -249,17 +249,18 @@ interface StepProps {
   set: (field: keyof FormData) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
   setSelect?: (field: keyof FormData) => (value: string) => void;
   shake: Set<string>;
+  t: (key: string) => string;
 }
 
-function CompanyStep({ form, set, shake }: StepProps) {
+function CompanyStep({ form, set, shake, t }: StepProps) {
   return (
     <div className="space-y-8">
-      <StepHeader title="Company Information" description="Tell us about the company you're referring." />
+      <StepHeader title={t("Company Information")} description={t("Tell us about the company you're referring.")} />
       <div className="space-y-6">
-        <Field label="Company" required shake={shake.has("company")}>
+        <Field label={t("Company")} required shake={shake.has("company")}>
           <Input value={form.company} onChange={set("company")} placeholder="Acme Inc" autoFocus />
         </Field>
-        <Field label="Website" required shake={shake.has("website")}>
+        <Field label={t("Website")} required shake={shake.has("website")}>
           <Input value={form.website} onChange={set("website")} placeholder="https://acme.com" />
         </Field>
       </div>
@@ -267,10 +268,10 @@ function CompanyStep({ form, set, shake }: StepProps) {
   );
 }
 
-function ContactStep({ form, set, setSelect, shake }: StepProps) {
+function ContactStep({ form, set, setSelect, shake, t }: StepProps) {
   return (
     <div className="space-y-8">
-      <StepHeader title="Contact Details" description="Who should we reach out to at this company?" />
+      <StepHeader title={t("Contact Details")} description={t("Who should we reach out to at this company?")} />
       <div className="space-y-6">
         <div className="grid grid-cols-3 gap-4">
           <Field label="Salutation">
@@ -304,10 +305,10 @@ function ContactStep({ form, set, setSelect, shake }: StepProps) {
   );
 }
 
-function AddressStep({ form, set }: StepProps) {
+function AddressStep({ form, set, t }: StepProps) {
   return (
     <div className="space-y-8">
-      <StepHeader title="Address" description="Optional. Where is this company located?" />
+      <StepHeader title={t("Address")} description={t("Optional. Where is this company located?")} />
       <div className="space-y-6">
         <Field label="Street">
           <Input value={form.street} onChange={set("street")} placeholder="123 Main St" autoFocus />
@@ -333,10 +334,10 @@ function AddressStep({ form, set }: StepProps) {
   );
 }
 
-function OpportunityStep({ form, set, setSelect, shake }: StepProps) {
+function OpportunityStep({ form, set, setSelect, shake, t }: StepProps) {
   return (
     <div className="space-y-8">
-      <StepHeader title="Opportunity Details" description="Help us understand the prospect's needs and timeline." />
+      <StepHeader title={t("Opportunity Details")} description={t("Help us understand the prospect's needs and timeline.")} />
       <div className="space-y-6">
         <Field label="Number of Users" required shake={shake.has("numberOfUsers")}>
           <Input value={form.numberOfUsers} onChange={set("numberOfUsers")} placeholder="e.g. 500" autoFocus />
