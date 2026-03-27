@@ -77,6 +77,12 @@ const PartnerReferralForm = () => {
       toast.error("Please fill in all required fields");
       return false;
     }
+    if (step === 0 && form.website && (!/^https?:\/\/.+\..+/.test(form.website) || form.website.length > 255)) {
+      setShakeFields(new Set(["website"]));
+      setTimeout(() => setShakeFields(new Set()), 600);
+      toast.error(form.website.length > 255 ? "Website must be 255 characters or less" : "Please enter a valid URL (e.g. https://example.com)");
+      return false;
+    }
     if (step === 1 && form.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
       setShakeFields(new Set(["email"]));
       setTimeout(() => setShakeFields(new Set()), 600);
@@ -269,7 +275,7 @@ function CompanyStep({ form, set, shake, t }: StepProps) {
           <Input value={form.company} onChange={set("company")} placeholder="Acme Inc" autoFocus />
         </Field>
         <Field label={t("Website")} required shake={shake.has("website")}>
-          <Input value={form.website} onChange={set("website")} placeholder="https://acme.com" />
+          <Input type="url" maxLength={255} value={form.website} onChange={set("website")} placeholder="https://acme.com" />
         </Field>
       </div>
     </div>
