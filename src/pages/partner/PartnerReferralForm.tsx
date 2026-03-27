@@ -76,11 +76,16 @@ const PartnerReferralForm = () => {
       toast.error("Please fill in all required fields");
       return false;
     }
-    if (step === 0 && form.website && (!/^(https?:\/\/)?.+\..+/.test(form.website) || form.website.length > 255)) {
-      setShakeFields(new Set(["website"]));
-      setTimeout(() => setShakeFields(new Set()), 600);
-      toast.error(form.website.length > 255 ? "Website must be 255 characters or less" : "Please enter a valid URL (e.g. example.com)");
-      return false;
+    if (step === 0 && form.website) {
+      const url = form.website.startsWith("http") ? form.website : `https://${form.website}`;
+      let valid = false;
+      try { valid = Boolean(new URL(url).hostname.includes(".")); } catch {}
+      if (!valid || form.website.length > 255) {
+        setShakeFields(new Set(["website"]));
+        setTimeout(() => setShakeFields(new Set()), 600);
+        toast.error(form.website.length > 255 ? "Website must be 255 characters or less" : "Please enter a valid URL (e.g. acme.com)");
+        return false;
+      }
     }
     if (step === 1 && form.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
       setShakeFields(new Set(["email"]));

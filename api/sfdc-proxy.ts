@@ -54,7 +54,11 @@ async function verifyAuth(req: VercelRequest) {
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  res.setHeader("Access-Control-Allow-Origin", req.headers.origin || "");
+  const allowedOrigins = [process.env.ALLOWED_ORIGIN || "https://pendoportals.vercel.app", "http://localhost:8080"];
+  const origin = req.headers.origin || "";
+  if (allowedOrigins.includes(origin)) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+  }
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "content-type, authorization");
   res.setHeader("Access-Control-Allow-Credentials", "true");
