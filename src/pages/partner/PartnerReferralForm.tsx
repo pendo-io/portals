@@ -77,6 +77,12 @@ const PartnerReferralForm = () => {
       toast.error("Please fill in all required fields");
       return false;
     }
+    if (step === 1 && form.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
+      setShakeFields(new Set(["email"]));
+      setTimeout(() => setShakeFields(new Set()), 600);
+      toast.error("Please enter a valid email address");
+      return false;
+    }
     return true;
   }, [step, form]);
 
