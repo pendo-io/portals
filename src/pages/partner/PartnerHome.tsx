@@ -56,7 +56,7 @@ const PartnerHome = () => {
 
   return (
     <div className="flex-1 p-4 sm:p-6 space-y-6 sm:space-y-8 overflow-y-auto">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between animate-fade-up">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">{t("Overview")}</h1>
           <p className="text-sm text-muted-foreground mt-1">{t("Welcome back. Here's your partnership overview.")}</p>
@@ -68,7 +68,7 @@ const PartnerHome = () => {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 animate-fade-up" style={{ animationDelay: "75ms" }}>
         <StatCard
           label={t("All Leads")}
           value={leadsLoading ? null : String(leads.length)}
@@ -83,7 +83,7 @@ const PartnerHome = () => {
       </div>
 
       {/* Quick Links */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 animate-fade-up" style={{ animationDelay: "150ms" }}>
         <Card className="hover:border-primary/50 transition-colors cursor-pointer" onClick={() => navigate(`${basePath}/leads`)}>
           <CardContent className="p-5 flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -131,7 +131,7 @@ const PartnerHome = () => {
       </div>
 
       {/* Leads by Created Date & Opportunities by Close Date */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 animate-fade-up" style={{ animationDelay: "225ms" }}>
         {/* Leads by Created Date */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-3">
