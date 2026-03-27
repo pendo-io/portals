@@ -24,7 +24,6 @@ const SECTIONS = ["Company", "Contact", "Address", "Opportunity"] as const;
 const initial = {
   company: "",
   website: "",
-  salutation: "",
   firstName: "",
   lastName: "",
   email: "",
@@ -77,10 +76,10 @@ const PartnerReferralForm = () => {
       toast.error("Please fill in all required fields");
       return false;
     }
-    if (step === 0 && form.website && (!/^https?:\/\/.+\..+/.test(form.website) || form.website.length > 255)) {
+    if (step === 0 && form.website && (!/^(https?:\/\/)?.+\..+/.test(form.website) || form.website.length > 255)) {
       setShakeFields(new Set(["website"]));
       setTimeout(() => setShakeFields(new Set()), 600);
-      toast.error(form.website.length > 255 ? "Website must be 255 characters or less" : "Please enter a valid URL (e.g. https://example.com)");
+      toast.error(form.website.length > 255 ? "Website must be 255 characters or less" : "Please enter a valid URL (e.g. example.com)");
       return false;
     }
     if (step === 1 && form.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
@@ -275,7 +274,7 @@ function CompanyStep({ form, set, shake, t }: StepProps) {
           <Input value={form.company} onChange={set("company")} placeholder="Acme Inc" autoFocus />
         </Field>
         <Field label={t("Website")} required shake={shake.has("website")}>
-          <Input type="url" maxLength={255} value={form.website} onChange={set("website")} placeholder="https://acme.com" />
+          <Input maxLength={255} value={form.website} onChange={set("website")} placeholder="acme.com" />
         </Field>
       </div>
     </div>
@@ -287,18 +286,7 @@ function ContactStep({ form, set, setSelect, shake, t }: StepProps) {
     <div className="space-y-8">
       <StepHeader title={t("Contact Details")} description={t("Who should we reach out to at this company?")} />
       <div className="space-y-6">
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <Field label="Salutation">
-            <Select value={form.salutation} onValueChange={setSelect!("salutation")}>
-              <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Mr.">Mr.</SelectItem>
-                <SelectItem value="Ms.">Ms.</SelectItem>
-                <SelectItem value="Mrs.">Mrs.</SelectItem>
-                <SelectItem value="Dr.">Dr.</SelectItem>
-              </SelectContent>
-            </Select>
-          </Field>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Field label="First Name">
             <Input value={form.firstName} onChange={set("firstName")} placeholder="First name" autoFocus />
           </Field>
