@@ -26,10 +26,12 @@ const PartnerHome = () => {
   const opps = oppsData?.records ?? [];
 
   const leadStats = useMemo(() => {
-    const active = leads.filter(
-      (l) => !l.Status.toLowerCase().includes("closed") && !l.Status.toLowerCase().includes("disqualified")
-    );
-    return { active: active.length, total: leads.length };
+    const now = new Date();
+    const thisMonth = leads.filter((l) => {
+      const d = new Date(l.CreatedDate);
+      return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+    });
+    return { total: leads.length, thisMonth: thisMonth.length };
   }, [leads]);
 
   const oppStats = useMemo(() => {
@@ -72,6 +74,7 @@ const PartnerHome = () => {
         <StatCard
           label={t("All Leads")}
           value={leadsLoading ? null : String(leads.length)}
+          sub={leadsLoading ? null : `${leadStats.thisMonth} this month`}
           icon={Users}
         />
         <StatCard
