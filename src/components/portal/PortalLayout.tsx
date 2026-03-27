@@ -10,9 +10,9 @@ import { usePortalType } from "@/hooks/usePortalType";
 import { Button } from "@/components/ui/button";
 
 const PortalLayout = () => {
-  // Prefetch data at layout level so it's warm when pages render
-  useSfdcLeads();
-  useSfdcOpportunities();
+  const { isLoading: leadsLoading } = useSfdcLeads();
+  const { isLoading: oppsLoading } = useSfdcOpportunities();
+  const dataReady = !leadsLoading && !oppsLoading;
 
   const { impersonating, stopImpersonating } = useAuth();
   const { t } = usePortalType();
@@ -20,7 +20,6 @@ const PortalLayout = () => {
   const { pathname } = useLocation();
   const contentRef = useRef<HTMLDivElement>(null);
 
-  // Reset scroll position on route change — instant, no visible scroll
   useEffect(() => {
     contentRef.current?.scrollTo(0, 0);
   }, [pathname]);
@@ -29,6 +28,17 @@ const PortalLayout = () => {
     stopImpersonating();
     navigate("/admin/users", { replace: true });
   };
+
+  if (!dataReady) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <img src="/logo.png" alt="Pendo" className="h-10 w-10 animate-pulse" />
+          <p className="text-sm text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <SidebarProvider>
