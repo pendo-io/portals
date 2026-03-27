@@ -24,7 +24,7 @@ export function useSfdcLeads() {
     queryKey: ["sfdc-leads", user?.id, sfdcAccountId, shouldFilter],
     queryFn: () => {
       const where = shouldFilter && sfdcAccountId && isSafeSfdcId(sfdcAccountId)
-        ? `WHERE LeadSource = 'Partner Referral' AND Referral_Partner_Account__c = '${sfdcAccountId}'`
+        ? `WHERE Referral_Partner_Account__c = '${sfdcAccountId}'`
         : `WHERE LeadSource = 'Partner Referral'`;
 
       return sfdcQuery<SfdcLead>(
