@@ -133,12 +133,12 @@ const PartnerHome = () => {
         </Card>
       </div>
 
-      {/* Leads by Created Date & Opportunities by Close Date */}
+      {/* Leads by created date & Opportunities by close date */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 animate-fade-up" style={{ animationDelay: "225ms" }}>
-        {/* Leads by Created Date */}
+        {/* Leads by created date */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-3">
-            <CardTitle className="text-base">Leads by Created Date</CardTitle>
+            <CardTitle className="text-base">Leads by created date</CardTitle>
             <Button variant="ghost" size="sm" className="text-xs text-muted-foreground" onClick={() => navigate(`${basePath}/leads`)}>
               {t("View Leads")}
               <ArrowRight className="h-3 w-3 ml-1" />
@@ -177,10 +177,10 @@ const PartnerHome = () => {
           </CardContent>
         </Card>
 
-        {/* Opportunities by Close Date */}
+        {/* Opportunities by close date */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-3">
-            <CardTitle className="text-base">Opportunities by Close Date</CardTitle>
+            <CardTitle className="text-base">Opportunities by close date</CardTitle>
             <Button variant="ghost" size="sm" className="text-xs text-muted-foreground" onClick={() => navigate(`${basePath}/opportunities`)}>
               {t("View Opportunities")}
               <ArrowRight className="h-3 w-3 ml-1" />
