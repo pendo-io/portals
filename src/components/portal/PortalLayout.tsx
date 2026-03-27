@@ -58,10 +58,10 @@ const PortalLayout = () => {
           ) : (
             <div className="flex-1 flex items-center justify-center">
               <div className="flex flex-col items-center gap-5">
-                <div className="relative h-10 w-10">
+                <div className="relative h-14 w-14">
                   <div className="absolute inset-0 rounded-full border-2 border-primary/20" />
                   <div className="absolute inset-0 rounded-full border-2 border-transparent border-t-primary animate-spin" />
-                  <img src="/logo.png" alt="" className="absolute inset-1.5 h-7 w-7" />
+                  <img src="/logo.png" alt="" className="absolute inset-3 h-8 w-8" />
                 </div>
               </div>
             </div>
