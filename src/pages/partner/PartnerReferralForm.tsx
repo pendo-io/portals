@@ -342,7 +342,7 @@ function OpportunityStep({ form, set, setSelect, shake, t }: StepProps) {
       <StepHeader title={t("Opportunity Details")} description={t("Help us understand the prospect's needs and timeline.")} />
       <div className="space-y-6">
         <Field label="Number of Users" required shake={shake.has("numberOfUsers")}>
-          <Input value={form.numberOfUsers} onChange={set("numberOfUsers")} placeholder="e.g. 500" autoFocus />
+          <Input type="number" value={form.numberOfUsers} onChange={set("numberOfUsers")} placeholder="e.g. 500" autoFocus />
         </Field>
         <Field label="Current Tech Stack / Solutions" required shake={shake.has("currentTechStack")}>
           <Textarea value={form.currentTechStack} onChange={set("currentTechStack")} placeholder="What tools are they currently using?" rows={2} />
@@ -353,14 +353,6 @@ function OpportunityStep({ form, set, setSelect, shake, t }: StepProps) {
             <SelectContent>
               <SelectItem value="Pendo for Customers">Pendo for Customers</SelectItem>
               <SelectItem value="Pendo for Employees">Pendo for Employees</SelectItem>
-              <SelectItem value="User Onboarding">User Onboarding</SelectItem>
-              <SelectItem value="Feature Adoption">Feature Adoption</SelectItem>
-              <SelectItem value="Retention / Churn">Retention / Churn</SelectItem>
-              <SelectItem value="Product Analytics">Product Analytics</SelectItem>
-              <SelectItem value="Customer Feedback">Customer Feedback</SelectItem>
-              <SelectItem value="Product Planning">Product Planning</SelectItem>
-              <SelectItem value="Change Management">Change Management</SelectItem>
-              <SelectItem value="Other">Other</SelectItem>
             </SelectContent>
           </Select>
         </Field>
