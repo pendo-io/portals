@@ -10,9 +10,8 @@ import { usePortalType } from "@/hooks/usePortalType";
 import { Button } from "@/components/ui/button";
 
 const PortalLayout = () => {
-  const { isLoading: leadsLoading } = useSfdcLeads();
-  const { isLoading: oppsLoading } = useSfdcOpportunities();
-  const dataReady = !leadsLoading && !oppsLoading;
+  useSfdcLeads();
+  useSfdcOpportunities();
 
   const { impersonating, stopImpersonating } = useAuth();
   const { t } = usePortalType();
@@ -53,19 +52,7 @@ const PortalLayout = () => {
             </div>
           )}
           <PortalTopBar />
-          {dataReady ? (
-            <Outlet />
-          ) : (
-            <div className="flex-1 flex items-center justify-center">
-              <div className="flex flex-col items-center gap-5">
-                <div className="relative h-14 w-14">
-                  <div className="absolute inset-0 rounded-full border-2 border-primary/20" />
-                  <div className="absolute inset-0 rounded-full border-2 border-transparent border-t-primary animate-spin" />
-                  <img src="/logo.png" alt="" className="absolute inset-3 h-8 w-8" />
-                </div>
-              </div>
-            </div>
-          )}
+          <Outlet />
         </div>
       </SidebarInset>
     </SidebarProvider>
