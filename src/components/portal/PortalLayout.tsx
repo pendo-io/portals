@@ -29,17 +29,6 @@ const PortalLayout = () => {
     navigate("/admin/users", { replace: true });
   };
 
-  if (!dataReady) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <img src="/logo.png" alt="Pendo" className="h-10 w-10 animate-pulse" />
-          <p className="text-sm text-muted-foreground">Loading...</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <SidebarProvider>
       <PortalSidebar />
@@ -64,7 +53,19 @@ const PortalLayout = () => {
             </div>
           )}
           <PortalTopBar />
-          <Outlet />
+          {dataReady ? (
+            <Outlet />
+          ) : (
+            <div className="flex-1 flex items-center justify-center">
+              <div className="flex flex-col items-center gap-5">
+                <div className="relative h-10 w-10">
+                  <div className="absolute inset-0 rounded-full border-2 border-primary/20" />
+                  <div className="absolute inset-0 rounded-full border-2 border-transparent border-t-primary animate-spin" />
+                  <img src="/logo.png" alt="" className="absolute inset-1.5 h-7 w-7" />
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </SidebarInset>
     </SidebarProvider>
