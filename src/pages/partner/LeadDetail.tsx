@@ -5,6 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useSfdcLeadDetail } from "@/hooks/useSfdcLeadDetail";
 import { useSfdcApprovalHistory } from "@/hooks/useSfdcApprovalHistory";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
 import {
   Loader2,
@@ -147,16 +148,21 @@ export default function LeadDetail() {
               {lead.Status}
             </span>
             {showSfdcLink && (
-              <Button variant="outline" size="sm" asChild>
-                <a
-                  href={`https://pendo.lightning.force.com/lightning/r/Lead/${lead.Id}/view`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <ExternalLink className="h-4 w-4 mr-1.5" />
-                  View in Salesforce
-                </a>
-              </Button>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="outline" size="sm" asChild>
+                    <a
+                      href={`https://pendo.lightning.force.com/lightning/r/Lead/${lead.Id}/view`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <ExternalLink className="h-4 w-4 mr-1.5" />
+                      View in Salesforce
+                    </a>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Only visible to admins</TooltipContent>
+              </Tooltip>
             )}
             <Button variant="outline" size="sm" onClick={() => navigate(`${basePath}/leads`)}>
               <ArrowLeft className="h-4 w-4 mr-1.5" />

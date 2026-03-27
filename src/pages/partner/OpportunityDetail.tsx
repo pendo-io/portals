@@ -6,6 +6,7 @@ import { useSfdcOpportunityDetail } from "@/hooks/useSfdcOpportunityDetail";
 import { useSfdcApprovalHistory } from "@/hooks/useSfdcApprovalHistory";
 import { useSfdcBillingInstallments } from "@/hooks/useSfdcBillingInstallments";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   Table,
   TableBody,
@@ -128,16 +129,21 @@ export default function OpportunityDetail() {
               {opp.StageName}
             </span>
             {showSfdcLink && (
-              <Button variant="outline" size="sm" asChild>
-                <a
-                  href={`https://pendo.lightning.force.com/lightning/r/Opportunity/${opp.Id}/view`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <ExternalLink className="h-4 w-4 mr-1.5" />
-                  View in Salesforce
-                </a>
-              </Button>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="outline" size="sm" asChild>
+                    <a
+                      href={`https://pendo.lightning.force.com/lightning/r/Opportunity/${opp.Id}/view`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <ExternalLink className="h-4 w-4 mr-1.5" />
+                      View in Salesforce
+                    </a>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Only visible to admins</TooltipContent>
+              </Tooltip>
             )}
             <Button variant="outline" size="sm" onClick={() => navigate(`${basePath}/opportunities`)}>
               <ArrowLeft className="h-4 w-4 mr-1.5" />
