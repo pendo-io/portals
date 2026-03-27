@@ -80,6 +80,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         headers: {
           Authorization: `Bearer ${accessToken}`,
           "Content-Type": "application/json",
+          "Sforce-Duplicate-Rule-Header": "allowSave=true",
         },
         body: JSON.stringify(fields),
       }
