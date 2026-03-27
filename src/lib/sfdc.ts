@@ -54,6 +54,9 @@ export async function sfdcCreate(
   const data = await res.json();
 
   if (!res.ok) {
+    if (Array.isArray(data) && data[0]?.errorCode === "DUPLICATES_DETECTED") {
+      throw new Error("A lead with this email already exists in Salesforce. Please use a different email address.");
+    }
     const msg = Array.isArray(data) ? data[0]?.message : data.error || `Create failed (${res.status})`;
     throw new Error(msg);
   }
