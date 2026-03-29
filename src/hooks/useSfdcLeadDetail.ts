@@ -15,13 +15,11 @@ export interface SfdcLeadDetail {
   CreatedDate: string;
   Owner: { Name: string } | null;
   CreatedBy: { Name: string } | null;
-  // Address compound field
   Street: string | null;
   City: string | null;
   State: string | null;
   PostalCode: string | null;
   Country: string | null;
-  // Custom fields
   Referral_Partner_Account__c: string | null;
   Referral_Partner_Account__r: { Name: string } | null;
   Number_of_Users__c: number | null;
@@ -32,39 +30,26 @@ export interface SfdcLeadDetail {
   Additional_Information__c: string | null;
 }
 
-const LEAD_FIELDS = `Id, Name, FirstName, LastName, Company, Email, Website,
-                Status, LeadSource, CreatedDate,
-                Owner.Name, CreatedBy.Name,
-                Street, City, State, PostalCode, Country,
-                Referral_Partner_Account__c, Referral_Partner_Account__r.Name,
-                Number_of_Users__c,
-                Current_Tech_Stack_Solutions__c, Department_s__c,
-                Use_Case__c, Competitors_Considered_or_Incumbent__c,
-                Additional_Information__c`;
-
-export { LEAD_FIELDS };
-
 export function useSfdcLeadDetail(leadId: string | undefined) {
-  const { user, session, sfdcAccountId, isSuperAdmin, impersonating } = useAuth();
+  const { user, session, sfdcAccountId, impersonating } = useAuth();
   const queryClient = useQueryClient();
-  const shouldFilter = !isSuperAdmin || !!impersonating;
+  const impersonateAccountId = impersonating?.sfdcAccountId ?? undefined;
 
   return useQuery({
     queryKey: ["sfdc-lead", leadId],
     queryFn: () => {
-      const cachedList = queryClient.getQueryData<SfdcQueryResult<SfdcLeadDetail>>(["sfdc-leads", user?.id, sfdcAccountId, shouldFilter]);
+      const cachedList = queryClient.getQueryData<SfdcQueryResult<SfdcLeadDetail>>(
+        ["sfdc-leads", user?.id, impersonateAccountId ?? sfdcAccountId]
+      );
       const cached = cachedList?.records?.find((l) => l.Id === leadId);
       if (cached) {
         return { totalSize: 1, done: true, records: [cached] } as SfdcQueryResult<SfdcLeadDetail>;
       }
 
-      return sfdcQuery<SfdcLeadDetail>(
-        `SELECT ${LEAD_FIELDS}
-         FROM Lead
-         WHERE Id = '${leadId}'
-         LIMIT 1`,
-        session?.access_token
-      );
+      return sfdcQuery<SfdcLeadDetail>("lead-detail", { leadId }, {
+        accessToken: session?.access_token,
+        impersonateAccountId,
+      });
     },
     enabled: !!user && !!leadId && isSafeSfdcId(leadId),
     staleTime: 5 * 60_000,

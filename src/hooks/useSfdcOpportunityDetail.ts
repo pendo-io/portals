@@ -15,7 +15,6 @@ export interface SfdcOpportunityDetail {
   LeadSource: string | null;
   Type: string | null;
   CreatedDate: string;
-  // Custom fields
   ARR__c: number | null;
   ARR_USD__c: number | null;
   Net_ARR__c: number | null;
@@ -40,40 +39,26 @@ export interface SfdcOpportunityDetail {
   Initial_Contact_Role__c: string | null;
 }
 
-export const OPP_FIELDS = `Id, Name, Account.Name, Owner.Name, CreatedBy.Name,
-                StageName, Amount, CloseDate, Probability, LeadSource, Type, CreatedDate,
-                ARR__c, ARR_USD__c, Net_ARR__c, TCV_USD__c,
-                Expiration_Date__c, Transaction_Type__c,
-                Next_Steps__c, Pipeline_Date__c,
-                Primary_Competitor_Names__c,
-                Partner_Relationship__c, Partner_Sub_type__c,
-                Created_By_Role__c, Net_ARR_Percentage__c,
-                Initial_Product_Interest__c, Management_Notes__c,
-                Solution_Partner_SI__c, Cloud_Hosting_Commit_Hyperscalers__c,
-                Data_Warehouse_Provider__c, Referring_Account_Owner__r.Name,
-                Initial_Contact__c, Initial_Contact__r.Name, Initial_Contact_Role__c`;
-
 export function useSfdcOpportunityDetail(oppId: string | undefined) {
-  const { user, session, sfdcAccountId, isSuperAdmin, impersonating } = useAuth();
+  const { user, session, sfdcAccountId, impersonating } = useAuth();
   const queryClient = useQueryClient();
-  const shouldFilter = !isSuperAdmin || !!impersonating;
+  const impersonateAccountId = impersonating?.sfdcAccountId ?? undefined;
 
   return useQuery({
     queryKey: ["sfdc-opportunity", oppId],
     queryFn: () => {
-      const cachedList = queryClient.getQueryData<SfdcQueryResult<SfdcOpportunityDetail>>(["sfdc-opportunities", user?.id, sfdcAccountId, shouldFilter]);
+      const cachedList = queryClient.getQueryData<SfdcQueryResult<SfdcOpportunityDetail>>(
+        ["sfdc-opportunities", user?.id, impersonateAccountId ?? sfdcAccountId]
+      );
       const cached = cachedList?.records?.find((o) => o.Id === oppId);
       if (cached) {
         return { totalSize: 1, done: true, records: [cached] } as SfdcQueryResult<SfdcOpportunityDetail>;
       }
 
-      return sfdcQuery<SfdcOpportunityDetail>(
-        `SELECT ${OPP_FIELDS}
-         FROM Opportunity
-         WHERE Id = '${oppId}'
-         LIMIT 1`,
-        session?.access_token
-      );
+      return sfdcQuery<SfdcOpportunityDetail>("opportunity-detail", { oppId }, {
+        accessToken: session?.access_token,
+        impersonateAccountId,
+      });
     },
     enabled: !!user && !!oppId && isSafeSfdcId(oppId),
     staleTime: 5 * 60_000,
