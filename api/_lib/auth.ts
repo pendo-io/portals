@@ -1,7 +1,6 @@
-import type { VercelRequest } from "@vercel/node";
 import { createClient } from "@supabase/supabase-js";
 
-export async function verifyAuth(req: VercelRequest) {
+export async function verifyAuth(req: any) {
   const authHeader = req.headers.authorization;
   if (!authHeader?.startsWith("Bearer ")) return null;
 

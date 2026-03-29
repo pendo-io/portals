@@ -1,5 +1,3 @@
-import type { VercelResponse } from "@vercel/node";
-
 export function getAllowedOrigins(): string[] {
   const origins = [process.env.ALLOWED_ORIGIN || "https://pendoportals.vercel.app"];
   if (process.env.NODE_ENV !== "production") {
@@ -8,7 +6,7 @@ export function getAllowedOrigins(): string[] {
   return origins;
 }
 
-export function setCorsHeaders(res: VercelResponse, origin: string) {
+export function setCorsHeaders(res: any, origin: string) {
   const allowed = getAllowedOrigins();
   if (allowed.includes(origin)) {
     res.setHeader("Access-Control-Allow-Origin", origin);
