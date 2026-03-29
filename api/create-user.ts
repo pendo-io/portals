@@ -1,6 +1,5 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { createClient } from "@supabase/supabase-js";
-import { setCorsHeaders } from "./_lib/cors";
 
 async function verifyAdmin(req: VercelRequest) {
   const authHeader = req.headers.authorization;
@@ -25,8 +24,22 @@ async function verifyAdmin(req: VercelRequest) {
   return user;
 }
 
+function getAllowedOrigins(): string[] {
+  const origins = [process.env.ALLOWED_ORIGIN || "https://pendoportals.vercel.app"];
+  if (process.env.NODE_ENV !== "production") {
+    origins.push("http://localhost:8080");
+  }
+  return origins;
+}
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  setCorsHeaders(res, req.headers.origin || "");
+  const origin = req.headers.origin || "";
+  if (getAllowedOrigins().includes(origin)) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+  }
+  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "content-type, authorization");
+  res.setHeader("Access-Control-Allow-Credentials", "true");
 
   if (req.method === "OPTIONS") return res.status(204).end();
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
