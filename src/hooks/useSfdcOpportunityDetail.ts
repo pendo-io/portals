@@ -54,13 +54,14 @@ export const OPP_FIELDS = `Id, Name, Account.Name, Owner.Name, CreatedBy.Name,
                 Initial_Contact__c, Initial_Contact__r.Name, Initial_Contact_Role__c`;
 
 export function useSfdcOpportunityDetail(oppId: string | undefined) {
-  const { user } = useAuth();
+  const { user, session, sfdcAccountId, isSuperAdmin, impersonating } = useAuth();
   const queryClient = useQueryClient();
+  const shouldFilter = !isSuperAdmin || !!impersonating;
 
   return useQuery({
     queryKey: ["sfdc-opportunity", oppId],
     queryFn: () => {
-      const cachedList = queryClient.getQueryData<SfdcQueryResult<SfdcOpportunityDetail>>(["sfdc-opportunities", user?.id]);
+      const cachedList = queryClient.getQueryData<SfdcQueryResult<SfdcOpportunityDetail>>(["sfdc-opportunities", user?.id, sfdcAccountId, shouldFilter]);
       const cached = cachedList?.records?.find((o) => o.Id === oppId);
       if (cached) {
         return { totalSize: 1, done: true, records: [cached] } as SfdcQueryResult<SfdcOpportunityDetail>;
@@ -70,7 +71,8 @@ export function useSfdcOpportunityDetail(oppId: string | undefined) {
         `SELECT ${OPP_FIELDS}
          FROM Opportunity
          WHERE Id = '${oppId}'
-         LIMIT 1`
+         LIMIT 1`,
+        session?.access_token
       );
     },
     enabled: !!user && !!oppId && isSafeSfdcId(oppId),

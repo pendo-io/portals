@@ -42,7 +42,7 @@ const PartnerLeads = () => {
   const [sortDir, setSortDir] = useState<SortDir>("asc");
   const navigate = useNavigate();
   const { basePath, t } = usePortalType();
-  const { data, isLoading, isError, error } = useSfdcLeads();
+  const { data, isLoading, isError, error, refetch } = useSfdcLeads();
 
   const leads = data?.records ?? [];
 
@@ -148,9 +148,12 @@ const PartnerLeads = () => {
       <div className="flex-1 overflow-auto">
         {isError ? (
           <div className="flex items-center justify-center p-8">
-            <div className="text-center space-y-2">
+            <div className="text-center space-y-3">
               <p className="text-destructive font-medium">{t("Failed to load leads")}</p>
-              <p className="text-sm text-muted-foreground">{(error as Error)?.message || "Please try refreshing."}</p>
+              <p className="text-sm text-muted-foreground">{(error as Error)?.message || "Something went wrong."}</p>
+              <Button variant="outline" size="sm" onClick={() => refetch()}>
+                Try Again
+              </Button>
             </div>
           </div>
         ) : isLoading ? (

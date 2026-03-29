@@ -8,7 +8,7 @@ interface SfdcUser {
 }
 
 export function useSfdcUserNames(userIds: string[]) {
-  const { user } = useAuth();
+  const { user, session } = useAuth();
   const uniqueIds = [...new Set(userIds.filter(Boolean))];
 
   return useQuery({
@@ -20,7 +20,8 @@ export function useSfdcUserNames(userIds: string[]) {
       if (safeIds.length === 0) return new Map<string, string>();
       const inClause = safeIds.map((id) => `'${id}'`).join(",");
       const result = await sfdcQuery<SfdcUser>(
-        `SELECT Id, Name FROM User WHERE Id IN (${inClause})`
+        `SELECT Id, Name FROM User WHERE Id IN (${inClause})`,
+        session?.access_token
       );
 
       const map = new Map<string, string>();

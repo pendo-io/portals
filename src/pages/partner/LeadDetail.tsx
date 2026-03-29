@@ -59,7 +59,7 @@ export default function LeadDetail() {
   const { basePath } = usePortalType();
   const { isSuperAdmin, impersonating } = useAuth();
   const showSfdcLink = isSuperAdmin && !impersonating;
-  const { data, isLoading, isError, error } = useSfdcLeadDetail(leadId);
+  const { data, isLoading, isError, error, refetch } = useSfdcLeadDetail(leadId);
   const { data: approvalData, isLoading: approvalsLoading } = useSfdcApprovalHistory(leadId);
 
   const lead = data?.records?.[0];
@@ -88,10 +88,17 @@ export default function LeadDetail() {
           {isError && (
             <p className="text-sm text-muted-foreground">{(error as Error)?.message}</p>
           )}
-          <Button variant="outline" size="sm" onClick={() => navigate(`${basePath}/leads`)}>
-            <ArrowLeft className="h-4 w-4 mr-1.5" />
-            Back to Leads
-          </Button>
+          <div className="flex items-center gap-2 justify-center">
+            {isError && (
+              <Button variant="outline" size="sm" onClick={() => refetch()}>
+                Try Again
+              </Button>
+            )}
+            <Button variant="outline" size="sm" onClick={() => navigate(`${basePath}/leads`)}>
+              <ArrowLeft className="h-4 w-4 mr-1.5" />
+              Back to Leads
+            </Button>
+          </div>
         </div>
       </div>
     );

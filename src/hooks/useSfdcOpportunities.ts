@@ -16,7 +16,7 @@ export interface SfdcOpportunity {
 const OPP_LIST_FIELDS = `Id, Name, Account.Name, StageName, Amount, CloseDate, LeadSource, CreatedDate`;
 
 export function useSfdcOpportunities() {
-  const { user, sfdcAccountId, isSuperAdmin, impersonating } = useAuth();
+  const { user, session, sfdcAccountId, isSuperAdmin, impersonating } = useAuth();
   const shouldFilter = !isSuperAdmin || !!impersonating;
 
   return useQuery({
@@ -30,7 +30,8 @@ export function useSfdcOpportunities() {
         `SELECT ${OPP_LIST_FIELDS}
          FROM Opportunity
          ${where}
-         ORDER BY CloseDate DESC`
+         ORDER BY CloseDate DESC`,
+        session?.access_token
       );
     },
     enabled: !!user,

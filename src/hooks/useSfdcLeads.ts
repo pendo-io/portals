@@ -17,7 +17,7 @@ export interface SfdcLead {
 const LEAD_LIST_FIELDS = `Id, Name, FirstName, LastName, Company, Email, Status, LeadSource, CreatedDate`;
 
 export function useSfdcLeads() {
-  const { user, sfdcAccountId, isSuperAdmin, impersonating } = useAuth();
+  const { user, session, sfdcAccountId, isSuperAdmin, impersonating } = useAuth();
   const shouldFilter = !isSuperAdmin || !!impersonating;
 
   return useQuery({
@@ -31,7 +31,8 @@ export function useSfdcLeads() {
         `SELECT ${LEAD_LIST_FIELDS}
          FROM Lead
          ${where}
-         ORDER BY CreatedDate DESC`
+         ORDER BY CreatedDate DESC`,
+        session?.access_token
       );
     },
     enabled: !!user,

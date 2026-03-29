@@ -1,5 +1,3 @@
-import { supabase } from "./supabase";
-
 export interface SfdcQueryResult<T> {
   totalSize: number;
   done: boolean;
@@ -11,19 +9,19 @@ export function isSafeSfdcId(id: string): boolean {
   return /^[a-zA-Z0-9]{15,18}$/.test(id);
 }
 
-async function getAuthHeaders(): Promise<Record<string, string>> {
-  const { data: { session } } = await supabase.auth.getSession();
+function buildHeaders(accessToken: string | undefined): Record<string, string> {
   const headers: Record<string, string> = { "Content-Type": "application/json" };
-  if (session?.access_token) {
-    headers["Authorization"] = `Bearer ${session.access_token}`;
+  if (accessToken) {
+    headers["Authorization"] = `Bearer ${accessToken}`;
   }
   return headers;
 }
 
 export async function sfdcQuery<T>(
-  query: string
+  query: string,
+  accessToken?: string
 ): Promise<SfdcQueryResult<T>> {
-  const headers = await getAuthHeaders();
+  const headers = buildHeaders(accessToken);
   const res = await fetch("/api/sfdc-proxy", {
     method: "POST",
     headers,
@@ -42,9 +40,10 @@ export async function sfdcQuery<T>(
 
 export async function sfdcCreate(
   sObject: string,
-  fields: Record<string, unknown>
+  fields: Record<string, unknown>,
+  accessToken?: string
 ): Promise<{ id: string; success: boolean; errors: string[] }> {
-  const headers = await getAuthHeaders();
+  const headers = buildHeaders(accessToken);
   const res = await fetch("/api/sfdc-create", {
     method: "POST",
     headers,

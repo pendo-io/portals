@@ -12,7 +12,7 @@ export interface SfdcApprovalStep {
 }
 
 export function useSfdcApprovalHistory(targetObjectId: string | undefined) {
-  const { user } = useAuth();
+  const { user, session } = useAuth();
 
   return useQuery({
     queryKey: ["sfdc-approval-history", targetObjectId],
@@ -22,7 +22,8 @@ export function useSfdcApprovalHistory(targetObjectId: string | undefined) {
                 Actor.Name, OriginalActor.Name
          FROM ProcessInstanceStep
          WHERE ProcessInstance.TargetObjectId = '${targetObjectId}'
-         ORDER BY CreatedDate DESC`
+         ORDER BY CreatedDate DESC`,
+        session?.access_token
       ),
     enabled: !!user && !!targetObjectId && isSafeSfdcId(targetObjectId),
     staleTime: 5 * 60_000,

@@ -59,7 +59,7 @@ export default function OpportunityDetail() {
   const { basePath } = usePortalType();
   const { isSuperAdmin, impersonating } = useAuth();
   const showSfdcLink = isSuperAdmin && !impersonating;
-  const { data, isLoading, isError, error } = useSfdcOpportunityDetail(oppId);
+  const { data, isLoading, isError, error, refetch } = useSfdcOpportunityDetail(oppId);
   const { data: approvalData, isLoading: approvalsLoading } = useSfdcApprovalHistory(oppId);
   const { data: biData, isLoading: biLoading } = useSfdcBillingInstallments(oppId);
 
@@ -89,10 +89,17 @@ export default function OpportunityDetail() {
           {isError && (
             <p className="text-sm text-muted-foreground">{(error as Error)?.message}</p>
           )}
-          <Button variant="outline" size="sm" onClick={() => navigate(`${basePath}/opportunities`)}>
-            <ArrowLeft className="h-4 w-4 mr-1.5" />
-            Back to Opportunities
-          </Button>
+          <div className="flex items-center gap-2 justify-center">
+            {isError && (
+              <Button variant="outline" size="sm" onClick={() => refetch()}>
+                Try Again
+              </Button>
+            )}
+            <Button variant="outline" size="sm" onClick={() => navigate(`${basePath}/opportunities`)}>
+              <ArrowLeft className="h-4 w-4 mr-1.5" />
+              Back to Opportunities
+            </Button>
+          </div>
         </div>
       </div>
     );

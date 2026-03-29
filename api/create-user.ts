@@ -1,5 +1,6 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { createClient } from "@supabase/supabase-js";
+import { setCorsHeaders } from "./_lib/cors";
 
 async function verifyAdmin(req: VercelRequest) {
   const authHeader = req.headers.authorization;
@@ -13,7 +14,6 @@ async function verifyAdmin(req: VercelRequest) {
   const { data: { user }, error } = await supabase.auth.getUser(authHeader.slice(7));
   if (error || !user) return null;
 
-  // Check super_admin role
   const { data: roles } = await supabase
     .from("user_roles")
     .select("role")
@@ -26,14 +26,7 @@ async function verifyAdmin(req: VercelRequest) {
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  const allowedOrigins = [process.env.ALLOWED_ORIGIN || "https://pendoportals.vercel.app", "http://localhost:8080"];
-  const origin = req.headers.origin || "";
-  if (allowedOrigins.includes(origin)) {
-    res.setHeader("Access-Control-Allow-Origin", origin);
-  }
-  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "content-type, authorization");
-  res.setHeader("Access-Control-Allow-Credentials", "true");
+  setCorsHeaders(res, req.headers.origin || "");
 
   if (req.method === "OPTIONS") return res.status(204).end();
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });

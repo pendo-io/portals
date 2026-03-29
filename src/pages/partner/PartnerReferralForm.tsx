@@ -1,6 +1,6 @@
 import { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQueryClient, useMutation } from "@tanstack/react-query";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { usePortalType } from "@/hooks/usePortalType";
 import { useAuth } from "@/hooks/useAuth";
@@ -53,11 +53,10 @@ const PartnerReferralForm = () => {
   useDocumentTitle("Lead Referral Form");
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { user, sfdcAccountId, partnerOwnerId } = useAuth();
+  const { user, session, sfdcAccountId, partnerOwnerId } = useAuth();
   const { t } = usePortalType();
   const [step, setStep] = useState(0);
   const [submitted, setSubmitted] = useState(false);
-  const [saving, setSaving] = useState(false);
   const [form, setForm] = useState<FormData>(initial);
   const [shakeFields, setShakeFields] = useState<Set<string>>(new Set());
 
@@ -105,58 +104,55 @@ const PartnerReferralForm = () => {
     if (step > 0) setStep(step - 1);
   };
 
-  const handleSubmit = async () => {
-    if (!validateStep()) return;
+  const submitMutation = useMutation({
+    mutationFn: (fields: Record<string, unknown>) =>
+      sfdcCreate("Lead", fields, session?.access_token),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["sfdc-leads"] });
+      setSubmitted(true);
+      toast.success("Referral submitted successfully");
+    },
+    onError: (err: Error) => {
+      console.error("Failed to create lead:", err);
+      toast.error(err.message || "Failed to submit referral");
+    },
+  });
+
+  const handleSubmit = () => {
+    if (!validateStep() || submitMutation.isPending) return;
     if (!user) {
       toast.error("Not authenticated");
       return;
     }
 
-    setSaving(true);
-    try {
-      const fields: Record<string, unknown> = {
-        Company: form.company,
-        Website: form.website,
-        FirstName: form.firstName || null,
-        LastName: form.lastName,
-        Email: form.email,
-        LeadSource: "Partner Referral",
-        Status: "Pending",
-        Referral_Partner_Account__c: sfdcAccountId || null,
-        Partner_Owner__c: partnerOwnerId || null,
-        // Address fields
-        Street: form.street || null,
-        City: form.city || null,
-        State: form.state || null,
-        PostalCode: form.zip || null,
-        Country: form.country || null,
-        // Custom fields
-        Department_s__c: form.departments || null,
-        Number_of_Users__c: form.numberOfUsers ? Number(form.numberOfUsers) : null,
-        Current_Tech_Stack_Solutions__c: form.currentTechStack || null,
-        Use_Case__c: form.useCase || null,
-        Competitors_Considered_or_Incumbent__c: form.competitors || null,
-        Additional_Information__c: form.additionalInfo || null,
-      };
+    const fields: Record<string, unknown> = {
+      Company: form.company,
+      Website: form.website,
+      FirstName: form.firstName || null,
+      LastName: form.lastName,
+      Email: form.email,
+      LeadSource: "Partner Referral",
+      Status: "Pending",
+      Referral_Partner_Account__c: sfdcAccountId || null,
+      Partner_Owner__c: partnerOwnerId || null,
+      Street: form.street || null,
+      City: form.city || null,
+      State: form.state || null,
+      PostalCode: form.zip || null,
+      Country: form.country || null,
+      Department_s__c: form.departments || null,
+      Number_of_Users__c: form.numberOfUsers ? Number(form.numberOfUsers) : null,
+      Current_Tech_Stack_Solutions__c: form.currentTechStack || null,
+      Use_Case__c: form.useCase || null,
+      Competitors_Considered_or_Incumbent__c: form.competitors || null,
+      Additional_Information__c: form.additionalInfo || null,
+    };
 
-      // Remove null values
-      for (const key of Object.keys(fields)) {
-        if (fields[key] === null) delete fields[key];
-      }
-
-      await sfdcCreate("Lead", fields);
-
-      // Invalidate leads cache so the new lead shows up
-      queryClient.invalidateQueries({ queryKey: ["sfdc-leads"] });
-
-      setSubmitted(true);
-      toast.success("Referral submitted successfully");
-    } catch (err) {
-      console.error("Failed to create lead:", err);
-      toast.error((err as Error).message || "Failed to submit referral");
-    } finally {
-      setSaving(false);
+    for (const key of Object.keys(fields)) {
+      if (fields[key] === null) delete fields[key];
     }
+
+    submitMutation.mutate(fields);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -231,9 +227,9 @@ const PartnerReferralForm = () => {
             <CornerDownLeft className="h-3 w-3" />
           </span>
           {isLast ? (
-            <Button onClick={handleSubmit} disabled={saving} className="gap-1.5 min-w-[140px]">
-              {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-              {saving ? t("Submitting...") : t("Submit Referral")}
+            <Button onClick={handleSubmit} disabled={submitMutation.isPending} className="gap-1.5 min-w-[140px]">
+              {submitMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+              {submitMutation.isPending ? t("Submitting...") : t("Submit Referral")}
             </Button>
           ) : (
             <Button onClick={next} className="gap-1.5">

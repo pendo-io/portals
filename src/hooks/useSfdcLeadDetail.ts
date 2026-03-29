@@ -45,13 +45,14 @@ const LEAD_FIELDS = `Id, Name, FirstName, LastName, Company, Email, Website,
 export { LEAD_FIELDS };
 
 export function useSfdcLeadDetail(leadId: string | undefined) {
-  const { user } = useAuth();
+  const { user, session, sfdcAccountId, isSuperAdmin, impersonating } = useAuth();
   const queryClient = useQueryClient();
+  const shouldFilter = !isSuperAdmin || !!impersonating;
 
   return useQuery({
     queryKey: ["sfdc-lead", leadId],
     queryFn: () => {
-      const cachedList = queryClient.getQueryData<SfdcQueryResult<SfdcLeadDetail>>(["sfdc-leads", user?.id]);
+      const cachedList = queryClient.getQueryData<SfdcQueryResult<SfdcLeadDetail>>(["sfdc-leads", user?.id, sfdcAccountId, shouldFilter]);
       const cached = cachedList?.records?.find((l) => l.Id === leadId);
       if (cached) {
         return { totalSize: 1, done: true, records: [cached] } as SfdcQueryResult<SfdcLeadDetail>;
@@ -61,7 +62,8 @@ export function useSfdcLeadDetail(leadId: string | undefined) {
         `SELECT ${LEAD_FIELDS}
          FROM Lead
          WHERE Id = '${leadId}'
-         LIMIT 1`
+         LIMIT 1`,
+        session?.access_token
       );
     },
     enabled: !!user && !!leadId && isSafeSfdcId(leadId),
