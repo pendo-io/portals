@@ -70,6 +70,8 @@ const CSV_TO_SFDC: Record<string, string> = {
 
 const REQUIRED_COLUMNS = ["Company", "Website", "Last Name", "Email", "Department(s)", "Number of Users", "Current Tech Stack / Solutions", "Use Case"];
 
+const USE_CASE_VALUES = ["Pendo for Customers", "Pendo for Employees"];
+
 type RowStatus = "pending" | "uploading" | "success" | "error";
 
 interface ParsedRow {
@@ -96,7 +98,25 @@ const PartnerBulkUpload = () => {
   /* ── Template download ── */
 
   const downloadTemplate = () => {
-    const csv = Papa.unparse({ fields: [...TEMPLATE_COLUMNS], data: [] });
+    const exampleRow: Record<string, string> = {
+      "Company": "Acme Inc",
+      "Website": "acme.com",
+      "First Name": "Jane",
+      "Last Name": "Doe",
+      "Email": "jane@acme.com",
+      "Department(s)": "Product, Eng",
+      "Street": "123 Main St",
+      "City": "Raleigh",
+      "State": "NC",
+      "Zip": "27601",
+      "Country": "US",
+      "Number of Users": "500",
+      "Current Tech Stack / Solutions": "Pendo, Amplitude",
+      "Use Case": "Pendo for Customers",
+      "Competitors Considered or Incumbent": "WalkMe",
+      "Additional Information": "",
+    };
+    const csv = Papa.unparse({ fields: [...TEMPLATE_COLUMNS], data: [exampleRow] });
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -156,6 +176,12 @@ const PartnerBulkUpload = () => {
             } catch {
               rowErrors.push("Website (invalid)");
             }
+          }
+          if (row["Use Case"]?.trim() && !USE_CASE_VALUES.includes(row["Use Case"].trim())) {
+            rowErrors.push(`Use Case (must be: ${USE_CASE_VALUES.join(" or ")})`);
+          }
+          if (row["Number of Users"]?.trim() && isNaN(Number(row["Number of Users"].trim()))) {
+            rowErrors.push("Number of Users (must be a number)");
           }
           if (rowErrors.length > 0) {
             errors.push(`Row ${i + 1}: missing or invalid — ${rowErrors.join(", ")}`);
@@ -297,57 +323,60 @@ const PartnerBulkUpload = () => {
       <div className="flex-1 overflow-auto">
         {rows.length === 0 ? (
           /* ── Empty / Upload state ── */
-          <div className="flex items-center justify-center p-6 sm:p-12">
-            <div className="w-full max-w-lg space-y-8">
-              {/* Step 1: Download template */}
-              <div className="space-y-3">
-                <div className="flex items-center gap-2">
-                  <span className="flex items-center justify-center h-6 w-6 rounded-full bg-primary text-primary-foreground text-xs font-bold">1</span>
-                  <h3 className="font-semibold">{t("Download the template")}</h3>
-                </div>
-                <p className="text-sm text-muted-foreground pl-8">
-                  {t("Use this CSV template to format your leads. Required fields: Company, Website, Last Name, Email, Department(s), Number of Users, Current Tech Stack, and Use Case.")}
-                </p>
-                <div className="pl-8">
-                  <Button variant="outline" onClick={downloadTemplate} className="gap-2">
-                    <Download className="h-4 w-4" />
-                    {t("Download Template")}
-                  </Button>
-                </div>
+          <div className="p-4 sm:p-8 max-w-3xl mx-auto w-full space-y-6">
+            {/* Step 1: Download template */}
+            <div className="rounded-lg border p-4 sm:p-5 space-y-4">
+              <div className="flex items-center gap-2">
+                <span className="flex items-center justify-center h-6 w-6 rounded-full bg-primary text-primary-foreground text-xs font-bold shrink-0">1</span>
+                <h3 className="font-semibold">{t("Download the template")}</h3>
               </div>
+              <p className="text-sm text-muted-foreground">
+                {t("The template includes an example row. Fill in your leads and remove the example before uploading.")}
+              </p>
+              <div className="rounded border bg-muted/30 p-3 text-xs text-muted-foreground space-y-1.5">
+                <p className="font-medium text-foreground text-[13px]">{t("Field formatting")}</p>
+                <ul className="space-y-1 list-disc list-inside">
+                  <li><span className="font-medium text-foreground">Email</span> — must be a valid email address (e.g. name@company.com)</li>
+                  <li><span className="font-medium text-foreground">Website</span> — domain or full URL, max 255 characters (e.g. acme.com)</li>
+                  <li><span className="font-medium text-foreground">Use Case</span> — must be exactly <span className="font-mono bg-muted px-1 rounded">Pendo for Customers</span> or <span className="font-mono bg-muted px-1 rounded">Pendo for Employees</span></li>
+                  <li><span className="font-medium text-foreground">Number of Users</span> — numeric value only (e.g. 500)</li>
+                </ul>
+              </div>
+              <Button variant="outline" onClick={downloadTemplate} className="gap-2">
+                <Download className="h-4 w-4" />
+                {t("Download Template")}
+              </Button>
+            </div>
 
-              {/* Step 2: Upload */}
-              <div className="space-y-3">
-                <div className="flex items-center gap-2">
-                  <span className="flex items-center justify-center h-6 w-6 rounded-full bg-primary text-primary-foreground text-xs font-bold">2</span>
-                  <h3 className="font-semibold">{t("Upload your file")}</h3>
-                </div>
-                <p className="text-sm text-muted-foreground pl-8">
-                  {t("Select your completed CSV file. Maximum 200 leads per upload.")}
-                </p>
-                <div className="pl-8">
-                  <input
-                    ref={fileRef}
-                    type="file"
-                    accept=".csv,text/csv"
-                    className="hidden"
-                    onChange={handleFile}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => fileRef.current?.click()}
-                    className="w-full border-2 border-dashed border-border rounded-lg p-8 flex flex-col items-center gap-3 hover:border-primary/50 hover:bg-muted/30 transition-colors cursor-pointer"
-                  >
-                    <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center">
-                      <FileSpreadsheet className="h-6 w-6 text-muted-foreground" />
-                    </div>
-                    <div className="text-center">
-                      <p className="text-sm font-medium">{t("Click to select a CSV file")}</p>
-                      <p className="text-xs text-muted-foreground mt-1">{t("or drag and drop")}</p>
-                    </div>
-                  </button>
-                </div>
+            {/* Step 2: Upload */}
+            <div className="rounded-lg border p-4 sm:p-5 space-y-4">
+              <div className="flex items-center gap-2">
+                <span className="flex items-center justify-center h-6 w-6 rounded-full bg-primary text-primary-foreground text-xs font-bold shrink-0">2</span>
+                <h3 className="font-semibold">{t("Upload your file")}</h3>
               </div>
+              <p className="text-sm text-muted-foreground">
+                {t("Select your completed CSV file. Maximum 200 leads per upload.")}
+              </p>
+              <input
+                ref={fileRef}
+                type="file"
+                accept=".csv,text/csv"
+                className="hidden"
+                onChange={handleFile}
+              />
+              <button
+                type="button"
+                onClick={() => fileRef.current?.click()}
+                className="w-full border-2 border-dashed border-border rounded-lg p-6 flex flex-col items-center gap-3 hover:border-primary/50 hover:bg-muted/30 transition-colors cursor-pointer"
+              >
+                <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center">
+                  <FileSpreadsheet className="h-5 w-5 text-muted-foreground" />
+                </div>
+                <div className="text-center">
+                  <p className="text-sm font-medium">{t("Click to select a CSV file")}</p>
+                  <p className="text-xs text-muted-foreground mt-1">{t("or drag and drop")}</p>
+                </div>
+              </button>
             </div>
           </div>
         ) : (

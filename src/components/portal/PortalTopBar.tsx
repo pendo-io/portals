@@ -29,7 +29,7 @@ export function PortalTopBar() {
     "/leads": t("Leads"),
     "/opportunities": t("Opportunities"),
     "/referral": t("Submit a Lead"),
-    "/bulk-upload": t("Bulk Lead Upload"),
+    "/bulk": t("Bulk Lead Upload"),
     "/admin/users": t("User Management"),
     "/admin/users/new": "Create User",
     "/admin/partners": t("Partner Management"),

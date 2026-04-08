@@ -53,12 +53,15 @@ export function PortalSidebar() {
     location.pathname === path ||
     (path !== "/" && location.pathname.startsWith(path));
 
-  const navItems = [
+  const exploreItems = [
     { path: "/", label: t("Home"), icon: Home },
     { path: "/leads", label: t("Leads"), icon: Users },
     { path: "/opportunities", label: t("Opportunities"), icon: Target },
+  ];
+
+  const submitItems = [
     { path: "/referral", label: t("Submit Lead"), icon: FileText },
-    { path: "/bulk-upload", label: t("Bulk Upload"), icon: UploadCloud },
+    { path: "/bulk", label: t("Bulk Upload"), icon: UploadCloud },
   ];
 
   const adminItems = [
@@ -94,7 +97,30 @@ export function PortalSidebar() {
         <SidebarGroup>
           <SidebarGroupContent>
             <SidebarMenu>
-              {navItems.map((item) => {
+              {exploreItems.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <SidebarMenuItem key={item.path}>
+                    <SidebarMenuButton asChild isActive={isActive(item.path)} tooltip={item.label}>
+                      <Link to={item.path}>
+                        <Icon className="h-4 w-4" />
+                        <span>{item.label}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                );
+              })}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        <SidebarGroup>
+          <div className="px-3 py-1.5 group-data-[collapsible=icon]:hidden">
+            <span className="text-[10px] uppercase tracking-widest text-muted-foreground/60 font-semibold">{t("Submit")}</span>
+          </div>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {submitItems.map((item) => {
                 const Icon = item.icon;
                 return (
                   <SidebarMenuItem key={item.path}>

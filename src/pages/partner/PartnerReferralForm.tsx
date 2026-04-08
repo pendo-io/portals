@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useQueryClient, useMutation } from "@tanstack/react-query";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { usePortalType } from "@/hooks/usePortalType";
@@ -17,7 +17,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
-import { CheckCircle2, Loader2, ArrowRight, ArrowLeft, CornerDownLeft } from "lucide-react";
+import { CheckCircle2, Loader2, ArrowRight, ArrowLeft, CornerDownLeft, UploadCloud } from "lucide-react";
 
 const SECTIONS = ["Company", "Contact", "Address", "Opportunity"] as const;
 
@@ -277,6 +277,15 @@ function CompanyStep({ form, set, shake, t }: StepProps) {
         <Field label={t("Website")} required shake={shake.has("website")}>
           <Input maxLength={255} value={form.website} onChange={set("website")} placeholder="acme.com" />
         </Field>
+      </div>
+      <div className="flex items-center gap-2 pt-2 text-sm text-muted-foreground">
+        <UploadCloud className="h-4 w-4 shrink-0" />
+        <span>
+          {t("Have multiple leads?")}{" "}
+          <Link to="/bulk" className="text-primary hover:underline font-medium">
+            {t("Upload them in bulk")}
+          </Link>
+        </span>
       </div>
     </div>
   );

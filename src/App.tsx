@@ -49,7 +49,7 @@ const App = () => (
               <Route path="/opportunities" element={<PartnerOpportunities />} />
               <Route path="/opportunities/:oppId" element={<OpportunityDetail />} />
               <Route path="/referral" element={<PartnerReferralForm />} />
-              <Route path="/bulk-upload" element={<PartnerBulkUpload />} />
+              <Route path="/bulk" element={<PartnerBulkUpload />} />
               <Route path="/admin/users" element={<AdminRoute><AdminUsers /></AdminRoute>} />
               <Route path="/admin/users/new" element={<AdminRoute><AdminCreateUser /></AdminRoute>} />
               <Route path="/admin/partners" element={<AdminRoute><AdminPartners /></AdminRoute>} />
