@@ -95,7 +95,7 @@ export function PortalSidebar() {
       </SidebarHeader>
 
       <SidebarContent>
-        <SidebarGroup>
+        <SidebarGroup className="pb-0">
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
@@ -110,8 +110,8 @@ export function PortalSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        <SidebarGroup>
-          <div className="px-3 py-1.5 group-data-[collapsible=icon]:hidden">
+        <SidebarGroup className="pb-0">
+          <div className="px-3 py-1 group-data-[collapsible=icon]:hidden">
             <span className="text-[10px] uppercase tracking-widest text-muted-foreground/60 font-semibold">{t("Explore")}</span>
           </div>
           <SidebarGroupContent>
@@ -133,9 +133,9 @@ export function PortalSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        <SidebarGroup>
-          <div className="px-3 py-1.5 group-data-[collapsible=icon]:hidden">
-            <span className="text-[10px] uppercase tracking-widest text-muted-foreground/60 font-semibold">{t("Submit")}</span>
+        <SidebarGroup className="pb-0">
+          <div className="px-3 py-1 group-data-[collapsible=icon]:hidden">
+            <span className="text-[10px] uppercase tracking-widest text-muted-foreground/60 font-semibold">{t("Refer")}</span>
           </div>
           <SidebarGroupContent>
             <SidebarMenu>
@@ -157,8 +157,8 @@ export function PortalSidebar() {
         </SidebarGroup>
 
         {showAdmin && (
-          <SidebarGroup>
-            <div className="px-3 py-1.5 group-data-[collapsible=icon]:hidden">
+          <SidebarGroup className="pb-0">
+            <div className="px-3 py-1 group-data-[collapsible=icon]:hidden">
               <span className="text-[10px] uppercase tracking-widest text-muted-foreground/60 font-semibold">{t("Admin")}</span>
             </div>
             <SidebarGroupContent>

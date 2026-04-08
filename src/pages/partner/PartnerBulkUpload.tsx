@@ -406,23 +406,21 @@ const PartnerBulkUpload = () => {
 
             {/* Table */}
             <div className="w-full overflow-x-auto border-b">
-              <Table className="table-fixed [&_th]:border-r [&_th:last-child]:border-r-0 [&_td]:border-r [&_td:last-child]:border-r-0">
+              <Table className="w-max min-w-full [&_th]:border-r [&_th:last-child]:border-r-0 [&_td]:border-r [&_td:last-child]:border-r-0">
                 <TableHeader>
                   <TableRow className="bg-muted/30 hover:bg-muted/30">
-                    <TableHead className="w-[60px] font-semibold text-xs uppercase tracking-wider">#</TableHead>
-                    <TableHead className="font-semibold text-xs uppercase tracking-wider">Status</TableHead>
-                    <TableHead className="font-semibold text-xs uppercase tracking-wider">Company</TableHead>
-                    <TableHead className="font-semibold text-xs uppercase tracking-wider">Contact</TableHead>
-                    <TableHead className="font-semibold text-xs uppercase tracking-wider hidden md:table-cell">Email</TableHead>
-                    <TableHead className="font-semibold text-xs uppercase tracking-wider hidden lg:table-cell">Use Case</TableHead>
-                    <TableHead className="font-semibold text-xs uppercase tracking-wider hidden xl:table-cell">Details</TableHead>
+                    <TableHead className="w-[50px] font-semibold text-xs uppercase tracking-wider sticky left-0 bg-muted/30 z-10">#</TableHead>
+                    <TableHead className="w-[80px] font-semibold text-xs uppercase tracking-wider sticky left-[50px] bg-muted/30 z-10">Status</TableHead>
+                    {TEMPLATE_COLUMNS.map((col) => (
+                      <TableHead key={col} className="min-w-[140px] font-semibold text-xs uppercase tracking-wider whitespace-nowrap">{col}</TableHead>
+                    ))}
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {rows.map((row, i) => (
                     <TableRow key={i} className="h-[52px]">
-                      <TableCell className="py-2 text-sm text-muted-foreground">{i + 1}</TableCell>
-                      <TableCell className="py-2">
+                      <TableCell className="py-2 text-sm text-muted-foreground sticky left-0 bg-background z-10">{i + 1}</TableCell>
+                      <TableCell className="py-2 sticky left-[50px] bg-background z-10">
                         {row.status === "pending" && (
                           <span className="inline-flex items-center rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">Ready</span>
                         )}
@@ -438,25 +436,11 @@ const PartnerBulkUpload = () => {
                           </Tooltip>
                         )}
                       </TableCell>
-                      <TableCell className="py-2">
-                        <span className="text-sm font-medium truncate block">{row.data["Company"] || "—"}</span>
-                      </TableCell>
-                      <TableCell className="py-2">
-                        <span className="text-sm truncate block">
-                          {[row.data["First Name"], row.data["Last Name"]].filter(Boolean).join(" ") || "—"}
-                        </span>
-                      </TableCell>
-                      <TableCell className="py-2 hidden md:table-cell">
-                        <span className="text-sm text-muted-foreground truncate block">{row.data["Email"] || "—"}</span>
-                      </TableCell>
-                      <TableCell className="py-2 hidden lg:table-cell">
-                        <span className="text-sm text-muted-foreground truncate block">{row.data["Use Case"] || "—"}</span>
-                      </TableCell>
-                      <TableCell className="py-2 hidden xl:table-cell">
-                        {row.status === "error" && row.error && (
-                          <span className="text-xs text-destructive truncate block">{row.error}</span>
-                        )}
-                      </TableCell>
+                      {TEMPLATE_COLUMNS.map((col) => (
+                        <TableCell key={col} className="py-2">
+                          <span className="text-sm truncate block max-w-[200px]">{row.data[col] || "—"}</span>
+                        </TableCell>
+                      ))}
                     </TableRow>
                   ))}
                 </TableBody>
