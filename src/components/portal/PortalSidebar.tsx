@@ -23,6 +23,7 @@ import {
   Users,
   Target,
   FileText,
+  UploadCloud,
   Moon,
   Sun,
   Menu,
@@ -57,6 +58,7 @@ export function PortalSidebar() {
     { path: "/leads", label: t("Leads"), icon: Users },
     { path: "/opportunities", label: t("Opportunities"), icon: Target },
     { path: "/referral", label: t("Submit Lead"), icon: FileText },
+    { path: "/bulk-upload", label: t("Bulk Upload"), icon: UploadCloud },
   ];
 
   const adminItems = [

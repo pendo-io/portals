@@ -15,6 +15,7 @@ import PartnerHome from "./pages/partner/PartnerHome";
 import PartnerLeads from "./pages/partner/PartnerLeads";
 import PartnerOpportunities from "./pages/partner/PartnerOpportunities";
 import PartnerReferralForm from "./pages/partner/PartnerReferralForm";
+import PartnerBulkUpload from "./pages/partner/PartnerBulkUpload";
 import LeadDetail from "./pages/partner/LeadDetail";
 import OpportunityDetail from "./pages/partner/OpportunityDetail";
 import AdminUsers from "./pages/admin/AdminUsers";
@@ -48,6 +49,7 @@ const App = () => (
               <Route path="/opportunities" element={<PartnerOpportunities />} />
               <Route path="/opportunities/:oppId" element={<OpportunityDetail />} />
               <Route path="/referral" element={<PartnerReferralForm />} />
+              <Route path="/bulk-upload" element={<PartnerBulkUpload />} />
               <Route path="/admin/users" element={<AdminRoute><AdminUsers /></AdminRoute>} />
               <Route path="/admin/users/new" element={<AdminRoute><AdminCreateUser /></AdminRoute>} />
               <Route path="/admin/partners" element={<AdminRoute><AdminPartners /></AdminRoute>} />
