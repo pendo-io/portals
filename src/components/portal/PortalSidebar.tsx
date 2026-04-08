@@ -53,8 +53,9 @@ export function PortalSidebar() {
     location.pathname === path ||
     (path !== "/" && location.pathname.startsWith(path));
 
+  const homeItem = { path: "/", label: t("Home"), icon: Home };
+
   const exploreItems = [
-    { path: "/", label: t("Home"), icon: Home },
     { path: "/leads", label: t("Leads"), icon: Users },
     { path: "/opportunities", label: t("Opportunities"), icon: Target },
   ];
@@ -95,6 +96,24 @@ export function PortalSidebar() {
 
       <SidebarContent>
         <SidebarGroup>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild isActive={isActive(homeItem.path)} tooltip={homeItem.label}>
+                  <Link to={homeItem.path}>
+                    <homeItem.icon className="h-4 w-4" />
+                    <span>{homeItem.label}</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        <SidebarGroup>
+          <div className="px-3 py-1.5 group-data-[collapsible=icon]:hidden">
+            <span className="text-[10px] uppercase tracking-widest text-muted-foreground/60 font-semibold">{t("Explore")}</span>
+          </div>
           <SidebarGroupContent>
             <SidebarMenu>
               {exploreItems.map((item) => {
