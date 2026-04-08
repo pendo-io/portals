@@ -34,6 +34,7 @@ import {
   useUpdateUserRole,
   type AdminUser,
 } from "@/hooks/useAdmin";
+import { DEMO_ADMIN_USER } from "@/lib/demoData";
 
 type SortKey = "name" | "email" | "role" | "partner" | "created";
 type SortDir = "asc" | "desc";
@@ -84,7 +85,7 @@ const AdminUsers = () => {
   const { data: users, isLoading, isError, error } = useAdminUsers();
   const { data: partners } = useAdminPartners();
   const updateRole = useUpdateUserRole();
-  const allUsers = users ?? [];
+  const allUsers = useMemo(() => [...(users ?? []), DEMO_ADMIN_USER], [users]);
 
   const handleSearchChange = (value: string) => { setSearch(value); setPage(0); };
   const handleRoleFilterChange = (value: string) => { setRoleFilter(value); setPage(0); };

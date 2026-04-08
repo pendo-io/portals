@@ -1,6 +1,8 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { usePortalType } from "@/hooks/usePortalType";
+import { isDemoMode } from "@/lib/demoData";
+import { Badge } from "@/components/ui/badge";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -13,7 +15,8 @@ import {
 export function PortalTopBar() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, partnerType } = useAuth();
+  const { user, partnerType, impersonating } = useAuth();
+  const demo = isDemoMode(impersonating?.id);
   const { t } = usePortalType();
   const currentPath = location.pathname;
 
@@ -75,6 +78,11 @@ export function PortalTopBar() {
           ))}
         </BreadcrumbList>
       </Breadcrumb>
+      {demo && (
+        <Badge variant="outline" className="ml-auto text-xs border-amber-500/50 text-amber-600 bg-amber-50 dark:bg-amber-950/30">
+          Demo Mode
+        </Badge>
+      )}
     </header>
   );
 }

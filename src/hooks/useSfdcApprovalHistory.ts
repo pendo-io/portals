@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "./useAuth";
 import { sfdcQuery, isSafeSfdcId } from "@/lib/sfdc";
+import { isDemoMode, getDemoApprovalHistory } from "@/lib/demoData";
 
 export interface SfdcApprovalStep {
   Id: string;
@@ -12,15 +13,18 @@ export interface SfdcApprovalStep {
 }
 
 export function useSfdcApprovalHistory(targetObjectId: string | undefined) {
-  const { user, session } = useAuth();
+  const { user, session, impersonating } = useAuth();
+  const demo = isDemoMode(impersonating?.id);
 
   return useQuery({
-    queryKey: ["sfdc-approval-history", targetObjectId],
+    queryKey: ["sfdc-approval-history", targetObjectId, demo ? "demo" : null],
     queryFn: () =>
-      sfdcQuery<SfdcApprovalStep>("approval-history", { targetObjectId }, {
-        accessToken: session?.access_token,
-      }),
-    enabled: !!user && !!targetObjectId && isSafeSfdcId(targetObjectId),
+      demo
+        ? getDemoApprovalHistory()
+        : sfdcQuery<SfdcApprovalStep>("approval-history", { targetObjectId }, {
+            accessToken: session?.access_token,
+          }),
+    enabled: !!user && !!targetObjectId && (demo || isSafeSfdcId(targetObjectId)),
     staleTime: 5 * 60_000,
     refetchOnWindowFocus: false,
   });

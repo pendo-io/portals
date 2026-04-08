@@ -1,6 +1,7 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "./useAuth";
 import { sfdcQuery, isSafeSfdcId, type SfdcQueryResult } from "@/lib/sfdc";
+import { isDemoMode, getDemoOpportunityDetail } from "@/lib/demoData";
 
 export interface SfdcOpportunityDetail {
   Id: string;
@@ -43,10 +44,13 @@ export function useSfdcOpportunityDetail(oppId: string | undefined) {
   const { user, session, sfdcAccountId, impersonating } = useAuth();
   const queryClient = useQueryClient();
   const impersonateAccountId = impersonating?.sfdcAccountId ?? undefined;
+  const demo = isDemoMode(impersonating?.id);
 
   return useQuery({
-    queryKey: ["sfdc-opportunity", oppId],
+    queryKey: ["sfdc-opportunity", oppId, demo ? "demo" : null],
     queryFn: () => {
+      if (demo && oppId) return getDemoOpportunityDetail(oppId);
+
       const cachedList = queryClient.getQueryData<SfdcQueryResult<SfdcOpportunityDetail>>(
         ["sfdc-opportunities", user?.id, impersonateAccountId ?? sfdcAccountId]
       );
@@ -60,7 +64,7 @@ export function useSfdcOpportunityDetail(oppId: string | undefined) {
         impersonateAccountId,
       });
     },
-    enabled: !!user && !!oppId && isSafeSfdcId(oppId),
+    enabled: !!user && !!oppId && (demo || isSafeSfdcId(oppId)),
     staleTime: 5 * 60_000,
     refetchOnWindowFocus: false,
   });

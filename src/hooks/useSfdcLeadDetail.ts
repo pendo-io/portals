@@ -1,6 +1,7 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "./useAuth";
 import { sfdcQuery, isSafeSfdcId, type SfdcQueryResult } from "@/lib/sfdc";
+import { isDemoMode, getDemoLeadDetail } from "@/lib/demoData";
 
 export interface SfdcLeadDetail {
   Id: string;
@@ -34,10 +35,13 @@ export function useSfdcLeadDetail(leadId: string | undefined) {
   const { user, session, sfdcAccountId, impersonating } = useAuth();
   const queryClient = useQueryClient();
   const impersonateAccountId = impersonating?.sfdcAccountId ?? undefined;
+  const demo = isDemoMode(impersonating?.id);
 
   return useQuery({
-    queryKey: ["sfdc-lead", leadId],
+    queryKey: ["sfdc-lead", leadId, demo ? "demo" : null],
     queryFn: () => {
+      if (demo && leadId) return getDemoLeadDetail(leadId);
+
       const cachedList = queryClient.getQueryData<SfdcQueryResult<SfdcLeadDetail>>(
         ["sfdc-leads", user?.id, impersonateAccountId ?? sfdcAccountId]
       );
@@ -51,7 +55,7 @@ export function useSfdcLeadDetail(leadId: string | undefined) {
         impersonateAccountId,
       });
     },
-    enabled: !!user && !!leadId && isSafeSfdcId(leadId),
+    enabled: !!user && !!leadId && (demo || isSafeSfdcId(leadId)),
     staleTime: 5 * 60_000,
     refetchOnWindowFocus: false,
   });

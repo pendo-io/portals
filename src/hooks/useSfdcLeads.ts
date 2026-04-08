@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "./useAuth";
 import { sfdcQuery } from "@/lib/sfdc";
+import { isDemoMode, getDemoLeads } from "@/lib/demoData";
 
 export interface SfdcLead {
   Id: string;
@@ -17,14 +18,17 @@ export interface SfdcLead {
 export function useSfdcLeads() {
   const { user, session, sfdcAccountId, impersonating } = useAuth();
   const impersonateAccountId = impersonating?.sfdcAccountId ?? undefined;
+  const demo = isDemoMode(impersonating?.id);
 
   return useQuery({
-    queryKey: ["sfdc-leads", user?.id, impersonateAccountId ?? sfdcAccountId],
+    queryKey: ["sfdc-leads", user?.id, demo ? "demo" : impersonateAccountId ?? sfdcAccountId],
     queryFn: () =>
-      sfdcQuery<SfdcLead>("leads", {}, {
-        accessToken: session?.access_token,
-        impersonateAccountId,
-      }),
+      demo
+        ? getDemoLeads()
+        : sfdcQuery<SfdcLead>("leads", {}, {
+            accessToken: session?.access_token,
+            impersonateAccountId,
+          }),
     enabled: !!user,
     staleTime: 10 * 60_000,
     gcTime: 30 * 60_000,
