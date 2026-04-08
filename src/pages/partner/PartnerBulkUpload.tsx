@@ -25,7 +25,6 @@ import {
   XCircle,
   Loader2,
   Trash2,
-  ArrowLeft,
   AlertCircle,
 } from "lucide-react";
 
@@ -294,21 +293,6 @@ const PartnerBulkUpload = () => {
 
   return (
     <div className="flex-1 flex flex-col min-h-0">
-      {/* Header */}
-      <div className="border-b px-3 sm:px-6 py-4">
-        <div className="flex items-center gap-3 mb-1">
-          <Button variant="ghost" size="icon" className="h-7 w-7 -ml-1" onClick={() => navigate("/referral")}>
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-          <div>
-            <h1 className="text-lg font-semibold tracking-tight">{t("Bulk Lead Upload")}</h1>
-            <p className="text-sm text-muted-foreground mt-0.5">
-              {t("Upload multiple leads at once using a CSV file.")}
-            </p>
-          </div>
-        </div>
-      </div>
-
       {/* Content */}
       <div className="flex-1 overflow-auto">
         {rows.length === 0 ? (
