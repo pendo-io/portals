@@ -26,6 +26,8 @@ import {
   Loader2,
   Trash2,
   AlertCircle,
+  RotateCcw,
+  RefreshCw,
 } from "lucide-react";
 
 /* ── CSV template columns → Salesforce field mapping ── */
@@ -80,6 +82,29 @@ interface ParsedRow {
   error?: string;
 }
 
+/* ── Humanize Salesforce errors ── */
+
+function humanizeError(msg: string): string {
+  if (!msg) return "Upload failed — please check this row and try again.";
+  if (msg.includes("DUPLICATES_DETECTED") || msg.includes("already exists"))
+    return "A lead with this email already exists in Salesforce.";
+  if (msg.includes("INVALID_EMAIL_ADDRESS"))
+    return "Invalid email address format.";
+  if (msg.includes("STRING_TOO_LONG"))
+    return "One or more fields exceed the maximum character limit.";
+  if (msg.includes("REQUIRED_FIELD_MISSING"))
+    return "A required field is missing — check Company, Last Name, and Email.";
+  if (msg.includes("FIELD_CUSTOM_VALIDATION_EXCEPTION"))
+    return "This record didn't pass a Salesforce validation rule. Check all fields.";
+  if (msg.includes("INVALID_OR_NULL_FOR_RESTRICTED_PICKLIST"))
+    return "Use Case must be exactly \"Pendo for Customers\" or \"Pendo for Employees\".";
+  if (msg.includes("UNABLE_TO_LOCK_ROW"))
+    return "Salesforce was busy — this can be retried.";
+  if (msg.includes("SERVER_UNAVAILABLE") || msg.includes("REQUEST_LIMIT_EXCEEDED"))
+    return "Salesforce is temporarily unavailable — try again shortly.";
+  return msg;
+}
+
 /* ── Component ── */
 
 const PartnerBulkUpload = () => {
@@ -94,6 +119,10 @@ const PartnerBulkUpload = () => {
   const [uploading, setUploading] = useState(false);
   const [done, setDone] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+
+  const validCount = rows.filter((r) => r.status === "pending").length;
+  const errorCount = rows.filter((r) => r.status === "error").length;
+  const successCount = rows.filter((r) => r.status === "success").length;
 
   /* ── Template download ── */
 
@@ -122,6 +151,22 @@ const PartnerBulkUpload = () => {
     const a = document.createElement("a");
     a.href = url;
     a.download = "lead_upload_template.csv";
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  /* ── Export failed rows as CSV ── */
+
+  const downloadErrors = () => {
+    const failed = rows.filter((r) => r.status === "error");
+    if (failed.length === 0) return;
+    const data = failed.map((r) => ({ ...r.data, "Error": r.error || "" }));
+    const csv = Papa.unparse(data);
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "failed_leads.csv";
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -163,45 +208,48 @@ const PartnerBulkUpload = () => {
           const rowErrors: string[] = [];
           for (const col of REQUIRED_COLUMNS) {
             if (!row[col]?.trim()) {
-              rowErrors.push(col);
+              rowErrors.push(`${col} is required`);
             }
           }
           if (row["Email"]?.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(row["Email"].trim())) {
-            rowErrors.push("Email (invalid format)");
+            rowErrors.push("Email must be a valid address (e.g. name@company.com)");
           }
           if (row["Website"]?.trim()) {
             const url = row["Website"].startsWith("http") ? row["Website"] : `https://${row["Website"]}`;
             try {
-              if (!new URL(url).hostname.includes(".")) rowErrors.push("Website (invalid)");
+              if (!new URL(url).hostname.includes(".")) rowErrors.push("Website must be a valid domain (e.g. acme.com)");
             } catch {
-              rowErrors.push("Website (invalid)");
+              rowErrors.push("Website must be a valid domain (e.g. acme.com)");
             }
           }
           if (row["Use Case"]?.trim() && !USE_CASE_VALUES.includes(row["Use Case"].trim())) {
-            rowErrors.push(`Use Case (must be: ${USE_CASE_VALUES.join(" or ")})`);
+            rowErrors.push("Use Case must be \"Pendo for Customers\" or \"Pendo for Employees\"");
           }
           if (row["Number of Users"]?.trim() && isNaN(Number(row["Number of Users"].trim()))) {
-            rowErrors.push("Number of Users (must be a number)");
+            rowErrors.push("Number of Users must be a number (e.g. 500)");
           }
-          if (rowErrors.length > 0) {
-            errors.push(`Row ${i + 1}: missing or invalid — ${rowErrors.join(", ")}`);
-          }
-          parsed.push({ data: row, status: rowErrors.length > 0 ? "error" : "pending", error: rowErrors.length > 0 ? rowErrors.join(", ") : undefined });
+          const hasErrors = rowErrors.length > 0;
+          parsed.push({
+            data: row,
+            status: hasErrors ? "error" : "pending",
+            error: hasErrors ? rowErrors.join("; ") : undefined,
+          });
         });
 
         setParseErrors(errors.filter((e) => !e.startsWith("Row")));
         setRows(parsed);
 
-        if (errors.length === 0) {
+        const rowErrs = parsed.filter((r) => r.status === "error").length;
+        const headerErrs = errors.filter((e) => !e.startsWith("Row")).length;
+
+        if (headerErrs > 0) {
+          toast.error("Template mismatch — check column headers");
+        } else if (rowErrs === parsed.length && parsed.length > 0) {
+          toast.error("All rows have validation errors — please fix your CSV and re-upload");
+        } else if (rowErrs > 0) {
+          toast.error(`${rowErrs} row${rowErrs === 1 ? " has" : "s have"} errors — valid rows can still be uploaded`);
+        } else if (parsed.length > 0) {
           toast.success(`${parsed.length} lead${parsed.length === 1 ? "" : "s"} ready to upload`);
-        } else {
-          const rowErrs = parsed.filter((r) => r.status === "error").length;
-          const headerErrs = errors.filter((e) => !e.startsWith("Row")).length;
-          if (headerErrs > 0) {
-            toast.error("Template mismatch — check column headers");
-          } else if (rowErrs > 0) {
-            toast.error(`${rowErrs} row${rowErrs === 1 ? " has" : "s have"} validation errors`);
-          }
         }
       },
       error(err) {
@@ -210,29 +258,26 @@ const PartnerBulkUpload = () => {
       },
     });
 
-    // Reset file input so same file can be re-selected
     e.target.value = "";
   }, []);
 
   /* ── Upload to Salesforce ── */
 
-  const handleUpload = async () => {
-    const uploadable = rows.filter((r) => r.status === "pending");
-    if (uploadable.length === 0) {
-      toast.error("No valid rows to upload");
+  const uploadRows = async (filter: (r: ParsedRow) => boolean) => {
+    const indices = rows.map((r, i) => (filter(r) ? i : -1)).filter((i) => i >= 0);
+    if (indices.length === 0) {
+      toast.error("No rows to upload");
       return;
     }
 
     setUploading(true);
+    setDone(false);
 
-    let successCount = 0;
-    let errorCount = 0;
+    let ok = 0;
+    let fail = 0;
 
-    for (let i = 0; i < rows.length; i++) {
-      if (rows[i].status !== "pending") continue;
-
-      // Mark uploading
-      setRows((prev) => prev.map((r, j) => (j === i ? { ...r, status: "uploading" as RowStatus } : r)));
+    for (const i of indices) {
+      setRows((prev) => prev.map((r, j) => (j === i ? { ...r, status: "uploading" as RowStatus, error: undefined } : r)));
 
       try {
         const fields: Record<string, unknown> = {
@@ -255,14 +300,14 @@ const PartnerBulkUpload = () => {
 
         await sfdcCreate("Lead", fields, session?.access_token);
         setRows((prev) => prev.map((r, j) => (j === i ? { ...r, status: "success" as RowStatus } : r)));
-        successCount++;
+        ok++;
       } catch (err: any) {
         setRows((prev) =>
           prev.map((r, j) =>
-            j === i ? { ...r, status: "error" as RowStatus, error: err.message || "Upload failed" } : r
+            j === i ? { ...r, status: "error" as RowStatus, error: humanizeError(err.message) } : r
           )
         );
-        errorCount++;
+        fail++;
       }
     }
 
@@ -270,12 +315,17 @@ const PartnerBulkUpload = () => {
     setUploading(false);
     setDone(true);
 
-    if (errorCount === 0) {
-      toast.success(`All ${successCount} lead${successCount === 1 ? "" : "s"} uploaded successfully`);
+    if (fail === 0) {
+      toast.success(`All ${ok} lead${ok === 1 ? "" : "s"} uploaded successfully`);
+    } else if (ok === 0) {
+      toast.error(`All ${fail} lead${fail === 1 ? "" : "s"} failed — see errors below`);
     } else {
-      toast.error(`${errorCount} failed, ${successCount} succeeded`);
+      toast.error(`${fail} failed, ${ok} succeeded — see errors below`);
     }
   };
+
+  const handleUpload = () => uploadRows((r) => r.status === "pending");
+  const handleRetryFailed = () => uploadRows((r) => r.status === "error");
 
   const reset = () => {
     setRows([]);
@@ -283,13 +333,9 @@ const PartnerBulkUpload = () => {
     setDone(false);
   };
 
-  const validCount = rows.filter((r) => r.status === "pending" || r.status === "success").length;
-  const errorCount = rows.filter((r) => r.status === "error").length;
-  const successCount = rows.filter((r) => r.status === "success").length;
+  /* ── Done state — all success ── */
 
-  /* ── Done state ── */
-
-  if (done && successCount === rows.length) {
+  if (done && errorCount === 0 && successCount > 0) {
     return (
       <div className="flex-1 flex items-center justify-center p-6">
         <div className="max-w-sm w-full text-center space-y-5">
@@ -380,17 +426,56 @@ const PartnerBulkUpload = () => {
             </div>
           </div>
         ) : (
-          /* ── Preview / Results table ── */
+          /* ── Preview / Results ── */
           <div className="space-y-0">
-            {/* Parse-level errors */}
+            {/* Parse-level errors (missing columns, etc.) */}
             {parseErrors.length > 0 && (
               <div className="mx-3 sm:mx-6 mt-4 p-3 rounded-lg bg-destructive/10 border border-destructive/20">
                 <div className="flex items-start gap-2">
                   <AlertCircle className="h-4 w-4 text-destructive shrink-0 mt-0.5" />
                   <div className="text-sm space-y-1">
+                    <p className="font-medium text-destructive">Your CSV doesn't match the expected template.</p>
                     {parseErrors.map((e, i) => (
-                      <p key={i} className="text-destructive">{e}</p>
+                      <p key={i} className="text-destructive/80">{e}</p>
                     ))}
+                    <p className="text-muted-foreground pt-1">Please download the template, update your file, and re-upload.</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Post-upload summary banner */}
+            {done && errorCount > 0 && (
+              <div className="mx-3 sm:mx-6 mt-4 p-4 rounded-lg border border-destructive/20 bg-destructive/5">
+                <div className="flex items-start gap-3">
+                  <AlertCircle className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
+                  <div className="flex-1 space-y-2">
+                    <div>
+                      <p className="font-semibold text-sm">
+                        {successCount > 0
+                          ? `${errorCount} of ${errorCount + successCount} lead${errorCount + successCount === 1 ? "" : "s"} failed to upload`
+                          : `All ${errorCount} lead${errorCount === 1 ? "" : "s"} failed to upload`}
+                      </p>
+                      <p className="text-sm text-muted-foreground mt-0.5">
+                        {successCount > 0
+                          ? "Successfully uploaded leads are already in Salesforce. You can retry the failed ones or download them to fix and re-upload."
+                          : "No leads were uploaded. You can retry, or download the errors to fix in your spreadsheet and re-upload."}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2 pt-1 flex-wrap">
+                      <Button size="sm" variant="outline" onClick={handleRetryFailed} disabled={uploading} className="gap-1.5">
+                        <RotateCcw className="h-3.5 w-3.5" />
+                        Retry {errorCount} Failed
+                      </Button>
+                      <Button size="sm" variant="ghost" onClick={downloadErrors} className="gap-1.5">
+                        <Download className="h-3.5 w-3.5" />
+                        Download Failed Rows
+                      </Button>
+                      <Button size="sm" variant="ghost" onClick={() => { reset(); fileRef.current?.click(); }} className="gap-1.5">
+                        <RefreshCw className="h-3.5 w-3.5" />
+                        Re-upload CSV
+                      </Button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -399,7 +484,7 @@ const PartnerBulkUpload = () => {
             {/* Summary bar */}
             <div className="border-b px-3 sm:px-6 py-3 flex items-center gap-2 flex-wrap">
               <Badge variant="secondary">{rows.length} total</Badge>
-              {validCount > 0 && !done && <Badge variant="outline" className="text-primary border-primary/30">{validCount} ready</Badge>}
+              {validCount > 0 && <Badge variant="outline" className="text-primary border-primary/30">{validCount} ready</Badge>}
               {errorCount > 0 && <Badge variant="outline" className="text-destructive border-destructive/30">{errorCount} error{errorCount !== 1 ? "s" : ""}</Badge>}
               {successCount > 0 && <Badge variant="outline" className="text-emerald-600 border-emerald-600/30">{successCount} uploaded</Badge>}
             </div>
@@ -418,30 +503,64 @@ const PartnerBulkUpload = () => {
                 </TableHeader>
                 <TableBody>
                   {rows.map((row, i) => (
-                    <TableRow key={i} className="h-[52px]">
-                      <TableCell className="py-2 text-sm text-muted-foreground sticky left-0 bg-background z-10">{i + 1}</TableCell>
-                      <TableCell className="py-2 sticky left-[50px] bg-background z-10">
-                        {row.status === "pending" && (
-                          <span className="inline-flex items-center rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">Ready</span>
-                        )}
-                        {row.status === "uploading" && (
-                          <Loader2 className="h-4 w-4 animate-spin text-primary" />
-                        )}
-                        {row.status === "success" && (
-                          <CheckCircle2 className="h-4 w-4 text-emerald-600" />
-                        )}
-                        {row.status === "error" && (
-                          <Tooltip text={row.error}>
-                            <XCircle className="h-4 w-4 text-destructive" />
-                          </Tooltip>
-                        )}
-                      </TableCell>
-                      {TEMPLATE_COLUMNS.map((col) => (
-                        <TableCell key={col} className="py-2">
-                          <span className="text-sm truncate block max-w-[200px]">{row.data[col] || "—"}</span>
+                    <>
+                      <TableRow
+                        key={i}
+                        className={`h-[52px] ${
+                          row.status === "error"
+                            ? "bg-destructive/[0.03]"
+                            : row.status === "success"
+                            ? "bg-emerald-500/[0.03]"
+                            : ""
+                        }`}
+                      >
+                        <TableCell className={`py-2 text-sm text-muted-foreground sticky left-0 z-10 ${
+                          row.status === "error" ? "bg-destructive/[0.03]" : row.status === "success" ? "bg-emerald-500/[0.03]" : "bg-background"
+                        }`}>{i + 1}</TableCell>
+                        <TableCell className={`py-2 sticky left-[50px] z-10 ${
+                          row.status === "error" ? "bg-destructive/[0.03]" : row.status === "success" ? "bg-emerald-500/[0.03]" : "bg-background"
+                        }`}>
+                          {row.status === "pending" && (
+                            <span className="inline-flex items-center rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">Ready</span>
+                          )}
+                          {row.status === "uploading" && (
+                            <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                          )}
+                          {row.status === "success" && (
+                            <span className="inline-flex items-center gap-1 text-emerald-600">
+                              <CheckCircle2 className="h-4 w-4" />
+                              <span className="text-xs font-medium">Done</span>
+                            </span>
+                          )}
+                          {row.status === "error" && (
+                            <span className="inline-flex items-center gap-1 text-destructive">
+                              <XCircle className="h-4 w-4" />
+                              <span className="text-xs font-medium">Failed</span>
+                            </span>
+                          )}
                         </TableCell>
-                      ))}
-                    </TableRow>
+                        {TEMPLATE_COLUMNS.map((col) => (
+                          <TableCell key={col} className="py-2">
+                            <span className="text-sm truncate block max-w-[200px]">{row.data[col] || "—"}</span>
+                          </TableCell>
+                        ))}
+                      </TableRow>
+                      {/* Inline error detail row */}
+                      {row.status === "error" && row.error && (
+                        <TableRow key={`${i}-err`} className="bg-destructive/[0.03] hover:bg-destructive/[0.05]">
+                          <TableCell className="sticky left-0 z-10 bg-destructive/[0.03]" />
+                          <TableCell
+                            colSpan={TEMPLATE_COLUMNS.length + 1}
+                            className="py-2 pl-2"
+                          >
+                            <div className="flex items-start gap-2">
+                              <AlertCircle className="h-3.5 w-3.5 text-destructive shrink-0 mt-0.5" />
+                              <span className="text-xs text-destructive leading-relaxed">{row.error}</span>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </>
                   ))}
                 </TableBody>
               </Table>
@@ -477,8 +596,22 @@ const PartnerBulkUpload = () => {
                 className="gap-1.5 min-w-[160px]"
               >
                 {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
-                {uploading ? t("Uploading...") : t(`Upload ${validCount} Lead${validCount === 1 ? "" : "s"}`)}
+                {uploading
+                  ? t(`Uploading... (${successCount + errorCount}/${validCount + successCount + errorCount})`)
+                  : t(`Upload ${validCount} Lead${validCount === 1 ? "" : "s"}`)}
               </Button>
+            ) : errorCount > 0 ? (
+              <div className="flex items-center gap-2">
+                <Button variant="outline" onClick={handleRetryFailed} disabled={uploading} className="gap-1.5">
+                  <RotateCcw className="h-4 w-4" />
+                  {t(`Retry ${errorCount} Failed`)}
+                </Button>
+                {successCount > 0 && (
+                  <Button onClick={() => navigate("/leads")} className="gap-1.5">
+                    {t("View Leads")}
+                  </Button>
+                )}
+              </div>
             ) : (
               <Button onClick={() => navigate("/leads")} className="gap-1.5">
                 {t("View Leads")}
@@ -490,20 +623,5 @@ const PartnerBulkUpload = () => {
     </div>
   );
 };
-
-/* ── Simple inline tooltip for error messages ── */
-
-function Tooltip({ text, children }: { text?: string; children: React.ReactNode }) {
-  return (
-    <span className="relative group cursor-help">
-      {children}
-      {text && (
-        <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 px-2 py-1 rounded bg-popover border text-popover-foreground text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 shadow-md">
-          {text}
-        </span>
-      )}
-    </span>
-  );
-}
 
 export default PartnerBulkUpload;
