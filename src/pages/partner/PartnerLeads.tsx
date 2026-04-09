@@ -178,13 +178,13 @@ const PartnerLeads = () => {
                   <TableHead className={`${thClass} hidden md:table-cell`} style={{ width: "26%" }} resizable onClick={() => handleSort("email")}>
                     <span className="inline-flex items-center">Email<SortIcon active={sortKey === "email"} dir={sortDir} /></span>
                   </TableHead>
-                  <TableHead className={thClass} resizable onClick={() => handleSort("company")}>
+                  <TableHead className={thClass} style={{ width: "20%" }} resizable onClick={() => handleSort("company")}>
                     <span className="inline-flex items-center">Company<SortIcon active={sortKey === "company"} dir={sortDir} /></span>
                   </TableHead>
                   <TableHead className={thClass} style={{ width: "14%" }} resizable onClick={() => handleSort("status")}>
                     <span className="inline-flex items-center">Status<SortIcon active={sortKey === "status"} dir={sortDir} /></span>
                   </TableHead>
-                  <TableHead className={`${thClass} hidden sm:table-cell`} style={{ width: "130px" }} resizable onClick={() => handleSort("created")}>
+                  <TableHead className={`${thClass} hidden sm:table-cell`} style={{ width: "170px" }} resizable onClick={() => handleSort("created")}>
                     <span className="inline-flex items-center">Created Date<SortIcon active={sortKey === "created"} dir={sortDir} /></span>
                   </TableHead>
                 </TableRow>
