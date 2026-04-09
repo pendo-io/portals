@@ -172,19 +172,19 @@ const PartnerLeads = () => {
             <Table className="table-fixed [&_th]:border-r [&_th:last-child]:border-r-0 [&_td]:border-r [&_td:last-child]:border-r-0">
               <TableHeader>
                 <TableRow className="bg-muted/30 hover:bg-muted/30">
-                  <TableHead className={thClass} resizable onClick={() => handleSort("contact")}>
+                  <TableHead className={thClass} style={{ width: "20%" }} resizable onClick={() => handleSort("contact")}>
                     <span className="inline-flex items-center">Name<SortIcon active={sortKey === "contact"} dir={sortDir} /></span>
                   </TableHead>
-                  <TableHead className={`${thClass} hidden md:table-cell`} resizable onClick={() => handleSort("email")}>
+                  <TableHead className={`${thClass} hidden md:table-cell`} style={{ width: "26%" }} resizable onClick={() => handleSort("email")}>
                     <span className="inline-flex items-center">Email<SortIcon active={sortKey === "email"} dir={sortDir} /></span>
                   </TableHead>
                   <TableHead className={thClass} resizable onClick={() => handleSort("company")}>
                     <span className="inline-flex items-center">Company<SortIcon active={sortKey === "company"} dir={sortDir} /></span>
                   </TableHead>
-                  <TableHead className={thClass} resizable onClick={() => handleSort("status")}>
+                  <TableHead className={thClass} style={{ width: "14%" }} resizable onClick={() => handleSort("status")}>
                     <span className="inline-flex items-center">Status<SortIcon active={sortKey === "status"} dir={sortDir} /></span>
                   </TableHead>
-                  <TableHead className={`${thClass} hidden sm:table-cell`} resizable onClick={() => handleSort("created")}>
+                  <TableHead className={`${thClass} hidden sm:table-cell`} style={{ width: "130px" }} resizable onClick={() => handleSort("created")}>
                     <span className="inline-flex items-center">Created Date<SortIcon active={sortKey === "created"} dir={sortDir} /></span>
                   </TableHead>
                 </TableRow>
@@ -196,7 +196,7 @@ const PartnerLeads = () => {
                       <span className="text-sm font-medium truncate block">{lead.Name}</span>
                     </TableCell>
                     <TableCell className="py-2 hidden md:table-cell">
-                      <span className="text-sm text-muted-foreground">{lead.Email ?? "—"}</span>
+                      <span className="text-sm text-muted-foreground truncate block">{lead.Email ?? "—"}</span>
                     </TableCell>
                     <TableCell className="py-2 max-w-[140px] sm:max-w-none">
                       <span className="text-sm truncate block">{lead.Company}</span>
