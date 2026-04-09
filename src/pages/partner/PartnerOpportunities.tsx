@@ -206,7 +206,7 @@ const PartnerOpportunities = () => {
             <Table className="table-fixed [&_th]:border-r [&_th:last-child]:border-r-0 [&_td]:border-r [&_td:last-child]:border-r-0">
               <TableHeader>
                 <TableRow className="bg-muted/30 hover:bg-muted/30">
-                  <TableHead className={thClass} style={{ width: "28%" }} resizable onClick={() => handleSort("name")}>
+                  <TableHead className={thClass} style={{ width: "34%" }} resizable onClick={() => handleSort("name")}>
                     <span className="inline-flex items-center">Opportunity Name<SortIcon active={sortKey === "name"} dir={sortDir} /></span>
                   </TableHead>
                   <TableHead className={`${thClass} hidden md:table-cell`} style={{ width: "16%" }} resizable onClick={() => handleSort("account")}>
@@ -215,13 +215,13 @@ const PartnerOpportunities = () => {
                   <TableHead className={thClass} style={{ width: "14%" }} resizable onClick={() => handleSort("stage")}>
                     <span className="inline-flex items-center">Stage<SortIcon active={sortKey === "stage"} dir={sortDir} /></span>
                   </TableHead>
-                  <TableHead className={`${thClass} hidden sm:table-cell`} style={{ width: "145px" }} resizable onClick={() => handleSort("closeDate")}>
+                  <TableHead className={`${thClass} hidden sm:table-cell`} style={{ width: "110px" }} resizable onClick={() => handleSort("closeDate")}>
                     <span className="inline-flex items-center">Close Date<SortIcon active={sortKey === "closeDate"} dir={sortDir} /></span>
                   </TableHead>
-                  <TableHead className={`${thClass} text-right hidden sm:table-cell`} style={{ width: "90px" }} resizable onClick={() => handleSort("arr")}>
+                  <TableHead className={`${thClass} text-right hidden sm:table-cell`} style={{ width: "75px" }} resizable onClick={() => handleSort("arr")}>
                     <span className="inline-flex items-center justify-end">ARR<SortIcon active={sortKey === "arr"} dir={sortDir} /></span>
                   </TableHead>
-                  <TableHead className={`${thClass} text-right`} style={{ width: "90px" }} resizable onClick={() => handleSort("amount")}>
+                  <TableHead className={`${thClass} text-right`} style={{ width: "75px" }} resizable onClick={() => handleSort("amount")}>
                     <span className="inline-flex items-center justify-end">TCV<SortIcon active={sortKey === "amount"} dir={sortDir} /></span>
                   </TableHead>
                 </TableRow>
