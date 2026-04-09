@@ -9,6 +9,7 @@ export interface SfdcOpportunity {
   Account: { Name: string; Website: string | null } | null;
   StageName: string;
   Amount: number | null;
+  ARR__c: number | null;
   CloseDate: string;
   LeadSource: string | null;
   CreatedDate: string;

@@ -24,7 +24,7 @@ import {
 import { Search, Loader2, ArrowUp, ArrowDown, ArrowUpDown, ChevronLeft, ChevronRight } from "lucide-react";
 import { useSfdcOpportunities } from "@/hooks/useSfdcOpportunities";
 
-type SortKey = "name" | "account" | "stage" | "amount" | "probability" | "closeDate";
+type SortKey = "name" | "account" | "stage" | "amount" | "arr" | "probability" | "closeDate";
 type SortDir = "asc" | "desc";
 
 const PAGE_SIZE = 50;
@@ -97,6 +97,7 @@ const PartnerOpportunities = () => {
         case "account": aVal = a.Account?.Name ?? null; bVal = b.Account?.Name ?? null; break;
         case "stage": aVal = a.StageName; bVal = b.StageName; break;
         case "amount": aVal = a.Amount; bVal = b.Amount; break;
+        case "arr": aVal = a.ARR__c; bVal = b.ARR__c; break;
         case "probability": aVal = a.Probability; bVal = b.Probability; break;
         case "closeDate": aVal = a.CloseDate; bVal = b.CloseDate; break;
       }
@@ -110,6 +111,9 @@ const PartnerOpportunities = () => {
       return sortDir === "asc" ? cmp : -cmp;
     });
   }, [filtered, sortKey, sortDir]);
+
+  const totalARR = filtered.reduce((sum, o) => sum + (o.ARR__c ?? 0), 0);
+  const totalTCV = filtered.reduce((sum, o) => sum + (o.Amount ?? 0), 0);
 
   const totalPages = Math.max(1, Math.ceil(sorted.length / PAGE_SIZE));
   const paginated = useMemo(() => {
@@ -192,6 +196,9 @@ const PartnerOpportunities = () => {
                   <TableHead className={`${thClass} hidden sm:table-cell`} style={{ width: "145px" }} resizable onClick={() => handleSort("closeDate")}>
                     <span className="inline-flex items-center">Close Date<SortIcon active={sortKey === "closeDate"} dir={sortDir} /></span>
                   </TableHead>
+                  <TableHead className={`${thClass} text-right hidden sm:table-cell`} style={{ width: "90px" }} resizable onClick={() => handleSort("arr")}>
+                    <span className="inline-flex items-center justify-end">ARR<SortIcon active={sortKey === "arr"} dir={sortDir} /></span>
+                  </TableHead>
                   <TableHead className={`${thClass} text-right`} style={{ width: "90px" }} resizable onClick={() => handleSort("amount")}>
                     <span className="inline-flex items-center justify-end">TCV<SortIcon active={sortKey === "amount"} dir={sortDir} /></span>
                   </TableHead>
@@ -220,6 +227,9 @@ const PartnerOpportunities = () => {
                         {new Date(opp.CloseDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
                       </span>
                     </TableCell>
+                    <TableCell className="py-2 text-right hidden sm:table-cell">
+                      <span className="text-sm font-medium tabular-nums">{formatCurrency(opp.ARR__c)}</span>
+                    </TableCell>
                     <TableCell className="py-2 text-right">
                       <span className="text-sm font-medium tabular-nums">{formatCurrency(opp.Amount)}</span>
                     </TableCell>
@@ -231,35 +241,33 @@ const PartnerOpportunities = () => {
         )}
       </div>
 
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="border-t border-border/50 px-3 sm:px-6 py-3 flex items-center justify-between bg-card/30">
-          <span className="text-sm text-muted-foreground">
-            {page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, sorted.length)} of {sorted.length} opportunities
+      {/* Footer: summaries + pagination */}
+      <div className="border-t border-border/50 px-3 sm:px-6 py-3 flex items-center justify-between gap-4 bg-card/30 flex-wrap">
+        <div className="flex items-center gap-4 text-sm">
+          <span className="text-muted-foreground">
+            ARR <span className="font-medium text-foreground tabular-nums">{formatCurrency(totalARR)}</span>
           </span>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setPage((p) => Math.max(0, p - 1))}
-              disabled={page === 0}
-            >
+          <span className="text-muted-foreground">
+            TCV <span className="font-medium text-foreground tabular-nums">{formatCurrency(totalTCV)}</span>
+          </span>
+        </div>
+        {totalPages > 1 && (
+          <div className="flex items-center gap-2 ml-auto">
+            <span className="text-sm text-muted-foreground">
+              {page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, sorted.length)} of {sorted.length}
+            </span>
+            <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.max(0, p - 1))} disabled={page === 0}>
               <ChevronLeft className="h-4 w-4" />
             </Button>
-            <span className="text-sm text-muted-foreground min-w-[80px] text-center">
-              Page {page + 1} of {totalPages}
+            <span className="text-sm text-muted-foreground min-w-[60px] text-center">
+              {page + 1} / {totalPages}
             </span>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
-              disabled={page >= totalPages - 1}
-            >
+            <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))} disabled={page >= totalPages - 1}>
               <ChevronRight className="h-4 w-4" />
             </Button>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 };

@@ -104,7 +104,7 @@ const LEAD_DETAIL_FIELDS = `Id, Name, FirstName, LastName, Company, Email, Websi
                 Use_Case__c, Competitors_Considered_or_Incumbent__c,
                 Additional_Information__c`;
 
-const OPP_LIST_FIELDS = `Id, Name, Account.Name, Account.Website, StageName, Amount, CloseDate, LeadSource, CreatedDate`;
+const OPP_LIST_FIELDS = `Id, Name, Account.Name, Account.Website, StageName, Amount, ARR__c, CloseDate, LeadSource, CreatedDate`;
 
 const OPP_DETAIL_FIELDS = `Id, Name, Account.Name, Account.Website, Owner.Name, CreatedBy.Name,
                 StageName, Amount, CloseDate, Probability, LeadSource, Type, CreatedDate,

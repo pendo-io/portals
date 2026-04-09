@@ -90,16 +90,16 @@ const DEMO_LEAD_DETAILS: Record<string, SfdcLeadDetail> = Object.fromEntries(
 
 // ── Opportunities ───────────────────────────────────────────────────
 const DEMO_OPPORTUNITIES: SfdcOpportunity[] = [
-  { Id: demoId(101), Name: "Northwind Solutions - Enterprise", Account: { Name: "Northwind Solutions" }, StageName: "Negotiation", Amount: 185000, CloseDate: daysFromNow(14), LeadSource: "Partner Referral", CreatedDate: daysAgo(45) },
-  { Id: demoId(102), Name: "Contoso Ltd - Platform License", Account: { Name: "Contoso Ltd" }, StageName: "Discovery", Amount: 72000, CloseDate: daysFromNow(45), LeadSource: "Partner Referral", CreatedDate: daysAgo(30) },
-  { Id: demoId(103), Name: "Fabrikam Inc - Expansion", Account: { Name: "Fabrikam Inc" }, StageName: "Proposal", Amount: 240000, CloseDate: daysFromNow(21), LeadSource: "Partner Referral", CreatedDate: daysAgo(60) },
-  { Id: demoId(104), Name: "Tailspin Toys - Starter", Account: { Name: "Tailspin Toys" }, StageName: "Qualification", Amount: 36000, CloseDate: daysFromNow(60), LeadSource: "Partner Referral", CreatedDate: daysAgo(10) },
-  { Id: demoId(105), Name: "Adventure Works - Renewal", Account: { Name: "Adventure Works" }, StageName: "Closed Won", Amount: 150000, CloseDate: daysAgo(5).split("T")[0], LeadSource: "Partner Referral", CreatedDate: daysAgo(90) },
-  { Id: demoId(106), Name: "Woodgrove Bank - Analytics Suite", Account: { Name: "Woodgrove Bank" }, StageName: "Negotiation", Amount: 320000, CloseDate: daysFromNow(30), LeadSource: "Partner Referral", CreatedDate: daysAgo(40) },
-  { Id: demoId(107), Name: "Litware Inc - POC", Account: { Name: "Litware Inc" }, StageName: "Closed Lost", Amount: 48000, CloseDate: daysAgo(15).split("T")[0], LeadSource: "Partner Referral", CreatedDate: daysAgo(75) },
-  { Id: demoId(108), Name: "Proseware GmbH - Growth Plan", Account: { Name: "Proseware GmbH" }, StageName: "Discovery", Amount: 95000, CloseDate: daysFromNow(50), LeadSource: "Partner Referral", CreatedDate: daysAgo(7) },
-  { Id: demoId(109), Name: "Fourth Coffee - Migration", Account: { Name: "Fourth Coffee" }, StageName: "Proposal", Amount: 128000, CloseDate: daysFromNow(35), LeadSource: "Partner Referral", CreatedDate: daysAgo(55) },
-  { Id: demoId(110), Name: "Relecloud - Enterprise Rollout", Account: { Name: "Relecloud" }, StageName: "Qualification", Amount: 210000, CloseDate: daysFromNow(70), LeadSource: "Partner Referral", CreatedDate: daysAgo(14) },
+  { Id: demoId(101), Name: "Northwind Solutions - Enterprise", Account: { Name: "Northwind Solutions", Website: null }, StageName: "Negotiation", Amount: 185000, ARR__c: 62000, CloseDate: daysFromNow(14), LeadSource: "Partner Referral", CreatedDate: daysAgo(45) },
+  { Id: demoId(102), Name: "Contoso Ltd - Platform License", Account: { Name: "Contoso Ltd", Website: null }, StageName: "Discovery", Amount: 72000, ARR__c: 24000, CloseDate: daysFromNow(45), LeadSource: "Partner Referral", CreatedDate: daysAgo(30) },
+  { Id: demoId(103), Name: "Fabrikam Inc - Expansion", Account: { Name: "Fabrikam Inc", Website: null }, StageName: "Proposal", Amount: 240000, ARR__c: 80000, CloseDate: daysFromNow(21), LeadSource: "Partner Referral", CreatedDate: daysAgo(60) },
+  { Id: demoId(104), Name: "Tailspin Toys - Starter", Account: { Name: "Tailspin Toys", Website: null }, StageName: "Qualification", Amount: 36000, ARR__c: 12000, CloseDate: daysFromNow(60), LeadSource: "Partner Referral", CreatedDate: daysAgo(10) },
+  { Id: demoId(105), Name: "Adventure Works - Renewal", Account: { Name: "Adventure Works", Website: null }, StageName: "Closed Won", Amount: 150000, ARR__c: 50000, CloseDate: daysAgo(5).split("T")[0], LeadSource: "Partner Referral", CreatedDate: daysAgo(90) },
+  { Id: demoId(106), Name: "Woodgrove Bank - Analytics Suite", Account: { Name: "Woodgrove Bank", Website: null }, StageName: "Negotiation", Amount: 320000, ARR__c: 107000, CloseDate: daysFromNow(30), LeadSource: "Partner Referral", CreatedDate: daysAgo(40) },
+  { Id: demoId(107), Name: "Litware Inc - POC", Account: { Name: "Litware Inc", Website: null }, StageName: "Closed Lost", Amount: 48000, ARR__c: 16000, CloseDate: daysAgo(15).split("T")[0], LeadSource: "Partner Referral", CreatedDate: daysAgo(75) },
+  { Id: demoId(108), Name: "Proseware GmbH - Growth Plan", Account: { Name: "Proseware GmbH", Website: null }, StageName: "Discovery", Amount: 95000, ARR__c: 32000, CloseDate: daysFromNow(50), LeadSource: "Partner Referral", CreatedDate: daysAgo(7) },
+  { Id: demoId(109), Name: "Fourth Coffee - Migration", Account: { Name: "Fourth Coffee", Website: null }, StageName: "Proposal", Amount: 128000, ARR__c: 43000, CloseDate: daysFromNow(35), LeadSource: "Partner Referral", CreatedDate: daysAgo(55) },
+  { Id: demoId(110), Name: "Relecloud - Enterprise Rollout", Account: { Name: "Relecloud", Website: null }, StageName: "Qualification", Amount: 210000, ARR__c: 70000, CloseDate: daysFromNow(70), LeadSource: "Partner Referral", CreatedDate: daysAgo(14) },
 ];
 
 const DEMO_OPP_DETAILS: Record<string, SfdcOpportunityDetail> = Object.fromEntries(
