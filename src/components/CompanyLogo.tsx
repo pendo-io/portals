@@ -15,7 +15,7 @@ function extractDomain(website: string): string {
   }
 }
 
-export function CompanyLogo({ website, fallback, imgClassName = "h-6 w-6 object-contain rounded" }: CompanyLogoProps) {
+export function CompanyLogo({ website, fallback, imgClassName = "h-10 w-10 object-contain rounded-xl" }: CompanyLogoProps) {
   const [usePendo, setUsePendo] = useState(false);
   const apiKey = import.meta.env.VITE_BRANDFETCH_KEY;
 
