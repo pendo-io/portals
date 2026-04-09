@@ -20,9 +20,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Search, Loader2, ArrowUp, ArrowDown, ArrowUpDown, ChevronLeft, ChevronRight, Building2 } from "lucide-react";
+import { Search, Loader2, ArrowUp, ArrowDown, ArrowUpDown, ChevronLeft, ChevronRight } from "lucide-react";
 import { useSfdcLeads } from "@/hooks/useSfdcLeads";
-import { CompanyLogo } from "@/components/CompanyLogo";
 
 type SortKey = "company" | "contact" | "email" | "status" | "source" | "created";
 type SortDir = "asc" | "desc";
@@ -200,16 +199,7 @@ const PartnerLeads = () => {
                       <span className="text-sm text-muted-foreground">{lead.Email ?? "—"}</span>
                     </TableCell>
                     <TableCell className="py-2 max-w-[140px] sm:max-w-none">
-                      <div className="flex items-center gap-2 min-w-0">
-                        <div className="h-5 w-5 rounded bg-muted/50 flex items-center justify-center shrink-0">
-                          <CompanyLogo
-                            website={lead.Website}
-                            fallback={<Building2 className="h-3 w-3 text-muted-foreground" />}
-                            imgClassName="h-5 w-5 object-contain rounded"
-                          />
-                        </div>
-                        <span className="text-sm truncate">{lead.Company}</span>
-                      </div>
+                      <span className="text-sm truncate block">{lead.Company}</span>
                     </TableCell>
                     <TableCell className="py-2">
                       {lead.Status ? (
