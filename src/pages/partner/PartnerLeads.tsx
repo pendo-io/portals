@@ -33,6 +33,7 @@ function statusColor(status: string): string {
     case "New":           return "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400";
     case "Working":       return "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400";
     case "Qualified":     return "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400";
+    case "Qualifying":    return "bg-sky-100 text-sky-700 dark:bg-sky-900/40 dark:text-sky-400";
     case "Unqualified":   return "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400";
     case "Converted":     return "bg-violet-100 text-violet-700 dark:bg-violet-900/40 dark:text-violet-400";
     case "Approved":      return "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400";
