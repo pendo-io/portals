@@ -6,7 +6,7 @@ import { isDemoMode, getDemoOpportunityDetail } from "@/lib/demoData";
 export interface SfdcOpportunityDetail {
   Id: string;
   Name: string;
-  Account: { Name: string } | null;
+  Account: { Name: string; Website: string | null } | null;
   Owner: { Name: string } | null;
   CreatedBy: { Name: string } | null;
   StageName: string;

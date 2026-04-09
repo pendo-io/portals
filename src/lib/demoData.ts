@@ -49,18 +49,18 @@ function daysFromNow(n: number) {
 
 // ── Leads ───────────────────────────────────────────────────────────
 const DEMO_LEADS: SfdcLead[] = [
-  { Id: demoId(1), Name: "Sarah Chen", FirstName: "Sarah", LastName: "Chen", Company: "Northwind Solutions", Email: "s.chen@northwind.example", Status: "Working", LeadSource: "Partner Referral", CreatedDate: daysAgo(2) },
-  { Id: demoId(2), Name: "Marcus Johnson", FirstName: "Marcus", LastName: "Johnson", Company: "Contoso Ltd", Email: "m.johnson@contoso.example", Status: "New", LeadSource: "Partner Referral", CreatedDate: daysAgo(5) },
-  { Id: demoId(3), Name: "Priya Patel", FirstName: "Priya", LastName: "Patel", Company: "Fabrikam Inc", Email: "p.patel@fabrikam.example", Status: "Qualified", LeadSource: "Partner Referral", CreatedDate: daysAgo(8) },
-  { Id: demoId(4), Name: "James Wilson", FirstName: "James", LastName: "Wilson", Company: "Tailspin Toys", Email: "j.wilson@tailspin.example", Status: "Working", LeadSource: "Partner Referral", CreatedDate: daysAgo(12) },
-  { Id: demoId(5), Name: "Elena Rodriguez", FirstName: "Elena", LastName: "Rodriguez", Company: "Adventure Works", Email: "e.rodriguez@adventureworks.example", Status: "New", LeadSource: "Partner Referral", CreatedDate: daysAgo(15) },
-  { Id: demoId(6), Name: "David Kim", FirstName: "David", LastName: "Kim", Company: "Woodgrove Bank", Email: "d.kim@woodgrove.example", Status: "Qualified", LeadSource: "Partner Referral", CreatedDate: daysAgo(20) },
-  { Id: demoId(7), Name: "Aisha Mohammed", FirstName: "Aisha", LastName: "Mohammed", Company: "Litware Inc", Email: "a.mohammed@litware.example", Status: "Unqualified", LeadSource: "Partner Referral", CreatedDate: daysAgo(25) },
-  { Id: demoId(8), Name: "Tom Schneider", FirstName: "Tom", LastName: "Schneider", Company: "Proseware GmbH", Email: "t.schneider@proseware.example", Status: "New", LeadSource: "Partner Referral", CreatedDate: daysAgo(1) },
-  { Id: demoId(9), Name: "Yuki Tanaka", FirstName: "Yuki", LastName: "Tanaka", Company: "Fourth Coffee", Email: "y.tanaka@fourthcoffee.example", Status: "Working", LeadSource: "Partner Referral", CreatedDate: daysAgo(18) },
-  { Id: demoId(10), Name: "Rachel Green", FirstName: "Rachel", LastName: "Green", Company: "Margie's Travel", Email: "r.green@margies.example", Status: "Qualified", LeadSource: "Partner Referral", CreatedDate: daysAgo(30) },
-  { Id: demoId(11), Name: "Luis Hernandez", FirstName: "Luis", LastName: "Hernandez", Company: "Wide World Importers", Email: "l.hernandez@wideworldimporters.example", Status: "New", LeadSource: "Partner Referral", CreatedDate: daysAgo(3) },
-  { Id: demoId(12), Name: "Nina Petrova", FirstName: "Nina", LastName: "Petrova", Company: "Relecloud", Email: "n.petrova@relecloud.example", Status: "Working", LeadSource: "Partner Referral", CreatedDate: daysAgo(10) },
+  { Id: demoId(1), Name: "Sarah Chen", FirstName: "Sarah", LastName: "Chen", Company: "Northwind Solutions", Email: "s.chen@northwind.example", Website: null, Status: "Working", LeadSource: "Partner Referral", CreatedDate: daysAgo(2) },
+  { Id: demoId(2), Name: "Marcus Johnson", FirstName: "Marcus", LastName: "Johnson", Company: "Contoso Ltd", Email: "m.johnson@contoso.example", Website: null, Status: "New", LeadSource: "Partner Referral", CreatedDate: daysAgo(5) },
+  { Id: demoId(3), Name: "Priya Patel", FirstName: "Priya", LastName: "Patel", Company: "Fabrikam Inc", Email: "p.patel@fabrikam.example", Website: null, Status: "Qualified", LeadSource: "Partner Referral", CreatedDate: daysAgo(8) },
+  { Id: demoId(4), Name: "James Wilson", FirstName: "James", LastName: "Wilson", Company: "Tailspin Toys", Email: "j.wilson@tailspin.example", Website: null, Status: "Working", LeadSource: "Partner Referral", CreatedDate: daysAgo(12) },
+  { Id: demoId(5), Name: "Elena Rodriguez", FirstName: "Elena", LastName: "Rodriguez", Company: "Adventure Works", Email: "e.rodriguez@adventureworks.example", Website: null, Status: "New", LeadSource: "Partner Referral", CreatedDate: daysAgo(15) },
+  { Id: demoId(6), Name: "David Kim", FirstName: "David", LastName: "Kim", Company: "Woodgrove Bank", Email: "d.kim@woodgrove.example", Website: null, Status: "Qualified", LeadSource: "Partner Referral", CreatedDate: daysAgo(20) },
+  { Id: demoId(7), Name: "Aisha Mohammed", FirstName: "Aisha", LastName: "Mohammed", Company: "Litware Inc", Email: "a.mohammed@litware.example", Website: null, Status: "Unqualified", LeadSource: "Partner Referral", CreatedDate: daysAgo(25) },
+  { Id: demoId(8), Name: "Tom Schneider", FirstName: "Tom", LastName: "Schneider", Company: "Proseware GmbH", Email: "t.schneider@proseware.example", Website: null, Status: "New", LeadSource: "Partner Referral", CreatedDate: daysAgo(1) },
+  { Id: demoId(9), Name: "Yuki Tanaka", FirstName: "Yuki", LastName: "Tanaka", Company: "Fourth Coffee", Email: "y.tanaka@fourthcoffee.example", Website: null, Status: "Working", LeadSource: "Partner Referral", CreatedDate: daysAgo(18) },
+  { Id: demoId(10), Name: "Rachel Green", FirstName: "Rachel", LastName: "Green", Company: "Margie's Travel", Email: "r.green@margies.example", Website: null, Status: "Qualified", LeadSource: "Partner Referral", CreatedDate: daysAgo(30) },
+  { Id: demoId(11), Name: "Luis Hernandez", FirstName: "Luis", LastName: "Hernandez", Company: "Wide World Importers", Email: "l.hernandez@wideworldimporters.example", Website: null, Status: "New", LeadSource: "Partner Referral", CreatedDate: daysAgo(3) },
+  { Id: demoId(12), Name: "Nina Petrova", FirstName: "Nina", LastName: "Petrova", Company: "Relecloud", Email: "n.petrova@relecloud.example", Website: null, Status: "Working", LeadSource: "Partner Referral", CreatedDate: daysAgo(10) },
 ];
 
 const DEMO_LEAD_DETAILS: Record<string, SfdcLeadDetail> = Object.fromEntries(

@@ -92,7 +92,7 @@ function getAllowedOrigins(): string[] {
 
 // ── Query builders ──
 
-const LEAD_LIST_FIELDS = `Id, Name, FirstName, LastName, Company, Email, Status, LeadSource, CreatedDate`;
+const LEAD_LIST_FIELDS = `Id, Name, FirstName, LastName, Company, Email, Website, Status, LeadSource, CreatedDate`;
 
 const LEAD_DETAIL_FIELDS = `Id, Name, FirstName, LastName, Company, Email, Website,
                 Status, LeadSource, CreatedDate,
@@ -106,7 +106,7 @@ const LEAD_DETAIL_FIELDS = `Id, Name, FirstName, LastName, Company, Email, Websi
 
 const OPP_LIST_FIELDS = `Id, Name, Account.Name, StageName, Amount, CloseDate, LeadSource, CreatedDate`;
 
-const OPP_DETAIL_FIELDS = `Id, Name, Account.Name, Owner.Name, CreatedBy.Name,
+const OPP_DETAIL_FIELDS = `Id, Name, Account.Name, Account.Website, Owner.Name, CreatedBy.Name,
                 StageName, Amount, CloseDate, Probability, LeadSource, Type, CreatedDate,
                 ARR__c, ARR_USD__c, Net_ARR__c, TCV_USD__c,
                 Expiration_Date__c, Transaction_Type__c,

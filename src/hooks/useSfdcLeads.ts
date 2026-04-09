@@ -10,6 +10,7 @@ export interface SfdcLead {
   LastName: string;
   Company: string;
   Email: string | null;
+  Website: string | null;
   Status: string;
   LeadSource: string | null;
   CreatedDate: string;

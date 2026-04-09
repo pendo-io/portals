@@ -32,6 +32,7 @@ import {
   CircleDot,
   ExternalLink,
 } from "lucide-react";
+import { CompanyLogo } from "@/components/CompanyLogo";
 
 function Row({ label, value, wrap }: { label: string; value: string | number | null | undefined; wrap?: boolean }) {
   const display = value == null || value === "" ? "—" : typeof value === "number" ? value.toLocaleString() : value;
@@ -113,7 +114,10 @@ export default function OpportunityDetail() {
           <div className="space-y-2">
             <div className="flex items-center gap-3">
               <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-                <Target className="h-5 w-5 text-primary" />
+                <CompanyLogo
+                  website={opp.Account?.Website}
+                  fallback={<Target className="h-5 w-5 text-primary" />}
+                />
               </div>
               <div>
                 <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">{opp.Account?.Name ?? "Opportunity"}</p>
