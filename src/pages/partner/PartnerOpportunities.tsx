@@ -21,7 +21,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Search, Loader2, ArrowUp, ArrowDown, ArrowUpDown, ChevronLeft, ChevronRight } from "lucide-react";
+import { Search, Loader2, ArrowUp, ArrowDown, ArrowUpDown, ChevronLeft, ChevronRight, Info } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useSfdcOpportunities } from "@/hooks/useSfdcOpportunities";
 
 type SortKey = "name" | "account" | "stage" | "amount" | "arr" | "probability" | "closeDate";
@@ -157,6 +158,12 @@ const PartnerOpportunities = () => {
           </Badge>
           <Badge variant="secondary">ARR {formatCurrency(totalARR)}</Badge>
           <Badge variant="secondary">TCV {formatCurrency(totalTCV)}</Badge>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Info className="h-3.5 w-3.5 text-muted-foreground cursor-default shrink-0" />
+            </TooltipTrigger>
+            <TooltipContent>Partner referral fees are paid on eligible year 1 ARR only</TooltipContent>
+          </Tooltip>
         </div>
       </div>
 
