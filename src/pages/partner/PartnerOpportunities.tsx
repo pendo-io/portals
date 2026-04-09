@@ -149,11 +149,15 @@ const PartnerOpportunities = () => {
           </SelectContent>
         </Select>
 
-        <Badge variant="secondary" className="ml-auto">
-          {filtered.length === opps.length
-            ? `${opps.length} opportunities`
-            : `${filtered.length} of ${opps.length} opportunities`}
-        </Badge>
+        <div className="ml-auto flex items-center gap-2 flex-wrap">
+          <Badge variant="secondary">
+            {filtered.length === opps.length
+              ? `${opps.length} opportunities`
+              : `${filtered.length} of ${opps.length} opportunities`}
+          </Badge>
+          <Badge variant="secondary">ARR {formatCurrency(totalARR)}</Badge>
+          <Badge variant="secondary">TCV {formatCurrency(totalTCV)}</Badge>
+        </div>
       </div>
 
       {/* Content */}
@@ -241,33 +245,25 @@ const PartnerOpportunities = () => {
         )}
       </div>
 
-      {/* Footer: summaries + pagination */}
-      <div className="border-t border-border/50 px-3 sm:px-6 py-3 flex items-center justify-between gap-4 bg-card/30 flex-wrap">
-        <div className="flex items-center gap-4 text-sm">
-          <span className="text-muted-foreground">
-            ARR <span className="font-medium text-foreground tabular-nums">{formatCurrency(totalARR)}</span>
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="border-t border-border/50 px-3 sm:px-6 py-3 flex items-center justify-between bg-card/30">
+          <span className="text-sm text-muted-foreground">
+            {page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, sorted.length)} of {sorted.length} opportunities
           </span>
-          <span className="text-muted-foreground">
-            TCV <span className="font-medium text-foreground tabular-nums">{formatCurrency(totalTCV)}</span>
-          </span>
-        </div>
-        {totalPages > 1 && (
-          <div className="flex items-center gap-2 ml-auto">
-            <span className="text-sm text-muted-foreground">
-              {page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, sorted.length)} of {sorted.length}
-            </span>
+          <div className="flex items-center gap-2">
             <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.max(0, p - 1))} disabled={page === 0}>
               <ChevronLeft className="h-4 w-4" />
             </Button>
-            <span className="text-sm text-muted-foreground min-w-[60px] text-center">
-              {page + 1} / {totalPages}
+            <span className="text-sm text-muted-foreground min-w-[80px] text-center">
+              Page {page + 1} of {totalPages}
             </span>
             <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))} disabled={page >= totalPages - 1}>
               <ChevronRight className="h-4 w-4" />
             </Button>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 };
