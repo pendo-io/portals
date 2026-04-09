@@ -37,6 +37,7 @@ function statusColor(status: string): string {
     case "Converted":     return "bg-violet-100 text-violet-700 dark:bg-violet-900/40 dark:text-violet-400";
     case "Approved":      return "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400";
     case "Pending":       return "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400";
+    case "Rejected":      return "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400";
     case "Not Submitted": return "bg-muted text-muted-foreground";
     default:              return "bg-muted text-muted-foreground";
   }
