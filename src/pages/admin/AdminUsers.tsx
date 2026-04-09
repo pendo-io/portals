@@ -242,19 +242,19 @@ const AdminUsers = () => {
             <Table className="table-fixed [&_th]:border-r [&_th:last-child]:border-r-0 [&_td]:border-r [&_td:last-child]:border-r-0">
               <TableHeader>
                 <TableRow className="bg-muted/30 hover:bg-muted/30">
-                  <TableHead className={thClass} resizable onClick={() => handleSort("name")}>
+                  <TableHead className={thClass} style={{ width: "18%" }} resizable onClick={() => handleSort("name")}>
                     <span className="inline-flex items-center">Name<SortIcon active={sortKey === "name"} dir={sortDir} /></span>
                   </TableHead>
-                  <TableHead className={`${thClass} hidden md:table-cell`} resizable onClick={() => handleSort("email")}>
+                  <TableHead className={`${thClass} hidden md:table-cell`} style={{ width: "26%" }} resizable onClick={() => handleSort("email")}>
                     <span className="inline-flex items-center">Email<SortIcon active={sortKey === "email"} dir={sortDir} /></span>
                   </TableHead>
-                  <TableHead className={thClass} resizable onClick={() => handleSort("role")}>
+                  <TableHead className={thClass} style={{ width: "16%" }} resizable onClick={() => handleSort("role")}>
                     <span className="inline-flex items-center">Role<SortIcon active={sortKey === "role"} dir={sortDir} /></span>
                   </TableHead>
                   <TableHead className={thClass} resizable onClick={() => handleSort("partner")}>
                     <span className="inline-flex items-center">Partner<SortIcon active={sortKey === "partner"} dir={sortDir} /></span>
                   </TableHead>
-                  <TableHead className={`${thClass} hidden sm:table-cell`} resizable onClick={() => handleSort("created")}>
+                  <TableHead className={`${thClass} hidden sm:table-cell`} style={{ width: "120px" }} resizable onClick={() => handleSort("created")}>
                     <span className="inline-flex items-center">Created<SortIcon active={sortKey === "created"} dir={sortDir} /></span>
                   </TableHead>
                 </TableRow>
@@ -265,7 +265,7 @@ const AdminUsers = () => {
                   return (
                     <TableRow key={u.id} className="hover:bg-muted/50 h-[52px]">
                       <TableCell className="py-2">
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 min-w-0">
                           <Tooltip>
                             <TooltipTrigger asChild>
                               <button
@@ -281,14 +281,14 @@ const AdminUsers = () => {
                         </div>
                       </TableCell>
                       <TableCell className="py-2 hidden md:table-cell">
-                        <span className="text-sm text-muted-foreground">{u.email}</span>
+                        <span className="text-sm text-muted-foreground truncate block">{u.email}</span>
                       </TableCell>
                       <TableCell className="py-1">
                         <Select
                           value={role}
                           onValueChange={(val) => handleRoleChange(u.id, val)}
                         >
-                          <SelectTrigger className="h-8 w-full sm:w-[140px] text-xs border-0 bg-transparent hover:bg-muted/50 shadow-none focus:ring-0">
+                          <SelectTrigger className="h-8 w-full text-xs border-0 bg-transparent hover:bg-muted/50 shadow-none focus:ring-0">
                             <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${getRoleColor(role)}`}>
                               {getRoleLabel(role)}
                             </span>
@@ -311,7 +311,7 @@ const AdminUsers = () => {
                             {u.partners.name}
                           </a>
                         ) : (
-                          <span className="text-sm">{u.partners?.name ?? "—"}</span>
+                          <span className="text-sm truncate block">{u.partners?.name ?? "—"}</span>
                         )}
                       </TableCell>
                       <TableCell className="py-2 hidden sm:table-cell">
