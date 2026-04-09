@@ -15,13 +15,15 @@ function extractDomain(website: string): string {
   }
 }
 
+type Stage = "company" | "pendo" | "fallback";
+
 export function CompanyLogo({ website, fallback, imgClassName = "h-10 w-10 object-contain rounded-xl" }: CompanyLogoProps) {
-  const [usePendo, setUsePendo] = useState(false);
+  const [stage, setStage] = useState<Stage>(website ? "company" : "pendo");
   const apiKey = import.meta.env.VITE_BRANDFETCH_KEY;
 
-  if (!apiKey) return <>{fallback}</>;
+  if (!apiKey || stage === "fallback") return <>{fallback}</>;
 
-  const domain = !website || usePendo ? "pendo.com" : extractDomain(website);
+  const domain = stage === "pendo" ? "pendo.com" : extractDomain(website!);
   const src = `https://cdn.brandfetch.io/${domain}/w/48/h/48?c=${apiKey}`;
 
   return (
@@ -29,7 +31,7 @@ export function CompanyLogo({ website, fallback, imgClassName = "h-10 w-10 objec
       src={src}
       alt={domain}
       className={imgClassName}
-      onError={() => setUsePendo(true)}
+      onError={() => setStage(stage === "company" ? "pendo" : "fallback")}
     />
   );
 }
