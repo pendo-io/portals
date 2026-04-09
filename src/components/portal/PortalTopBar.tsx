@@ -3,6 +3,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { usePortalType } from "@/hooks/usePortalType";
 import { isDemoMode } from "@/lib/demoData";
 import { Badge } from "@/components/ui/badge";
+import { SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -17,6 +18,7 @@ export function PortalTopBar() {
   const navigate = useNavigate();
   const { user, partnerType, impersonating } = useAuth();
   const demo = isDemoMode(impersonating?.id);
+  const { isMobile } = useSidebar();
   const { t } = usePortalType();
   const currentPath = location.pathname;
 
@@ -57,6 +59,7 @@ export function PortalTopBar() {
 
   return (
     <header className="flex h-14 shrink-0 items-center gap-2 border-b px-4 sm:px-6">
+      {isMobile && <SidebarTrigger className="-ml-1 shrink-0" />}
       <Breadcrumb>
         <BreadcrumbList>
           {breadcrumbSegments.map((seg, i) => (
