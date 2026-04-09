@@ -214,28 +214,6 @@ export default function OpportunityDetail() {
               </CardContent>
             </Card>
 
-            {/* Partner & Product Details */}
-            <Card className="md:col-span-2 lg:col-span-3">
-              <CardHeader>
-                <CardTitle className="text-sm font-medium flex items-center gap-2">
-                  <Building2 className="h-4 w-4" />
-                  Partner & Product Details
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="text-sm">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8">
-                  <div>
-                    <Row label="Solution Partner/SI" value={opp.Solution_Partner_SI__c} />
-                    <Row label="Referring Account Owner" value={opp.Referring_Account_Owner__r?.Name} />
-                  </div>
-                  <div>
-                    <Row label="Cloud Hosting / Hyperscalers" value={opp.Cloud_Hosting_Commit_Hyperscalers__c} />
-                    <Row label="Data Warehouse Provider" value={opp.Data_Warehouse_Provider__c} />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
             {/* Contact Role Details */}
             <Card className="md:col-span-2 lg:col-span-3">
               <CardHeader>
