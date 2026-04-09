@@ -21,7 +21,7 @@ export function CompanyLogo({ website, fallback, imgClassName = "h-10 w-10 objec
 
   if (!apiKey) return <>{fallback}</>;
 
-  const domain = !website || usePendo ? "pendo.io" : extractDomain(website);
+  const domain = !website || usePendo ? "pendo.com" : extractDomain(website);
   const src = `https://cdn.brandfetch.io/${domain}/w/48/h/48?c=${apiKey}`;
 
   return (
