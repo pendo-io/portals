@@ -35,6 +35,18 @@ const formatCurrency = (value: number | null): string => {
   return `$${value.toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
 };
 
+function stageColor(stage: string): string {
+  switch (stage) {
+    case "Closed Won":    return "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400";
+    case "Closed Lost":   return "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400";
+    case "Negotiation":   return "bg-violet-100 text-violet-700 dark:bg-violet-900/40 dark:text-violet-400";
+    case "Proposal":      return "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400";
+    case "Discovery":     return "bg-sky-100 text-sky-700 dark:bg-sky-900/40 dark:text-sky-400";
+    case "Qualification": return "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400";
+    default:              return "bg-muted text-muted-foreground";
+  }
+}
+
 function SortIcon({ active, dir }: { active: boolean; dir?: SortDir }) {
   if (!active) return <ArrowUpDown className="h-3 w-3 ml-1 opacity-40" />;
   return dir === "asc" ? <ArrowUp className="h-3 w-3 ml-1" /> : <ArrowDown className="h-3 w-3 ml-1" />;
@@ -226,7 +238,7 @@ const PartnerOpportunities = () => {
                     </TableCell>
                     <TableCell className="py-2">
                       {opp.StageName ? (
-                        <span className="inline-flex items-center rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
+                        <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${stageColor(opp.StageName)}`}>
                           {opp.StageName}
                         </span>
                       ) : (
