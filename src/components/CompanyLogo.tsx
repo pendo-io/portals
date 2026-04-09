@@ -16,14 +16,12 @@ function extractDomain(website: string): string {
 }
 
 export function CompanyLogo({ website, fallback, imgClassName = "h-6 w-6 object-contain rounded" }: CompanyLogoProps) {
-  const [imgError, setImgError] = useState(false);
+  const [usePendo, setUsePendo] = useState(false);
   const apiKey = import.meta.env.VITE_BRANDFETCH_KEY;
 
-  if (!website || !apiKey || imgError) {
-    return <>{fallback}</>;
-  }
+  if (!apiKey) return <>{fallback}</>;
 
-  const domain = extractDomain(website);
+  const domain = !website || usePendo ? "pendo.io" : extractDomain(website);
   const src = `https://cdn.brandfetch.io/${domain}/w/48/h/48?c=${apiKey}`;
 
   return (
@@ -31,7 +29,7 @@ export function CompanyLogo({ website, fallback, imgClassName = "h-6 w-6 object-
       src={src}
       alt={domain}
       className={imgClassName}
-      onError={() => setImgError(true)}
+      onError={() => setUsePendo(true)}
     />
   );
 }
