@@ -36,15 +36,14 @@ const formatCurrency = (value: number | null): string => {
 };
 
 function stageColor(stage: string): string {
-  switch (stage) {
-    case "Closed Won":    return "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400";
-    case "Closed Lost":   return "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400";
-    case "Negotiation":   return "bg-violet-100 text-violet-700 dark:bg-violet-900/40 dark:text-violet-400";
-    case "Proposal":      return "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400";
-    case "Discovery":     return "bg-sky-100 text-sky-700 dark:bg-sky-900/40 dark:text-sky-400";
-    case "Qualification": return "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400";
-    default:              return "bg-muted text-muted-foreground";
-  }
+  const s = stage.toLowerCase();
+  if (s.includes("closed won"))                                    return "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400";
+  if (s.includes("closed lost"))                                   return "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400";
+  if (s.includes("negotiat") || s.includes("contract"))           return "bg-violet-100 text-violet-700 dark:bg-violet-900/40 dark:text-violet-400";
+  if (s.includes("proposal") || s.includes("value prop") || s.includes("shortlist")) return "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400";
+  if (s.includes("discover") || s.includes("needs") || s.includes("pilot") || s.includes("business value")) return "bg-sky-100 text-sky-700 dark:bg-sky-900/40 dark:text-sky-400";
+  if (s.includes("qualif") || s.includes("prospect") || s.includes("decision") || s.includes("perception")) return "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400";
+  return "bg-muted text-muted-foreground";
 }
 
 function SortIcon({ active, dir }: { active: boolean; dir?: SortDir }) {
