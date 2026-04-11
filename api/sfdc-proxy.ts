@@ -220,7 +220,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   ]);
   if (!authCtx) return res.status(401).json({ error: "Unauthorized" });
 
-  // Handle impersonation: super_admin can scope to a different account
+  // Handle impersonation: super_admin can scope to a registered partner account
   const impersonateAccount = req.headers["x-impersonate-account"] as string | undefined;
   if (impersonateAccount) {
     if (!authCtx.isSuperAdmin) {
@@ -228,6 +228,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
     if (!isSafeSfdcId(impersonateAccount)) {
       return res.status(400).json({ error: "Invalid impersonate account ID" });
+    }
+    // Verify the target account is a registered partner in our system
+    const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
+    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    const supabase = createClient(supabaseUrl!, serviceKey!);
+    const { data: partner } = await supabase
+      .from("partners")
+      .select("id")
+      .eq("sfdc_account_id", impersonateAccount)
+      .single();
+    if (!partner) {
+      return res.status(403).json({ error: "Account not registered in this system" });
     }
     authCtx.sfdcAccountId = impersonateAccount;
     authCtx.isSuperAdmin = false; // Treat as scoped user

@@ -79,6 +79,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const { sObject, fields } = req.body;
   if (!sObject || !fields) return res.status(400).json({ error: "Missing sObject or fields" });
 
+  const ALLOWED_SOBJECTS = ["Lead"];
+  if (!ALLOWED_SOBJECTS.includes(sObject)) {
+    return res.status(400).json({ error: "Invalid sObject" });
+  }
+
   const instanceUrl = process.env.SFDC_INSTANCE_URL;
   if (!instanceUrl) return res.status(500).json({ error: "SFDC_INSTANCE_URL not configured" });
 
