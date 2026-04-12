@@ -524,9 +524,9 @@ function parseJSON<T>(text: string): T | null {
        });
      } catch {}
 
-     return new Response(JSON.stringify({ 
-       success: false, 
-       error: error.message || "Failed to generate brief" 
+     return new Response(JSON.stringify({
+       success: false,
+       error: "Internal server error"
      }), {
        status: 500,
        headers: { ...corsHeaders, "Content-Type": "application/json" },
