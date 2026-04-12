@@ -220,10 +220,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const instanceUrl = process.env.SFDC_INSTANCE_URL;
   if (!instanceUrl) return res.status(500).json({ error: "SFDC_INSTANCE_URL not configured" });
 
-  const [authCtx, accessToken] = await Promise.all([
-    verifyAuthAndGetContext(req),
-    getSfdcToken(),
-  ]);
+  let authCtx: AuthContext | null;
+  let accessToken: string;
+  try {
+    [authCtx, accessToken] = await Promise.all([
+      verifyAuthAndGetContext(req),
+      getSfdcToken(),
+    ]);
+  } catch (error: any) {
+    console.error("sfdc-proxy auth/token error:", error);
+    return res.status(500).json({ error: "Internal server error" });
+  }
   if (!authCtx) return res.status(401).json({ error: "Unauthorized" });
 
   // Handle impersonation: super_admin can scope to a registered partner account
