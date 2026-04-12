@@ -35,7 +35,7 @@ const IMPERSONATE_KEY = "impersonate_user";
 
 function getStoredImpersonation(): ImpersonatedUser | null {
   try {
-    const raw = localStorage.getItem(IMPERSONATE_KEY);
+    const raw = sessionStorage.getItem(IMPERSONATE_KEY);
     return raw ? JSON.parse(raw) : null;
   } catch {
     return null;
@@ -94,17 +94,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const signOut = useCallback(async () => {
-    localStorage.removeItem(IMPERSONATE_KEY);
+    sessionStorage.removeItem(IMPERSONATE_KEY);
     await supabase.auth.signOut();
   }, []);
 
   const startImpersonating = useCallback((target: ImpersonatedUser) => {
-    localStorage.setItem(IMPERSONATE_KEY, JSON.stringify(target));
+    sessionStorage.setItem(IMPERSONATE_KEY, JSON.stringify(target));
     setImpersonating(target);
   }, []);
 
   const stopImpersonating = useCallback(() => {
-    localStorage.removeItem(IMPERSONATE_KEY);
+    sessionStorage.removeItem(IMPERSONATE_KEY);
     setImpersonating(null);
   }, []);
 

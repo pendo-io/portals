@@ -84,6 +84,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(400).json({ error: "Invalid sObject" });
   }
 
+  // Field-level allowlist: partners may only set these Lead fields
+  const ALLOWED_LEAD_FIELDS = new Set([
+    "Company", "Website", "FirstName", "LastName", "Email",
+    "LeadSource", "Status", "Street", "City", "State", "PostalCode", "Country",
+    "Department_s__c", "Number_of_Users__c", "Current_Tech_Stack_Solutions__c",
+    "Use_Case__c", "Competitors_Considered_or_Incumbent__c", "Additional_Information__c",
+    "Referral_Partner_Account__c", "Partner_Owner__c",
+  ]);
+  const filteredFields: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(fields as Record<string, unknown>)) {
+    if (ALLOWED_LEAD_FIELDS.has(key)) {
+      filteredFields[key] = value;
+    }
+  }
+
   const instanceUrl = process.env.SFDC_INSTANCE_URL;
   if (!instanceUrl) return res.status(500).json({ error: "SFDC_INSTANCE_URL not configured" });
 
@@ -98,7 +113,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           "Content-Type": "application/json",
           "Sforce-Duplicate-Rule-Header": "allowSave=true",
         },
-        body: JSON.stringify(fields),
+        body: JSON.stringify(filteredFields),
       }
     );
 

@@ -1,9 +1,16 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
-};
+const ALLOWED_ORIGINS = [
+  Deno.env.get("ALLOWED_ORIGIN") ?? "https://pendoportals.vercel.app",
+];
+
+function getCorsHeaders(req: Request): Record<string, string> {
+  const origin = req.headers.get("origin") ?? "";
+  return {
+    "Access-Control-Allow-Origin": ALLOWED_ORIGINS.includes(origin) ? origin : "",
+    "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
+  };
+}
 
 // Map of allowed public workflow slugs to their webhook URLs
 const PUBLIC_WORKFLOWS: Record<string, string> = {
@@ -12,6 +19,7 @@ const PUBLIC_WORKFLOWS: Record<string, string> = {
 };
 
 serve(async (req) => {
+  const corsHeaders = getCorsHeaders(req);
   // Handle CORS preflight
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -27,8 +35,8 @@ serve(async (req) => {
       });
     }
 
-    // Validate email is @pendo.io
-    if (formData.yourEmail && !formData.yourEmail.endsWith("@pendo.io")) {
+    // Validate email is exactly @pendo.io (endsWith would allow @evil.pendo.io)
+    if (formData.yourEmail && !/^[^\s@]+@pendo\.io$/i.test(formData.yourEmail)) {
       return new Response(JSON.stringify({ error: "Please use a @pendo.io email address" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -81,7 +89,7 @@ serve(async (req) => {
     });
   } catch (error) {
     console.error("Error:", error);
-    return new Response(JSON.stringify({ error: error.message }), {
+    return new Response(JSON.stringify({ error: "Internal server error" }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });

@@ -53,6 +53,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(400).json({ error: "Missing email, password, or fullName" });
   }
 
+  if (typeof email !== "string" || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 255) {
+    return res.status(400).json({ error: "Invalid email address" });
+  }
+
+  if (typeof fullName !== "string" || fullName.trim().length === 0 || fullName.length > 255) {
+    return res.status(400).json({ error: "fullName must be 1–255 characters" });
+  }
+
   if (typeof password !== "string" || password.length < 8) {
     return res.status(400).json({ error: "Password must be at least 8 characters" });
   }
