@@ -82,7 +82,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     });
 
     if (authError) {
-      return res.status(400).json({ error: authError.message });
+      return res.status(400).json({ error: "Failed to create user" });
     }
 
     const userId = authData.user.id;

@@ -78,6 +78,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   const { sObject, fields } = req.body;
   if (!sObject || !fields) return res.status(400).json({ error: "Missing sObject or fields" });
+  if (typeof fields !== "object" || Array.isArray(fields)) {
+    return res.status(400).json({ error: "fields must be an object" });
+  }
 
   const ALLOWED_SOBJECTS = ["Lead"];
   if (!ALLOWED_SOBJECTS.includes(sObject)) {

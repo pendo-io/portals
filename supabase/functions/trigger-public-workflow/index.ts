@@ -66,8 +66,6 @@ serve(async (req) => {
       }
     });
 
-    console.log("Calling webhook with URL:", url.toString());
-
     // Call the webhook
     const webhookResponse = await fetch(url.toString(), {
       method: "POST",
