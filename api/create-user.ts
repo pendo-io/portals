@@ -1,6 +1,18 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { createClient } from "@supabase/supabase-js";
-import { checkRateLimit, getClientIp } from "./_rateLimit";
+
+const _rlStore = new Map<string, { count: number; resetAt: number }>();
+function _rl(req: VercelRequest, key: string, max: number, windowMs: number) {
+  const fwd = req.headers["x-forwarded-for"];
+  const ip = (typeof fwd === "string" ? fwd.split(",")[0] : Array.isArray(fwd) ? fwd[0] : "unknown").trim();
+  const k = `${ip}:${key}`;
+  const now = Date.now();
+  const e = _rlStore.get(k);
+  if (!e || now > e.resetAt) { _rlStore.set(k, { count: 1, resetAt: now + windowMs }); return null; }
+  if (e.count >= max) return Math.ceil((e.resetAt - now) / 1000);
+  e.count++;
+  return null;
+}
 
 async function verifyAdmin(req: VercelRequest) {
   const authHeader = req.headers.authorization;
@@ -45,9 +57,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method === "OPTIONS") return res.status(204).end();
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
-  const rl = checkRateLimit(getClientIp(req), "create-user", 20, 5 * 60 * 1000);
-  if (!rl.allowed) {
-    return res.status(429).setHeader("Retry-After", String(rl.retryAfter)).json({ error: "Too many requests" });
+  const retryAfter = _rl(req, "create-user", 20, 5 * 60 * 1000);
+  if (retryAfter !== null) {
+    return res.status(429).setHeader("Retry-After", String(retryAfter)).json({ error: "Too many requests" });
   }
 
   const admin = await verifyAdmin(req);
