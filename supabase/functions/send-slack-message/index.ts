@@ -48,7 +48,7 @@ serve(async (req) => {
       );
     }
 
-    console.log('Authenticated user:', user.email);
+    console.log('User authenticated successfully');
 
     if (!SLACK_WEBHOOK_URL) {
       console.error('SLACK_WEBHOOK_URL is not configured');
@@ -98,7 +98,7 @@ serve(async (req) => {
       );
     }
 
-    console.log('Sending message to Slack for user:', user.email);
+    console.log('Sending message to Slack');
 
     // Send to Slack
     const response = await fetch(SLACK_WEBHOOK_URL, {
@@ -121,7 +121,7 @@ serve(async (req) => {
   } catch (error) {
     console.error('Error sending to Slack:', error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: "Internal server error" }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
