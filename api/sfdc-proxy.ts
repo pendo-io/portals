@@ -1,5 +1,6 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { createClient } from "@supabase/supabase-js";
+import { checkRateLimit, getClientIp } from "./_rateLimit";
 
 let cachedToken: { access_token: string; expires_at: number } | null = null;
 
@@ -205,6 +206,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   if (req.method === "OPTIONS") return res.status(204).end();
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
+
+  const rl = checkRateLimit(getClientIp(req), "sfdc-proxy", 300, 5 * 60 * 1000);
+  if (!rl.allowed) {
+    return res.status(429).setHeader("Retry-After", String(rl.retryAfter)).json({ error: "Too many requests" });
+  }
 
   const { type, params = {} } = req.body;
   if (!type || !VALID_TYPES.includes(type)) {
