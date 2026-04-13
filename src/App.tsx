@@ -21,6 +21,7 @@ import OpportunityDetail from "./pages/partner/OpportunityDetail";
 import AdminUsers from "./pages/admin/AdminUsers";
 import AdminCreateUser from "./pages/admin/AdminCreateUser";
 import AdminPartners from "./pages/admin/AdminPartners";
+import AcceptInvite from "./pages/AcceptInvite";
 
 const queryClient = new QueryClient();
 
@@ -41,6 +42,7 @@ const App = () => (
           <ScrollToTop />
           <Routes>
             <Route path="/login" element={<Login />} />
+            <Route path="/accept-invite" element={<AcceptInvite />} />
 
             <Route element={<ProtectedRoute><PortalLayout /></ProtectedRoute>}>
               <Route path="/" element={<PartnerHome />} />

@@ -39,25 +39,21 @@ async function verifyAdmin(req: VercelRequest) {
 
 function getAllowedOrigins(): string[] {
   const origins = [process.env.ALLOWED_ORIGIN || "https://pendoportals.vercel.app"];
-  if (process.env.NODE_ENV !== "production") {
-    origins.push("http://localhost:8080");
-  }
+  if (process.env.NODE_ENV !== "production") origins.push("http://localhost:8080");
   return origins;
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   const origin = req.headers.origin || "";
-  if (getAllowedOrigins().includes(origin)) {
-    res.setHeader("Access-Control-Allow-Origin", origin);
-  }
-  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+  if (getAllowedOrigins().includes(origin)) res.setHeader("Access-Control-Allow-Origin", origin);
+  res.setHeader("Access-Control-Allow-Methods", "DELETE, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "content-type, authorization");
   res.setHeader("Access-Control-Allow-Credentials", "true");
 
   if (req.method === "OPTIONS") return res.status(204).end();
-  if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
+  if (req.method !== "DELETE") return res.status(405).json({ error: "Method not allowed" });
 
-  const retryAfter = _rl(req, "create-user", 20, 5 * 60 * 1000);
+  const retryAfter = _rl(req, "delete-user", 20, 5 * 60 * 1000);
   if (retryAfter !== null) {
     return res.status(429).setHeader("Retry-After", String(retryAfter)).json({ error: "Too many requests" });
   }
@@ -65,53 +61,28 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const admin = await verifyAdmin(req);
   if (!admin) return res.status(403).json({ error: "Forbidden" });
 
-  const { email, fullName, role, partnerId } = req.body;
-
-  if (!email || !fullName) {
-    return res.status(400).json({ error: "Missing email or fullName" });
+  const { userId } = req.body ?? {};
+  if (!userId || typeof userId !== "string") {
+    return res.status(400).json({ error: "Missing userId" });
   }
 
-  if (typeof email !== "string" || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 255) {
-    return res.status(400).json({ error: "Invalid email address" });
-  }
-
-  if (typeof fullName !== "string" || fullName.trim().length === 0 || fullName.length > 255) {
-    return res.status(400).json({ error: "fullName must be 1–255 characters" });
+  if (userId === admin.id) {
+    return res.status(400).json({ error: "Cannot delete your own account" });
   }
 
   const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!supabaseUrl || !serviceRoleKey) {
-    return res.status(500).json({ error: "Supabase credentials not configured" });
-  }
-
-  const siteUrl = process.env.ALLOWED_ORIGIN || "https://pendoportals.vercel.app";
-  const supabase = createClient(supabaseUrl, serviceRoleKey);
+  const supabase = createClient(supabaseUrl!, serviceRoleKey!);
 
   try {
-    const { data: authData, error: authError } = await supabase.auth.admin.inviteUserByEmail(email, {
-      data: { full_name: fullName.trim() },
-      redirectTo: `${siteUrl}/accept-invite`,
-    });
-
-    if (authError) {
-      return res.status(400).json({ error: authError.message || "Failed to send invitation" });
+    const { error } = await supabase.auth.admin.deleteUser(userId);
+    if (error) {
+      console.error("delete-user error:", error);
+      return res.status(400).json({ error: "Failed to delete user" });
     }
-
-    const userId = authData.user.id;
-
-    // Ensure full_name and optional partner_id are set on the profile
-    const profileUpdate: Record<string, string> = { full_name: fullName.trim() };
-    if (partnerId) profileUpdate.partner_id = partnerId;
-    await supabase.from("profiles").update(profileUpdate).eq("id", userId);
-
-    if (role === "super_admin") {
-      await supabase.from("user_roles").insert({ user_id: userId, role: "super_admin" });
-    }
-
-    return res.status(200).json({ id: userId, email });
+    return res.status(200).json({ success: true });
   } catch (error: any) {
-    console.error("create-user error:", error);
+    console.error("delete-user error:", error);
     return res.status(500).json({ error: "Internal server error" });
   }
 }

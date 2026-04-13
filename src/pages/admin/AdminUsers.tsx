@@ -1,9 +1,10 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Table,
   TableBody,
@@ -20,11 +21,49 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+  SheetFooter,
+} from "@/components/ui/sheet";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Search, Loader2, ArrowUp, ArrowDown, ArrowUpDown, ChevronLeft, ChevronRight, UserCheck, Plus } from "lucide-react";
+import {
+  Search,
+  Loader2,
+  ArrowUp,
+  ArrowDown,
+  ArrowUpDown,
+  ChevronLeft,
+  ChevronRight,
+  UserCheck,
+  Plus,
+  MoreHorizontal,
+  Pencil,
+  Trash2,
+} from "lucide-react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { useAuth, type PartnerType } from "@/hooks/useAuth";
@@ -32,9 +71,12 @@ import {
   useAdminUsers,
   useAdminPartners,
   useUpdateUserRole,
+  useAssignPartner,
+  useDeleteUser,
+  useUpdateUserProfile,
   type AdminUser,
 } from "@/hooks/useAdmin";
-import { DEMO_ADMIN_USER } from "@/lib/demoData";
+import { DEMO_ADMIN_USER, DEMO_USER_ID } from "@/lib/demoData";
 
 type SortKey = "name" | "email" | "role" | "partner" | "created";
 type SortDir = "asc" | "desc";
@@ -80,11 +122,23 @@ const AdminUsers = () => {
   const [sortKey, setSortKey] = useState<SortKey | null>(null);
   const [sortDir, setSortDir] = useState<SortDir>("asc");
 
+  // Edit sheet state
+  const [editUser, setEditUser] = useState<AdminUser | null>(null);
+  const [editName, setEditName] = useState("");
+  const [editPartnerId, setEditPartnerId] = useState<string>("none");
+  const [editSaving, setEditSaving] = useState(false);
+
+  // Delete dialog state
+  const [deleteTarget, setDeleteTarget] = useState<AdminUser | null>(null);
+
   const navigate = useNavigate();
   const { startImpersonating } = useAuth();
   const { data: users, isLoading, isError, error } = useAdminUsers();
   const { data: partners } = useAdminPartners();
   const updateRole = useUpdateUserRole();
+  const assignPartner = useAssignPartner();
+  const deleteUser = useDeleteUser();
+  const updateProfile = useUpdateUserProfile();
   const allUsers = useMemo(() => [...(users ?? []), DEMO_ADMIN_USER], [users]);
 
   const handleSearchChange = (value: string) => { setSearch(value); setPage(0); };
@@ -122,6 +176,46 @@ const AdminUsers = () => {
       toast.success("Role updated");
     } catch (err) {
       toast.error((err as Error).message || "Failed to update role");
+    }
+  };
+
+  const handleOpenEdit = (u: AdminUser) => {
+    setEditUser(u);
+    setEditName(u.full_name || "");
+    setEditPartnerId(u.partner_id || "none");
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editUser) return;
+    setEditSaving(true);
+    try {
+      const tasks: Promise<any>[] = [];
+      if (editName.trim() !== (editUser.full_name || "")) {
+        tasks.push(updateProfile.mutateAsync({ userId: editUser.id, fullName: editName.trim() }));
+      }
+      const newPartnerId = editPartnerId === "none" ? null : editPartnerId;
+      if (newPartnerId !== editUser.partner_id) {
+        tasks.push(assignPartner.mutateAsync({ userId: editUser.id, partnerId: newPartnerId }));
+      }
+      await Promise.all(tasks);
+      toast.success("User updated");
+      setEditUser(null);
+    } catch (err) {
+      toast.error((err as Error).message || "Failed to update user");
+    } finally {
+      setEditSaving(false);
+    }
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deleteTarget) return;
+    const target = deleteTarget;
+    setDeleteTarget(null);
+    try {
+      await deleteUser.mutateAsync(target.id);
+      toast.success(`${target.full_name || target.email} has been deleted`);
+    } catch (err) {
+      toast.error((err as Error).message || "Failed to delete user");
     }
   };
 
@@ -257,11 +351,13 @@ const AdminUsers = () => {
                   <TableHead className={`${thClass} hidden sm:table-cell`} style={{ width: "120px" }} resizable onClick={() => handleSort("created")}>
                     <span className="inline-flex items-center">Created<SortIcon active={sortKey === "created"} dir={sortDir} /></span>
                   </TableHead>
+                  <TableHead style={{ width: "52px" }} />
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {paginated.map((u) => {
                   const role = getPrimaryRole(u);
+                  const isDemo = u.id === DEMO_USER_ID;
                   return (
                     <TableRow key={u.id} className="hover:bg-muted/50 h-[52px]">
                       <TableCell className="py-2">
@@ -287,6 +383,7 @@ const AdminUsers = () => {
                         <Select
                           value={role}
                           onValueChange={(val) => handleRoleChange(u.id, val)}
+                          disabled={isDemo}
                         >
                           <SelectTrigger className="h-8 w-full text-xs border-0 bg-transparent hover:bg-muted/50 shadow-none focus:ring-0">
                             <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${getRoleColor(role)}`}>
@@ -319,6 +416,35 @@ const AdminUsers = () => {
                           {new Date(u.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
                         </span>
                       </TableCell>
+                      <TableCell className="py-2">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-7 w-7 p-0 text-muted-foreground hover:text-foreground"
+                              disabled={isDemo}
+                            >
+                              <MoreHorizontal className="h-4 w-4" />
+                              <span className="sr-only">Actions</span>
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => handleOpenEdit(u)}>
+                              <Pencil className="h-4 w-4 mr-2" />
+                              Edit user
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                              className="text-destructive focus:text-destructive"
+                              onClick={() => setDeleteTarget(u)}
+                            >
+                              <Trash2 className="h-4 w-4 mr-2" />
+                              Delete user
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
                     </TableRow>
                   );
                 })}
@@ -347,6 +473,75 @@ const AdminUsers = () => {
           </div>
         </div>
       )}
+
+      {/* Edit User Sheet */}
+      <Sheet open={!!editUser} onOpenChange={(open) => { if (!open && !editSaving) setEditUser(null); }}>
+        <SheetContent className="flex flex-col">
+          <SheetHeader>
+            <SheetTitle>Edit User</SheetTitle>
+            <SheetDescription>
+              Update details for {editUser?.email}.
+            </SheetDescription>
+          </SheetHeader>
+          <div className="flex-1 space-y-5 mt-6">
+            <div className="space-y-2">
+              <Label className="text-sm text-muted-foreground font-medium">Full Name</Label>
+              <Input
+                value={editName}
+                onChange={(e) => setEditName(e.target.value)}
+                placeholder="Full name"
+                disabled={editSaving}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-sm text-muted-foreground font-medium">Partner</Label>
+              <Select value={editPartnerId} onValueChange={setEditPartnerId} disabled={editSaving}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">No Partner</SelectItem>
+                  {partners?.map((p) => (
+                    <SelectItem key={p.id} value={p.id}>{p.name} ({p.type})</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <SheetFooter className="gap-2">
+            <Button variant="outline" onClick={() => setEditUser(null)} disabled={editSaving}>
+              Cancel
+            </Button>
+            <Button onClick={handleSaveEdit} disabled={editSaving || !editName.trim()}>
+              {editSaving && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
+              Save changes
+            </Button>
+          </SheetFooter>
+        </SheetContent>
+      </Sheet>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={!!deleteTarget} onOpenChange={(open) => { if (!open) setDeleteTarget(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete user?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete{" "}
+              <strong>{deleteTarget?.full_name || deleteTarget?.email}</strong> and all their data.
+              This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={handleConfirmDelete}
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

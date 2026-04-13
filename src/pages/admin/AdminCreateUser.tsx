@@ -11,7 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Loader2, ArrowLeft } from "lucide-react";
+import { Loader2, ArrowLeft, Mail } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/lib/supabase";
 import { useAdminPartners } from "@/hooks/useAdmin";
@@ -26,13 +26,12 @@ function getRoleLabel(role: string) {
 }
 
 const AdminCreateUser = () => {
-  useDocumentTitle("Create User");
+  useDocumentTitle("Invite User");
   const navigate = useNavigate();
   const { data: partners } = useAdminPartners();
 
   const [email, setEmail] = useState("");
   const [fullName, setFullName] = useState("");
-  const [password, setPassword] = useState("");
   const [role, setRole] = useState<string>("user");
   const [partnerId, setPartnerId] = useState<string>("none");
   const [saving, setSaving] = useState(false);
@@ -40,13 +39,8 @@ const AdminCreateUser = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!email.trim() || !fullName.trim() || !password.trim()) {
+    if (!email.trim() || !fullName.trim()) {
       toast.error("Please fill in all required fields");
-      return;
-    }
-
-    if (password.length < 8) {
-      toast.error("Password must be at least 8 characters");
       return;
     }
 
@@ -61,7 +55,6 @@ const AdminCreateUser = () => {
         },
         body: JSON.stringify({
           email: email.trim(),
-          password: password.trim(),
           fullName: fullName.trim(),
           role,
           partnerId: partnerId !== "none" ? partnerId : null,
@@ -69,12 +62,12 @@ const AdminCreateUser = () => {
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Failed to create user");
+      if (!res.ok) throw new Error(data.error || "Failed to send invitation");
 
-      toast.success(`User ${fullName.trim()} created successfully`);
+      toast.success(`Invitation sent to ${email.trim()}`);
       navigate("/admin/users");
     } catch (err) {
-      toast.error((err as Error).message || "Failed to create user");
+      toast.error((err as Error).message || "Failed to send invitation");
     } finally {
       setSaving(false);
     }
@@ -94,9 +87,9 @@ const AdminCreateUser = () => {
       <div className="flex-1 flex items-start justify-center p-6 sm:p-12 overflow-y-auto">
         <div className="w-full max-w-lg">
           <div className="mb-8">
-            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">Create User</h2>
+            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">Invite User</h2>
             <p className="text-sm sm:text-base text-muted-foreground mt-2">
-              Provision a new user account for the partner portal.
+              Send an invitation email. The user will set their own password when they accept.
             </p>
           </div>
 
@@ -124,20 +117,6 @@ const AdminCreateUser = () => {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="jane@company.com"
                 required
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label className="text-sm text-muted-foreground font-medium">
-                Password <span className="text-primary">*</span>
-              </Label>
-              <Input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Minimum 8 characters"
-                required
-                minLength={8}
               />
             </div>
 
@@ -180,8 +159,11 @@ const AdminCreateUser = () => {
               >
                 Cancel
               </Button>
-              <Button type="submit" disabled={saving} className="min-w-[120px]">
-                {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : "Create User"}
+              <Button type="submit" disabled={saving} className="min-w-[140px] gap-2">
+                {saving
+                  ? <Loader2 className="h-4 w-4 animate-spin" />
+                  : <><Mail className="h-4 w-4" />Send Invitation</>
+                }
               </Button>
             </div>
           </form>

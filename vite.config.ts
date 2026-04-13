@@ -187,17 +187,17 @@ export default defineConfig(({ mode }) => {
             }
           });
 
-          // POST /api/create-user — provision a new user (requires service role)
-          server.middlewares.use("/api/create-user", async (req, res) => {
+          // DELETE /api/delete-user — delete a user (requires service role)
+          server.middlewares.use("/api/delete-user", async (req, res) => {
             if (req.method === "OPTIONS") { res.writeHead(204); res.end(); return; }
-            if (req.method !== "POST") { res.writeHead(405); res.end(JSON.stringify({ error: "Method not allowed" })); return; }
+            if (req.method !== "DELETE") { res.writeHead(405); res.end(JSON.stringify({ error: "Method not allowed" })); return; }
 
             const body = await readBody(req);
-            const { email, password, fullName, role, partnerId } = body;
+            const { userId } = body;
 
-            if (!email || !password || !fullName) {
+            if (!userId) {
               res.writeHead(400, { "Content-Type": "application/json" });
-              res.end(JSON.stringify({ error: "Missing email, password, or fullName" }));
+              res.end(JSON.stringify({ error: "Missing userId" }));
               return;
             }
 
@@ -214,11 +214,53 @@ export default defineConfig(({ mode }) => {
               const { createClient } = await import("@supabase/supabase-js");
               const supabase = createClient(supabaseUrl, serviceRoleKey);
 
-              const { data: authData, error: authError } = await supabase.auth.admin.createUser({
-                email,
-                password,
-                email_confirm: true,
-                user_metadata: { full_name: fullName },
+              const { error } = await supabase.auth.admin.deleteUser(userId);
+
+              if (error) {
+                res.writeHead(400, { "Content-Type": "application/json" });
+                res.end(JSON.stringify({ error: error.message }));
+                return;
+              }
+
+              res.writeHead(200, { "Content-Type": "application/json" });
+              res.end(JSON.stringify({ success: true }));
+            } catch (error: any) {
+              console.error("delete-user error:", error);
+              res.writeHead(500, { "Content-Type": "application/json" });
+              res.end(JSON.stringify({ error: error.message }));
+            }
+          });
+
+          // POST /api/create-user — invite a new user (requires service role)
+          server.middlewares.use("/api/create-user", async (req, res) => {
+            if (req.method === "OPTIONS") { res.writeHead(204); res.end(); return; }
+            if (req.method !== "POST") { res.writeHead(405); res.end(JSON.stringify({ error: "Method not allowed" })); return; }
+
+            const body = await readBody(req);
+            const { email, fullName, role, partnerId } = body;
+
+            if (!email || !fullName) {
+              res.writeHead(400, { "Content-Type": "application/json" });
+              res.end(JSON.stringify({ error: "Missing email or fullName" }));
+              return;
+            }
+
+            const supabaseUrl = env.VITE_SUPABASE_URL;
+            const serviceRoleKey = env.SUPABASE_SERVICE_ROLE_KEY;
+
+            if (!supabaseUrl || !serviceRoleKey) {
+              res.writeHead(500, { "Content-Type": "application/json" });
+              res.end(JSON.stringify({ error: "Supabase credentials not configured" }));
+              return;
+            }
+
+            try {
+              const { createClient } = await import("@supabase/supabase-js");
+              const supabase = createClient(supabaseUrl, serviceRoleKey);
+
+              const { data: authData, error: authError } = await supabase.auth.admin.inviteUserByEmail(email, {
+                data: { full_name: fullName },
+                redirectTo: "http://localhost:8080/accept-invite",
               });
 
               if (authError) {
@@ -229,9 +271,9 @@ export default defineConfig(({ mode }) => {
 
               const userId = authData.user.id;
 
-              if (partnerId) {
-                await supabase.from("profiles").update({ partner_id: partnerId }).eq("id", userId);
-              }
+              const profileUpdate: Record<string, string> = { full_name: fullName };
+              if (partnerId) profileUpdate.partner_id = partnerId;
+              await supabase.from("profiles").update(profileUpdate).eq("id", userId);
 
               if (role === "super_admin") {
                 await supabase.from("user_roles").insert({ user_id: userId, role: "super_admin" });
