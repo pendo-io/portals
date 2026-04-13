@@ -19,7 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Search, ArrowUp, ArrowDown, ArrowUpDown } from "lucide-react";
+import { Search, ArrowUp, ArrowDown, ArrowUpDown, Loader2 } from "lucide-react";
 import {
   useAdminPartners,
 } from "@/hooks/useAdmin";

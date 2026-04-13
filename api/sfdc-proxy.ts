@@ -160,7 +160,7 @@ function buildQuery(type: QueryType, params: any, ctx: AuthContext): string {
 
     case "opportunities": {
       const where = scoped && accountId
-        ? `WHERE PartnerAccountId = '${accountId}'`
+        ? `WHERE PartnerAccountId = '${accountId}' AND LeadSource = 'Partner Referral'`
         : `WHERE LeadSource = 'Partner Referral'`;
       return `SELECT ${OPP_LIST_FIELDS} FROM Opportunity ${where} ORDER BY CloseDate DESC`;
     }
@@ -171,7 +171,7 @@ function buildQuery(type: QueryType, params: any, ctx: AuthContext): string {
       const scopeClause = scoped && accountId
         ? ` AND PartnerAccountId = '${accountId}'`
         : "";
-      return `SELECT ${OPP_DETAIL_FIELDS} FROM Opportunity WHERE Id = '${oppId}'${scopeClause} LIMIT 1`;
+      return `SELECT ${OPP_DETAIL_FIELDS} FROM Opportunity WHERE Id = '${oppId}'${scopeClause} AND LeadSource = 'Partner Referral' LIMIT 1`;
     }
 
     case "approval-history": {
