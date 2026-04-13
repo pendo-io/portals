@@ -27,6 +27,7 @@ const initial = {
   firstName: "",
   lastName: "",
   email: "",
+  title: "",
   street: "",
   city: "",
   state: "",
@@ -44,9 +45,9 @@ type FormData = typeof initial;
 
 const requiredBySection: Record<number, (keyof FormData)[]> = {
   0: ["company", "website"],
-  1: ["lastName", "email", "departments"],
+  1: ["lastName", "email", "title"],
   2: [],
-  3: ["numberOfUsers", "currentTechStack", "useCase"],
+  3: ["useCase"],
 };
 
 const PartnerReferralForm = () => {
@@ -131,6 +132,7 @@ const PartnerReferralForm = () => {
       FirstName: form.firstName || null,
       LastName: form.lastName,
       Email: form.email,
+      Title: form.title,
       LeadSource: "Partner Referral",
       Status: "Pending",
       Referral_Partner_Account__c: sfdcAccountId || null,
@@ -200,6 +202,11 @@ const PartnerReferralForm = () => {
   return (
     <div className="flex-1 flex flex-col" onKeyDown={handleKeyDown}>
       <ProgressBar value={progress} />
+      <div className="flex justify-end px-6 pt-3">
+        <span className="text-xs text-muted-foreground/60 tabular-nums">
+          Step {step + 1} of {SECTIONS.length}
+        </span>
+      </div>
 
       {/* Content */}
       <div className="flex-1 flex items-center justify-center p-6 sm:p-12 overflow-y-auto">
@@ -294,7 +301,7 @@ function CompanyStep({ form, set, shake, t }: StepProps) {
 function ContactStep({ form, set, setSelect, shake, t }: StepProps) {
   return (
     <div className="space-y-8">
-      <StepHeader title={t("Contact Details")} description={t("Who should we reach out to at this company?")} />
+      <StepHeader title={t("Contact Details")} description={t("Who is the primary contact for an introduction?")} />
       <div className="space-y-6">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Field label="First Name">
@@ -308,10 +315,13 @@ function ContactStep({ form, set, setSelect, shake, t }: StepProps) {
           <Field label="Email" required shake={shake.has("email")}>
             <Input type="email" value={form.email} onChange={set("email")} placeholder="name@company.com" />
           </Field>
-          <Field label="Department(s)" required shake={shake.has("departments")}>
-            <Input value={form.departments} onChange={set("departments")} placeholder="e.g. Product, Eng" />
+          <Field label="Title" required shake={shake.has("title")}>
+            <Input value={form.title} onChange={set("title")} placeholder="e.g. VP of Product" />
           </Field>
         </div>
+        <Field label="Department(s)">
+          <Input value={form.departments} onChange={set("departments")} placeholder="e.g. Product, Eng" />
+        </Field>
       </div>
     </div>
   );
@@ -351,20 +361,20 @@ function OpportunityStep({ form, set, setSelect, shake, t }: StepProps) {
     <div className="space-y-8">
       <StepHeader title={t("Opportunity Details")} description={t("Help us understand the prospect's needs and timeline.")} />
       <div className="space-y-6">
-        <Field label="Number of Users" required shake={shake.has("numberOfUsers")}>
-          <Input type="number" value={form.numberOfUsers} onChange={set("numberOfUsers")} placeholder="e.g. 500" autoFocus />
-        </Field>
-        <Field label="Current Tech Stack / Solutions" required shake={shake.has("currentTechStack")}>
-          <Textarea value={form.currentTechStack} onChange={set("currentTechStack")} placeholder="What tools are they currently using?" rows={2} />
-        </Field>
         <Field label="Use Case" required shake={shake.has("useCase")}>
           <Select value={form.useCase} onValueChange={setSelect!("useCase")}>
-            <SelectTrigger><SelectValue placeholder="Select use case" /></SelectTrigger>
+            <SelectTrigger autoFocus><SelectValue placeholder="Select use case" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="Pendo for Customers">Pendo for Customers</SelectItem>
               <SelectItem value="Pendo for Employees">Pendo for Employees</SelectItem>
             </SelectContent>
           </Select>
+        </Field>
+        <Field label="Number of Users">
+          <Input type="number" value={form.numberOfUsers} onChange={set("numberOfUsers")} placeholder="e.g. 500" />
+        </Field>
+        <Field label="Current Tech Stack / Solutions">
+          <Textarea value={form.currentTechStack} onChange={set("currentTechStack")} placeholder="What tools are they currently using?" rows={2} />
         </Field>
         <Field label="Competitors Considered or Incumbent">
           <Textarea value={form.competitors} onChange={set("competitors")} placeholder="Any competing or existing solutions?" rows={2} />

@@ -77,7 +77,7 @@ const translations: Record<string, Record<string, string>> = {
     "Company Information": "会社情報",
     "Tell us about the company you're referring.": "紹介する会社について教えてください。",
     "Contact Details": "連絡先情報",
-    "Who should we reach out to at this company?": "この会社の連絡先は誰ですか？",
+    "Who is the primary contact for an introduction?": "この会社の連絡先は誰ですか？",
     "Address": "住所",
     "Optional. Where is this company located?": "任意。この会社の所在地は？",
     "Opportunity Details": "商談詳細",
