@@ -342,13 +342,13 @@ const AdminUsers = () => {
                   <TableHead className={`${thClass} hidden md:table-cell`} style={{ width: "26%" }} resizable onClick={() => handleSort("email")}>
                     <span className="inline-flex items-center">Email<SortIcon active={sortKey === "email"} dir={sortDir} /></span>
                   </TableHead>
-                  <TableHead className={thClass} style={{ width: "16%" }} resizable onClick={() => handleSort("role")}>
+                  <TableHead className={thClass} style={{ width: "11%" }} resizable onClick={() => handleSort("role")}>
                     <span className="inline-flex items-center">Role<SortIcon active={sortKey === "role"} dir={sortDir} /></span>
                   </TableHead>
                   <TableHead className={thClass} resizable onClick={() => handleSort("partner")}>
                     <span className="inline-flex items-center">Partner<SortIcon active={sortKey === "partner"} dir={sortDir} /></span>
                   </TableHead>
-                  <TableHead className={`${thClass} hidden sm:table-cell`} style={{ width: "120px" }} resizable onClick={() => handleSort("created")}>
+                  <TableHead className={`${thClass} hidden sm:table-cell`} style={{ width: "160px" }} resizable onClick={() => handleSort("created")}>
                     <span className="inline-flex items-center">Created<SortIcon active={sortKey === "created"} dir={sortDir} /></span>
                   </TableHead>
                   <TableHead style={{ width: "52px" }} />
