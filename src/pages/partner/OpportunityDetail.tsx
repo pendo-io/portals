@@ -21,7 +21,6 @@ import {
   ArrowLeft,
   Target,
   Tag,
-  Calendar,
   DollarSign,
   User,
   Building2,
@@ -164,7 +163,7 @@ export default function OpportunityDetail() {
       {/* Card grid */}
       <div className="flex-1 overflow-auto">
         <div className="p-3 sm:p-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
             {/* Opportunity Information */}
             <Card>
@@ -177,15 +176,16 @@ export default function OpportunityDetail() {
               <CardContent className="text-sm space-y-0">
                 <Row label="Type" value={opp.Type} />
                 <Row label="Stage" value={opp.StageName} />
+                <Row label="Created Date" value={fmtDate(opp.CreatedDate)} />
               </CardContent>
             </Card>
 
-            {/* Financials */}
+            {/* Deal Details */}
             <Card>
               <CardHeader>
                 <CardTitle className="text-sm font-medium flex items-center gap-2">
                   <DollarSign className="h-4 w-4" />
-                  Financials
+                  Deal Details
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Info className="h-3.5 w-3.5 text-muted-foreground cursor-default" />
@@ -197,19 +197,6 @@ export default function OpportunityDetail() {
               <CardContent className="text-sm space-y-0">
                 <Row label="TCV" value={fmtCurrency(opp.Amount)} />
                 <Row label="ARR" value={fmtCurrency(opp.ARR__c)} />
-              </CardContent>
-            </Card>
-
-            {/* Overview */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-sm font-medium flex items-center gap-2">
-                  <Calendar className="h-4 w-4" />
-                  Key Dates
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="text-sm space-y-0">
-                <Row label="Created Date" value={fmtDate(opp.CreatedDate)} />
                 <Row label="Close Date" value={fmtDate(opp.CloseDate)} />
               </CardContent>
             </Card>
@@ -244,7 +231,7 @@ export default function OpportunityDetail() {
             </Card>
 
             {/* Next Steps */}
-            <Card>
+            <Card className="md:col-span-2">
               <CardHeader>
                 <CardTitle className="text-sm font-medium flex items-center gap-2">
                   <FileText className="h-4 w-4" />
@@ -259,7 +246,7 @@ export default function OpportunityDetail() {
             </Card>
 
             {/* Approval History */}
-            <Card className="md:col-span-2 lg:col-span-3">
+            <Card className="md:col-span-2">
               <CardHeader>
                 <CardTitle className="text-sm font-medium flex items-center gap-2">
                   <ClipboardCheck className="h-4 w-4" />
