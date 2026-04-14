@@ -20,8 +20,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Search, Loader2, ArrowUp, ArrowDown, ArrowUpDown, ChevronLeft, ChevronRight } from "lucide-react";
+import { Search, Loader2, ArrowUp, ArrowDown, ArrowUpDown, ChevronLeft, ChevronRight, Lock } from "lucide-react";
 import { useSfdcLeads } from "@/hooks/useSfdcLeads";
+import { useAuth } from "@/hooks/useAuth";
 
 type SortKey = "company" | "contact" | "email" | "status" | "source" | "created";
 type SortDir = "asc" | "desc";
@@ -58,6 +59,7 @@ const PartnerLeads = () => {
   const [sortDir, setSortDir] = useState<SortDir>("asc");
   const navigate = useNavigate();
   const { basePath, t } = usePortalType();
+  const { isSuperAdmin } = useAuth();
   const { data, isLoading, isError, error, refetch } = useSfdcLeads();
 
   const leads = data?.records ?? [];
@@ -203,6 +205,16 @@ const PartnerLeads = () => {
                   <TableHead className={`${thClass} hidden sm:table-cell`} style={{ width: "170px" }} resizable onClick={() => handleSort("created")}>
                     <span className="inline-flex items-center">Created Date<SortIcon active={sortKey === "created"} dir={sortDir} /></span>
                   </TableHead>
+                  {isSuperAdmin && (
+                    <TableHead className={`${thClass} hidden lg:table-cell`} style={{ width: "160px" }}>
+                      <span className="inline-flex items-center gap-1.5">
+                        Partner Account
+                        <span className="inline-flex items-center gap-0.5 text-[10px] font-normal normal-case tracking-normal text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/30 rounded px-1 py-0.5">
+                          <Lock className="h-2.5 w-2.5" />Admin
+                        </span>
+                      </span>
+                    </TableHead>
+                  )}
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -231,6 +243,13 @@ const PartnerLeads = () => {
                         {new Date(lead.CreatedDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" })}
                       </span>
                     </TableCell>
+                    {isSuperAdmin && (
+                      <TableCell className="py-2 hidden lg:table-cell">
+                        <span className="text-sm text-muted-foreground truncate block">
+                          {lead.Referral_Partner_Account__r?.Name ?? "—"}
+                        </span>
+                      </TableCell>
+                    )}
                   </TableRow>
                 ))}
               </TableBody>

@@ -21,9 +21,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Search, Loader2, ArrowUp, ArrowDown, ArrowUpDown, ChevronLeft, ChevronRight, Info } from "lucide-react";
+import { Search, Loader2, ArrowUp, ArrowDown, ArrowUpDown, ChevronLeft, ChevronRight, Info, Lock } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useSfdcOpportunities } from "@/hooks/useSfdcOpportunities";
+import { useAuth } from "@/hooks/useAuth";
 
 type SortKey = "name" | "account" | "stage" | "amount" | "arr" | "probability" | "closeDate";
 type SortDir = "asc" | "desc";
@@ -62,6 +63,7 @@ const PartnerOpportunities = () => {
   const [sortDir, setSortDir] = useState<SortDir>("asc");
   const navigate = useNavigate();
   const { basePath, t } = usePortalType();
+  const { isSuperAdmin } = useAuth();
   const { data, isLoading, isError, error, refetch } = useSfdcOpportunities();
 
   const opps = data?.records ?? [];
@@ -226,6 +228,16 @@ const PartnerOpportunities = () => {
                   <TableHead className={`${thClass} text-right`} style={{ width: "75px" }} resizable onClick={() => handleSort("amount")}>
                     <span className="inline-flex items-center justify-end">TCV<SortIcon active={sortKey === "amount"} dir={sortDir} /></span>
                   </TableHead>
+                  {isSuperAdmin && (
+                    <TableHead className={`${thClass} hidden lg:table-cell`} style={{ width: "160px" }}>
+                      <span className="inline-flex items-center gap-1.5">
+                        Partner Account
+                        <span className="inline-flex items-center gap-0.5 text-[10px] font-normal normal-case tracking-normal text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/30 rounded px-1 py-0.5">
+                          <Lock className="h-2.5 w-2.5" />Admin
+                        </span>
+                      </span>
+                    </TableHead>
+                  )}
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -257,6 +269,13 @@ const PartnerOpportunities = () => {
                     <TableCell className="py-2 text-right">
                       <span className="text-sm font-medium tabular-nums">{formatCurrency(opp.Amount)}</span>
                     </TableCell>
+                    {isSuperAdmin && (
+                      <TableCell className="py-2 hidden lg:table-cell">
+                        <span className="text-sm text-muted-foreground truncate block">
+                          {opp.PartnerAccount?.Name ?? "—"}
+                        </span>
+                      </TableCell>
+                    )}
                   </TableRow>
                 ))}
               </TableBody>

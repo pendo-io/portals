@@ -14,6 +14,7 @@ export interface SfdcLead {
   Status: string;
   LeadSource: string | null;
   CreatedDate: string;
+  Referral_Partner_Account__r: { Name: string } | null;
 }
 
 export function useSfdcLeads() {
