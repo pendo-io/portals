@@ -214,10 +214,10 @@ const PartnerOpportunities = () => {
                   <TableHead className={thClass} style={{ width: "40%" }} resizable onClick={() => handleSort("name")}>
                     <span className="inline-flex items-center">Opportunity Name<SortIcon active={sortKey === "name"} dir={sortDir} /></span>
                   </TableHead>
-                  <TableHead className={thClass} style={{ width: "16%" }} resizable onClick={() => handleSort("stage")}>
+                  <TableHead className={thClass} style={{ width: "13%" }} resizable onClick={() => handleSort("stage")}>
                     <span className="inline-flex items-center">Stage<SortIcon active={sortKey === "stage"} dir={sortDir} /></span>
                   </TableHead>
-                  <TableHead className={`${thClass} hidden sm:table-cell`} style={{ width: "110px" }} resizable onClick={() => handleSort("closeDate")}>
+                  <TableHead className={`${thClass} hidden sm:table-cell`} style={{ width: "130px" }} resizable onClick={() => handleSort("closeDate")}>
                     <span className="inline-flex items-center">Close Date<SortIcon active={sortKey === "closeDate"} dir={sortDir} /></span>
                   </TableHead>
                   <TableHead className={`${thClass} text-right hidden sm:table-cell`} style={{ width: "95px" }} resizable onClick={() => handleSort("arr")}>
