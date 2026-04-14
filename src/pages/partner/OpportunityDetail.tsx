@@ -206,7 +206,7 @@ export default function OpportunityDetail() {
               <CardHeader>
                 <CardTitle className="text-sm font-medium flex items-center gap-2">
                   <User className="h-4 w-4" />
-                  Account Executive Details
+                  Opportunity Owner Details
                 </CardTitle>
               </CardHeader>
               <CardContent className="text-sm space-y-0">
