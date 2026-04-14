@@ -163,14 +163,20 @@ const PartnerReferralForm = () => {
     <div className="flex-1 flex flex-col min-h-0" onKeyDown={handleKeyDown}>
       {/* Scrollable body */}
       <div className="flex-1 overflow-y-auto">
-        <div className="max-w-2xl mx-auto px-6 py-10 space-y-10">
+        <div className="w-full px-6 py-10 space-y-10">
 
           {/* Page heading */}
-          <div>
+          <div className="flex items-center justify-between">
             <h1 className="text-2xl font-bold tracking-tight">{t("Submit a Lead")}</h1>
-            <p className="text-sm text-muted-foreground mt-1">
-              {t("Refer a company you think would be a great fit for Pendo.")}
-            </p>
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <UploadCloud className="h-4 w-4 shrink-0" />
+              <span>
+                {t("Have multiple leads?")}{" "}
+                <Link to="/bulk" className="text-primary hover:underline font-medium">
+                  {t("Upload them in bulk")}
+                </Link>
+              </span>
+            </div>
           </div>
 
           {/* Company */}
@@ -182,15 +188,6 @@ const PartnerReferralForm = () => {
               <Field label={t("Website")} required shake={shakeFields.has("website")}>
                 <Input maxLength={255} value={form.website} onChange={set("website")} placeholder="acme.com" />
               </Field>
-            </div>
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <UploadCloud className="h-4 w-4 shrink-0" />
-              <span>
-                {t("Have multiple leads?")}{" "}
-                <Link to="/bulk" className="text-primary hover:underline font-medium">
-                  {t("Upload them in bulk")}
-                </Link>
-              </span>
             </div>
           </FormSection>
 
