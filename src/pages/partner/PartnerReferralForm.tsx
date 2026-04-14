@@ -163,7 +163,7 @@ const PartnerReferralForm = () => {
     <div className="flex-1 flex flex-col min-h-0" onKeyDown={handleKeyDown}>
       {/* Scrollable body */}
       <div className="flex-1 overflow-y-auto">
-        <div className="w-full px-6 py-10 space-y-10">
+        <div className="max-w-3xl mx-auto px-6 py-10 space-y-10">
 
           {/* Page heading */}
           <div className="flex items-center justify-between">
