@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useQueryClient, useMutation } from "@tanstack/react-query";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
@@ -17,9 +17,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
-import { CheckCircle2, Loader2, ArrowRight, ArrowLeft, CornerDownLeft, UploadCloud } from "lucide-react";
-
-const SECTIONS = ["Company", "Contact", "Address", "Opportunity"] as const;
+import { CheckCircle2, Loader2, UploadCloud } from "lucide-react";
 
 const initial = {
   company: "",
@@ -28,27 +26,17 @@ const initial = {
   lastName: "",
   email: "",
   title: "",
-  street: "",
-  city: "",
-  state: "",
-  zip: "",
-  country: "",
-  numberOfUsers: "",
   departments: "",
-  currentTechStack: "",
   useCase: "",
+  numberOfUsers: "",
+  currentTechStack: "",
   competitors: "",
   additionalInfo: "",
 };
 
 type FormData = typeof initial;
 
-const requiredBySection: Record<number, (keyof FormData)[]> = {
-  0: ["company", "website"],
-  1: ["lastName", "email", "title"],
-  2: [],
-  3: ["useCase"],
-};
+const REQUIRED: (keyof FormData)[] = ["company", "website", "lastName", "email", "title", "useCase"];
 
 const PartnerReferralForm = () => {
   useDocumentTitle("Lead Referral Form");
@@ -56,7 +44,6 @@ const PartnerReferralForm = () => {
   const queryClient = useQueryClient();
   const { user, session, sfdcAccountId, partnerOwnerId } = useAuth();
   const { t } = usePortalType();
-  const [step, setStep] = useState(0);
   const [submitted, setSubmitted] = useState(false);
   const [form, setForm] = useState<FormData>(initial);
   const [shakeFields, setShakeFields] = useState<Set<string>>(new Set());
@@ -66,44 +53,6 @@ const PartnerReferralForm = () => {
 
   const setSelect = (field: keyof FormData) => (value: string) =>
     setForm((prev) => ({ ...prev, [field]: value }));
-
-  const validateStep = useCallback(() => {
-    const required = requiredBySection[step] ?? [];
-    const missing = required.filter((f) => !form[f]);
-    if (missing.length > 0) {
-      setShakeFields(new Set(missing));
-      setTimeout(() => setShakeFields(new Set()), 600);
-      toast.error("Please fill in all required fields");
-      return false;
-    }
-    if (step === 0 && form.website) {
-      const url = form.website.startsWith("http") ? form.website : `https://${form.website}`;
-      let valid = false;
-      try { valid = Boolean(new URL(url).hostname.includes(".")); } catch {}
-      if (!valid || form.website.length > 255) {
-        setShakeFields(new Set(["website"]));
-        setTimeout(() => setShakeFields(new Set()), 600);
-        toast.error(form.website.length > 255 ? "Website must be 255 characters or less" : "Please enter a valid URL (e.g. acme.com)");
-        return false;
-      }
-    }
-    if (step === 1 && form.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
-      setShakeFields(new Set(["email"]));
-      setTimeout(() => setShakeFields(new Set()), 600);
-      toast.error("Please enter a valid email address");
-      return false;
-    }
-    return true;
-  }, [step, form]);
-
-  const next = () => {
-    if (!validateStep()) return;
-    if (step < SECTIONS.length - 1) setStep(step + 1);
-  };
-
-  const prev = () => {
-    if (step > 0) setStep(step - 1);
-  };
 
   const submitMutation = useMutation({
     mutationFn: (fields: Record<string, unknown>) =>
@@ -120,9 +69,33 @@ const PartnerReferralForm = () => {
   });
 
   const handleSubmit = () => {
-    if (!validateStep() || submitMutation.isPending) return;
-    if (!user) {
-      toast.error("Not authenticated");
+    if (submitMutation.isPending) return;
+    if (!user) { toast.error("Not authenticated"); return; }
+
+    const missing = REQUIRED.filter((f) => !form[f]);
+    if (missing.length > 0) {
+      setShakeFields(new Set(missing));
+      setTimeout(() => setShakeFields(new Set()), 600);
+      toast.error("Please fill in all required fields");
+      return;
+    }
+
+    if (form.website) {
+      const url = form.website.startsWith("http") ? form.website : `https://${form.website}`;
+      let valid = false;
+      try { valid = Boolean(new URL(url).hostname.includes(".")); } catch {}
+      if (!valid || form.website.length > 255) {
+        setShakeFields(new Set(["website"]));
+        setTimeout(() => setShakeFields(new Set()), 600);
+        toast.error(form.website.length > 255 ? "Website must be 255 characters or less" : "Please enter a valid URL (e.g. acme.com)");
+        return;
+      }
+    }
+
+    if (form.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
+      setShakeFields(new Set(["email"]));
+      setTimeout(() => setShakeFields(new Set()), 600);
+      toast.error("Please enter a valid email address");
       return;
     }
 
@@ -137,15 +110,10 @@ const PartnerReferralForm = () => {
       Status: "Pending",
       Referral_Partner_Account__c: sfdcAccountId || null,
       Partner_Owner__c: partnerOwnerId || null,
-      Street: form.street || null,
-      City: form.city || null,
-      State: form.state || null,
-      PostalCode: form.zip || null,
-      Country: form.country || null,
       Department_s__c: form.departments || null,
+      Use_Case__c: form.useCase || null,
       Number_of_Users__c: form.numberOfUsers ? Number(form.numberOfUsers) : null,
       Current_Tech_Stack_Solutions__c: form.currentTechStack || null,
-      Use_Case__c: form.useCase || null,
       Competitors_Considered_or_Incumbent__c: form.competitors || null,
       Additional_Information__c: form.additionalInfo || null,
     };
@@ -159,40 +127,32 @@ const PartnerReferralForm = () => {
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
-      const tag = (e.target as HTMLElement).tagName;
-      if (tag === "TEXTAREA") return;
+      if ((e.target as HTMLElement).tagName === "TEXTAREA") return;
       e.preventDefault();
-      if (step < SECTIONS.length - 1) next();
-      else handleSubmit();
+      handleSubmit();
     }
   };
 
-  const progress = submitted ? 100 : ((step + 1) / SECTIONS.length) * 100;
-  const isLast = step === SECTIONS.length - 1;
-
   if (submitted) {
     return (
-      <div className="flex-1 flex flex-col">
-        <ProgressBar value={100} />
-        <div className="flex-1 flex items-center justify-center p-6">
-          <div className="max-w-sm w-full text-center space-y-5">
-            <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
-              <CheckCircle2 className="h-8 w-8 text-primary" />
-            </div>
-            <div>
-              <h2 className="text-2xl font-bold">{t("Referral Submitted")}</h2>
-              <p className="text-sm text-muted-foreground mt-3 leading-relaxed">
-                {t("Thank you for your partnership with Pendo! We will review and strive to respond within 2 business days.")}
-              </p>
-            </div>
-            <div className="flex gap-3 justify-center pt-2">
-              <Button variant="outline" onClick={() => { setSubmitted(false); setForm(initial); setStep(0); }}>
-                {t("Submit Another")}
-              </Button>
-              <Button onClick={() => navigate("/")}>
-                {t("Back to Home")}
-              </Button>
-            </div>
+      <div className="flex-1 flex items-center justify-center p-6">
+        <div className="max-w-sm w-full text-center space-y-5">
+          <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
+            <CheckCircle2 className="h-8 w-8 text-primary" />
+          </div>
+          <div>
+            <h2 className="text-2xl font-bold">{t("Referral Submitted")}</h2>
+            <p className="text-sm text-muted-foreground mt-3 leading-relaxed">
+              {t("Thank you for your partnership with Pendo! We will review and strive to respond within 2 business days.")}
+            </p>
+          </div>
+          <div className="flex gap-3 justify-center pt-2">
+            <Button variant="outline" onClick={() => { setSubmitted(false); setForm(initial); }}>
+              {t("Submit Another")}
+            </Button>
+            <Button onClick={() => navigate("/")}>
+              {t("Back to Home")}
+            </Button>
           </div>
         </div>
       </div>
@@ -200,200 +160,121 @@ const PartnerReferralForm = () => {
   }
 
   return (
-    <div className="flex-1 flex flex-col" onKeyDown={handleKeyDown}>
-      <ProgressBar value={progress} />
-      <div className="flex justify-end px-6 pt-3">
-        <span className="text-xs text-muted-foreground/60 tabular-nums">
-          Step {step + 1} of {SECTIONS.length}
-        </span>
+    <div className="flex-1 flex flex-col min-h-0" onKeyDown={handleKeyDown}>
+      {/* Scrollable body */}
+      <div className="flex-1 overflow-y-auto">
+        <div className="max-w-2xl mx-auto px-6 py-10 space-y-10">
+
+          {/* Page heading */}
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight">{t("Submit a Lead")}</h1>
+            <p className="text-sm text-muted-foreground mt-1">
+              {t("Refer a company you think would be a great fit for Pendo.")}
+            </p>
+          </div>
+
+          {/* Company */}
+          <FormSection label={t("Company")}>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <Field label={t("Company")} required shake={shakeFields.has("company")}>
+                <Input value={form.company} onChange={set("company")} placeholder="Acme Inc" autoFocus />
+              </Field>
+              <Field label={t("Website")} required shake={shakeFields.has("website")}>
+                <Input maxLength={255} value={form.website} onChange={set("website")} placeholder="acme.com" />
+              </Field>
+            </div>
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <UploadCloud className="h-4 w-4 shrink-0" />
+              <span>
+                {t("Have multiple leads?")}{" "}
+                <Link to="/bulk" className="text-primary hover:underline font-medium">
+                  {t("Upload them in bulk")}
+                </Link>
+              </span>
+            </div>
+          </FormSection>
+
+          {/* Contact */}
+          <FormSection label={t("Contact")}>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <Field label={t("First Name")}>
+                <Input value={form.firstName} onChange={set("firstName")} placeholder="First name" />
+              </Field>
+              <Field label={t("Last Name")} required shake={shakeFields.has("lastName")}>
+                <Input value={form.lastName} onChange={set("lastName")} placeholder="Last name" />
+              </Field>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <Field label={t("Email")} required shake={shakeFields.has("email")}>
+                <Input type="email" value={form.email} onChange={set("email")} placeholder="name@company.com" />
+              </Field>
+              <Field label={t("Title")} required shake={shakeFields.has("title")}>
+                <Input value={form.title} onChange={set("title")} placeholder="e.g. VP of Product" />
+              </Field>
+            </div>
+            <Field label={t("Department(s)")}>
+              <Input value={form.departments} onChange={set("departments")} placeholder="e.g. Product, Eng" />
+            </Field>
+          </FormSection>
+
+          {/* Opportunity */}
+          <FormSection label={t("Opportunity")}>
+            <Field label={t("Use Case")} required shake={shakeFields.has("useCase")}>
+              <Select value={form.useCase} onValueChange={setSelect("useCase")}>
+                <SelectTrigger><SelectValue placeholder="Select use case" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Pendo for Customers">Pendo for Customers</SelectItem>
+                  <SelectItem value="Pendo for Employees">Pendo for Employees</SelectItem>
+                </SelectContent>
+              </Select>
+            </Field>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <Field label={t("Number of Users")}>
+                <Input type="number" value={form.numberOfUsers} onChange={set("numberOfUsers")} placeholder="e.g. 500" />
+              </Field>
+              <Field label={t("Current Tech Stack")}>
+                <Input value={form.currentTechStack} onChange={set("currentTechStack")} placeholder="e.g. Amplitude, Intercom" />
+              </Field>
+            </div>
+            <Field label={t("Competitors Considered or Incumbent")}>
+              <Input value={form.competitors} onChange={set("competitors")} placeholder="Any competing or existing solutions?" />
+            </Field>
+            <Field label={t("Additional Information")}>
+              <Textarea value={form.additionalInfo} onChange={set("additionalInfo")} placeholder="Anything else that would help us..." rows={3} />
+            </Field>
+          </FormSection>
+
+        </div>
       </div>
 
-      {/* Content */}
-      <div className="flex-1 flex items-center justify-center p-6 sm:p-12 overflow-y-auto">
-        <div className="w-full max-w-3xl" key={step}>
-          {step === 0 && <CompanyStep form={form} set={set} shake={shakeFields} t={t} />}
-          {step === 1 && <ContactStep form={form} set={set} setSelect={setSelect} shake={shakeFields} t={t} />}
-          {step === 2 && <AddressStep form={form} set={set} shake={shakeFields} t={t} />}
-          {step === 3 && <OpportunityStep form={form} set={set} setSelect={setSelect} shake={shakeFields} t={t} />}
-        </div>
-      </div>
-
-      {/* Footer */}
-      <div className="flex items-center justify-between px-6 py-4 shrink-0 border-t border-border/50">
-        <div>
-          {step > 0 && (
-            <Button variant="ghost" onClick={prev} className="gap-1.5">
-              <ArrowLeft className="h-4 w-4" />
-              {t("Back")}
-            </Button>
-          )}
-        </div>
-        <div className="flex items-center gap-3">
-          <span className="text-xs text-muted-foreground hidden sm:flex items-center gap-1.5">
-            press <kbd className="px-1.5 py-0.5 rounded bg-muted text-[10px] font-mono">Enter</kbd>
-            <CornerDownLeft className="h-3 w-3" />
-          </span>
-          {isLast ? (
-            <Button onClick={handleSubmit} disabled={submitMutation.isPending} className="gap-1.5 min-w-[140px]">
-              {submitMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-              {submitMutation.isPending ? t("Submitting...") : t("Submit Referral")}
-            </Button>
-          ) : (
-            <Button onClick={next} className="gap-1.5">
-              {t("Continue")}
-              <ArrowRight className="h-4 w-4" />
-            </Button>
-          )}
-        </div>
+      {/* Sticky footer */}
+      <div className="shrink-0 border-t border-border/50 px-6 py-4 flex items-center justify-between">
+        <p className="text-xs text-muted-foreground">
+          <span className="text-primary">*</span> Required fields
+        </p>
+        <Button onClick={handleSubmit} disabled={submitMutation.isPending} className="min-w-[140px] gap-1.5">
+          {submitMutation.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+          {submitMutation.isPending ? t("Submitting...") : t("Submit Referral")}
+        </Button>
       </div>
     </div>
   );
 };
 
-/* ── Progress Bar ── */
-
-function ProgressBar({ value }: { value: number }) {
-  return (
-    <div className="h-1 w-full bg-border/50 shrink-0">
-      <div
-        className="h-full bg-primary transition-all duration-500 ease-out"
-        style={{ width: `${value}%` }}
-      />
-    </div>
-  );
-}
-
-/* ── Step Components ── */
-
-interface StepProps {
-  form: FormData;
-  set: (field: keyof FormData) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
-  setSelect?: (field: keyof FormData) => (value: string) => void;
-  shake: Set<string>;
-  t: (key: string) => string;
-}
-
-function CompanyStep({ form, set, shake, t }: StepProps) {
-  return (
-    <div className="space-y-8">
-      <StepHeader title={t("Company Information")} description={t("Tell us about the company you're referring.")} />
-      <div className="space-y-6">
-        <Field label={t("Company")} required shake={shake.has("company")}>
-          <Input value={form.company} onChange={set("company")} placeholder="Acme Inc" autoFocus />
-        </Field>
-        <Field label={t("Website")} required shake={shake.has("website")}>
-          <Input maxLength={255} value={form.website} onChange={set("website")} placeholder="acme.com" />
-        </Field>
-      </div>
-      <div className="flex items-center gap-2 pt-2 text-sm text-muted-foreground">
-        <UploadCloud className="h-4 w-4 shrink-0" />
-        <span>
-          {t("Have multiple leads?")}{" "}
-          <Link to="/bulk" className="text-primary hover:underline font-medium">
-            {t("Upload them in bulk")}
-          </Link>
-        </span>
-      </div>
-    </div>
-  );
-}
-
-function ContactStep({ form, set, setSelect, shake, t }: StepProps) {
-  return (
-    <div className="space-y-8">
-      <StepHeader title={t("Contact Details")} description={t("Who is the primary contact for an introduction?")} />
-      <div className="space-y-6">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <Field label="First Name">
-            <Input value={form.firstName} onChange={set("firstName")} placeholder="First name" autoFocus />
-          </Field>
-          <Field label="Last Name" required shake={shake.has("lastName")}>
-            <Input value={form.lastName} onChange={set("lastName")} placeholder="Last name" />
-          </Field>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <Field label="Email" required shake={shake.has("email")}>
-            <Input type="email" value={form.email} onChange={set("email")} placeholder="name@company.com" />
-          </Field>
-          <Field label="Title" required shake={shake.has("title")}>
-            <Input value={form.title} onChange={set("title")} placeholder="e.g. VP of Product" />
-          </Field>
-        </div>
-        <Field label="Department(s)">
-          <Input value={form.departments} onChange={set("departments")} placeholder="e.g. Product, Eng" />
-        </Field>
-      </div>
-    </div>
-  );
-}
-
-function AddressStep({ form, set, t }: StepProps) {
-  return (
-    <div className="space-y-8">
-      <StepHeader title={t("Address")} description={t("Optional. Where is this company located?")} />
-      <div className="space-y-6">
-        <Field label="Street">
-          <Input value={form.street} onChange={set("street")} placeholder="123 Main St" autoFocus />
-        </Field>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <Field label="City">
-            <Input value={form.city} onChange={set("city")} placeholder="City" />
-          </Field>
-          <Field label="State / Province">
-            <Input value={form.state} onChange={set("state")} placeholder="State" />
-          </Field>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <Field label="Zip / Postal Code">
-            <Input value={form.zip} onChange={set("zip")} placeholder="12345" />
-          </Field>
-          <Field label="Country">
-            <Input value={form.country} onChange={set("country")} placeholder="Country" />
-          </Field>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function OpportunityStep({ form, set, setSelect, shake, t }: StepProps) {
-  return (
-    <div className="space-y-8">
-      <StepHeader title={t("Opportunity Details")} description={t("Help us understand the prospect's needs and timeline.")} />
-      <div className="space-y-6">
-        <Field label="Use Case" required shake={shake.has("useCase")}>
-          <Select value={form.useCase} onValueChange={setSelect!("useCase")}>
-            <SelectTrigger autoFocus><SelectValue placeholder="Select use case" /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="Pendo for Customers">Pendo for Customers</SelectItem>
-              <SelectItem value="Pendo for Employees">Pendo for Employees</SelectItem>
-            </SelectContent>
-          </Select>
-        </Field>
-        <Field label="Number of Users">
-          <Input type="number" value={form.numberOfUsers} onChange={set("numberOfUsers")} placeholder="e.g. 500" />
-        </Field>
-        <Field label="Current Tech Stack / Solutions">
-          <Textarea value={form.currentTechStack} onChange={set("currentTechStack")} placeholder="What tools are they currently using?" rows={2} />
-        </Field>
-        <Field label="Competitors Considered or Incumbent">
-          <Textarea value={form.competitors} onChange={set("competitors")} placeholder="Any competing or existing solutions?" rows={2} />
-        </Field>
-        <Field label="Additional Information">
-          <Textarea value={form.additionalInfo} onChange={set("additionalInfo")} placeholder="Anything else that would help us..." rows={2} />
-        </Field>
-      </div>
-    </div>
-  );
-}
-
 /* ── Shared Components ── */
 
-function StepHeader({ title, description }: { title: string; description: string }) {
+function FormSection({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div>
-      <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">{title}</h2>
-      <p className="text-sm sm:text-base text-muted-foreground mt-2">{description}</p>
+    <div className="space-y-4">
+      <div className="flex items-center gap-3">
+        <span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground/60 shrink-0">
+          {label}
+        </span>
+        <div className="flex-1 h-px bg-border/50" />
+      </div>
+      <div className="space-y-4">
+        {children}
+      </div>
     </div>
   );
 }
