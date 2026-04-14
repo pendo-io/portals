@@ -16,8 +16,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { toast } from "sonner";
-import { CheckCircle2, Loader2, UploadCloud } from "lucide-react";
+import { CheckCircle2, Loader2, UploadCloud, Info } from "lucide-react";
 
 const initial = {
   company: "",
@@ -226,7 +227,10 @@ const PartnerReferralForm = () => {
               </Select>
             </Field>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Field label={t("Number of Users")}>
+              <Field
+                label={t("Number of Active Users")}
+                tooltip={t("The number of end users who actively use the product being referred — not total employees.")}
+              >
                 <Input type="number" value={form.numberOfUsers} onChange={set("numberOfUsers")} placeholder="e.g. 500" />
               </Field>
               <Field label={t("Current Tech Stack")}>
@@ -276,13 +280,27 @@ function FormSection({ label, children }: { label: string; children: React.React
   );
 }
 
-function Field({ label, required, shake, children }: { label: string; required?: boolean; shake?: boolean; children: React.ReactNode }) {
+function Field({ label, required, shake, tooltip, children }: { label: string; required?: boolean; shake?: boolean; tooltip?: string; children: React.ReactNode }) {
   return (
     <div className={`space-y-2 ${shake ? "animate-shake" : ""}`}>
-      <Label className="text-sm text-muted-foreground font-medium">
-        {label}
-        {required && <span className="text-primary ml-0.5">*</span>}
-      </Label>
+      <div className="flex items-center gap-1.5">
+        <Label className="text-sm text-muted-foreground font-medium">
+          {label}
+          {required && <span className="text-primary ml-0.5">*</span>}
+        </Label>
+        {tooltip && (
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Info className="h-3.5 w-3.5 text-muted-foreground/50 cursor-default shrink-0" />
+              </TooltipTrigger>
+              <TooltipContent className="max-w-56 text-xs leading-relaxed">
+                {tooltip}
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        )}
+      </div>
       {children}
     </div>
   );
