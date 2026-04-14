@@ -230,27 +230,21 @@ export default function OpportunityDetail() {
             </Card>
 
             {/* Contact Role Details */}
-            <Card className="md:col-span-2 lg:col-span-3">
+            <Card>
               <CardHeader>
                 <CardTitle className="text-sm font-medium flex items-center gap-2">
                   <User className="h-4 w-4" />
                   Contact Role Details
                 </CardTitle>
               </CardHeader>
-              <CardContent className="text-sm">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8">
-                  <div>
-                    <Row label="Initial Contact" value={opp.Initial_Contact__r?.Name} />
-                  </div>
-                  <div>
-                    <Row label="Initial Contact Role" value={opp.Initial_Contact_Role__c} />
-                  </div>
-                </div>
+              <CardContent className="text-sm space-y-0">
+                <Row label="Initial Contact" value={opp.Initial_Contact__r?.Name} />
+                <Row label="Initial Contact Role" value={opp.Initial_Contact_Role__c} />
               </CardContent>
             </Card>
 
             {/* Next Steps */}
-            <Card className="md:col-span-2 lg:col-span-3">
+            <Card>
               <CardHeader>
                 <CardTitle className="text-sm font-medium flex items-center gap-2">
                   <FileText className="h-4 w-4" />
