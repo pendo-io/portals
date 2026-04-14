@@ -1,6 +1,6 @@
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "./useAuth";
-import { sfdcQuery, isSafeSfdcId, type SfdcQueryResult } from "@/lib/sfdc";
+import { sfdcQuery, isSafeSfdcId } from "@/lib/sfdc";
 import { isDemoMode, getDemoOpportunityDetail } from "@/lib/demoData";
 
 export interface SfdcOpportunityDetail {
@@ -36,29 +36,19 @@ export interface SfdcOpportunityDetail {
   Data_Warehouse_Provider__c: string | null;
   Referring_Account_Owner__r: { Name: string } | null;
   Initial_Contact__c: string | null;
-  Initial_Contact__r: { Name: string; Email: string | null } | null;
+  Initial_Contact__r: { Name: string; Title: string | null; Email: string | null } | null;
   Initial_Contact_Role__c: string | null;
 }
 
 export function useSfdcOpportunityDetail(oppId: string | undefined) {
-  const { user, session, sfdcAccountId, impersonating } = useAuth();
-  const queryClient = useQueryClient();
+  const { user, session, impersonating } = useAuth();
   const impersonateAccountId = impersonating?.sfdcAccountId ?? undefined;
   const demo = isDemoMode(impersonating?.id);
 
   return useQuery({
-    queryKey: ["sfdc-opportunity", oppId, demo ? "demo" : null],
+    queryKey: ["sfdc-opportunity", oppId, demo ? "demo" : impersonateAccountId ?? null],
     queryFn: () => {
       if (demo && oppId) return getDemoOpportunityDetail(oppId);
-
-      const cachedList = queryClient.getQueryData<SfdcQueryResult<SfdcOpportunityDetail>>(
-        ["sfdc-opportunities", user?.id, impersonateAccountId ?? sfdcAccountId]
-      );
-      const cached = cachedList?.records?.find((o) => o.Id === oppId);
-      if (cached) {
-        return { totalSize: 1, done: true, records: [cached] } as SfdcQueryResult<SfdcOpportunityDetail>;
-      }
-
       return sfdcQuery<SfdcOpportunityDetail>("opportunity-detail", { oppId }, {
         accessToken: session?.access_token,
         impersonateAccountId,
