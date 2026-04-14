@@ -26,7 +26,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { useSfdcOpportunities } from "@/hooks/useSfdcOpportunities";
 import { useAuth } from "@/hooks/useAuth";
 
-type SortKey = "name" | "account" | "stage" | "amount" | "arr" | "probability" | "closeDate";
+type SortKey = "name" | "account" | "stage" | "amount" | "arr" | "probability" | "closeDate" | "ae";
 type SortDir = "asc" | "desc";
 
 const PAGE_SIZE = 50;
@@ -63,7 +63,7 @@ const PartnerOpportunities = () => {
   const [sortDir, setSortDir] = useState<SortDir>("asc");
   const navigate = useNavigate();
   const { basePath, t } = usePortalType();
-  const { isSuperAdmin } = useAuth();
+  const { isSuperAdmin, impersonating } = useAuth();
   const { data, isLoading, isError, error, refetch } = useSfdcOpportunities();
 
   const opps = data?.records ?? [];
@@ -116,6 +116,7 @@ const PartnerOpportunities = () => {
         case "arr": aVal = a.ARR__c; bVal = b.ARR__c; break;
         case "probability": aVal = a.Probability; bVal = b.Probability; break;
         case "closeDate": aVal = a.CloseDate; bVal = b.CloseDate; break;
+        case "ae": aVal = a.Owner?.Name ?? null; bVal = b.Owner?.Name ?? null; break;
       }
       if (aVal == null && bVal == null) return 0;
       if (aVal == null) return 1;
@@ -228,7 +229,10 @@ const PartnerOpportunities = () => {
                   <TableHead className={`${thClass} text-right`} style={{ width: "75px" }} resizable onClick={() => handleSort("amount")}>
                     <span className="inline-flex items-center justify-end">TCV<SortIcon active={sortKey === "amount"} dir={sortDir} /></span>
                   </TableHead>
-                  {isSuperAdmin && (
+                  <TableHead className={`${thClass} hidden lg:table-cell`} style={{ width: "130px" }} resizable onClick={() => handleSort("ae")}>
+                    <span className="inline-flex items-center">AE<SortIcon active={sortKey === "ae"} dir={sortDir} /></span>
+                  </TableHead>
+                  {isSuperAdmin && !impersonating && (
                     <TableHead className={`${thClass} hidden lg:table-cell`} style={{ width: "160px" }}>
                       <TooltipProvider>
                         <Tooltip>
@@ -271,7 +275,10 @@ const PartnerOpportunities = () => {
                     <TableCell className="py-2 text-right">
                       <span className="text-sm font-medium tabular-nums">{formatCurrency(opp.Amount)}</span>
                     </TableCell>
-                    {isSuperAdmin && (
+                    <TableCell className="py-2 hidden lg:table-cell">
+                      <span className="text-sm text-muted-foreground truncate block">{opp.Owner?.Name ?? "—"}</span>
+                    </TableCell>
+                    {isSuperAdmin && !impersonating && (
                       <TableCell className="py-2 hidden lg:table-cell">
                         <span className="text-sm text-muted-foreground truncate block">
                           {opp.PartnerAccount?.Name ?? "—"}

@@ -127,10 +127,6 @@ export default function OpportunityDetail() {
             </div>
             <div className="flex items-center gap-4 text-sm text-muted-foreground flex-wrap">
               <span className="flex items-center gap-1.5">
-                <User className="h-3.5 w-3.5" />
-                {opp.Owner?.Name ?? "—"}
-              </span>
-              <span className="flex items-center gap-1.5">
                 <DollarSign className="h-3.5 w-3.5" />
                 TCV {opp.Amount != null ? fmtCurrency(opp.Amount) : "—"}
               </span>
@@ -181,7 +177,6 @@ export default function OpportunityDetail() {
               <CardContent className="text-sm space-y-0">
                 <Row label="Type" value={opp.Type} />
                 <Row label="Stage" value={opp.StageName} />
-                <Row label="Opportunity Owner" value={opp.Owner?.Name} />
               </CardContent>
             </Card>
 
@@ -202,7 +197,6 @@ export default function OpportunityDetail() {
               <CardContent className="text-sm space-y-0">
                 <Row label="TCV" value={fmtCurrency(opp.Amount)} />
                 <Row label="ARR" value={fmtCurrency(opp.ARR__c)} />
-                <Row label="Net ARR" value={fmtCurrency(opp.Net_ARR__c)} />
               </CardContent>
             </Card>
 
@@ -217,7 +211,21 @@ export default function OpportunityDetail() {
               <CardContent className="text-sm space-y-0">
                 <Row label="Created Date" value={fmtDate(opp.CreatedDate)} />
                 <Row label="Close Date" value={fmtDate(opp.CloseDate)} />
-                <Row label="Expiration Date" value={fmtDate(opp.Expiration_Date__c)} />
+              </CardContent>
+            </Card>
+
+            {/* AE Details */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-sm font-medium flex items-center gap-2">
+                  <User className="h-4 w-4" />
+                  AE Details
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="text-sm space-y-0">
+                <Row label="Name" value={opp.Owner?.Name} />
+                <Row label="Email" value={opp.Owner?.Email} />
+                <Row label="Title" value={opp.Owner?.Title} />
               </CardContent>
             </Card>
 

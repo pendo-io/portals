@@ -7,7 +7,7 @@ export interface SfdcOpportunityDetail {
   Id: string;
   Name: string;
   Account: { Name: string; Website: string | null } | null;
-  Owner: { Name: string } | null;
+  Owner: { Name: string; Email: string | null; Title: string | null } | null;
   CreatedBy: { Name: string } | null;
   StageName: string;
   Amount: number | null;

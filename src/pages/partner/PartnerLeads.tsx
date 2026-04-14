@@ -60,7 +60,7 @@ const PartnerLeads = () => {
   const [sortDir, setSortDir] = useState<SortDir>("asc");
   const navigate = useNavigate();
   const { basePath, t } = usePortalType();
-  const { isSuperAdmin } = useAuth();
+  const { isSuperAdmin, impersonating } = useAuth();
   const { data, isLoading, isError, error, refetch } = useSfdcLeads();
 
   const leads = data?.records ?? [];
@@ -206,7 +206,7 @@ const PartnerLeads = () => {
                   <TableHead className={`${thClass} hidden sm:table-cell`} style={{ width: "170px" }} resizable onClick={() => handleSort("created")}>
                     <span className="inline-flex items-center">Created Date<SortIcon active={sortKey === "created"} dir={sortDir} /></span>
                   </TableHead>
-                  {isSuperAdmin && (
+                  {isSuperAdmin && !impersonating && (
                     <TableHead className={`${thClass} hidden lg:table-cell`} style={{ width: "200px" }}>
                       <TooltipProvider>
                         <Tooltip>
@@ -246,7 +246,7 @@ const PartnerLeads = () => {
                         {new Date(lead.CreatedDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
                       </span>
                     </TableCell>
-                    {isSuperAdmin && (
+                    {isSuperAdmin && !impersonating && (
                       <TableCell className="py-2 hidden lg:table-cell">
                         <span className="text-sm text-muted-foreground truncate block">
                           {lead.Referral_Partner_Account__r?.Name ?? "—"}
