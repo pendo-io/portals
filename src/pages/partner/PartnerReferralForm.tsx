@@ -166,20 +166,6 @@ const PartnerReferralForm = () => {
       <div className="flex-1 overflow-y-auto">
         <div className="max-w-3xl mx-auto px-6 py-10 space-y-10">
 
-          {/* Page heading */}
-          <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold tracking-tight">{t("Submit a Lead")}</h1>
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <UploadCloud className="h-4 w-4 shrink-0" />
-              <span>
-                {t("Have multiple leads?")}{" "}
-                <Link to="/bulk" className="text-primary hover:underline font-medium">
-                  {t("Upload them in bulk")}
-                </Link>
-              </span>
-            </div>
-          </div>
-
           {/* Company */}
           <FormSection label={t("Company")}>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -189,6 +175,15 @@ const PartnerReferralForm = () => {
               <Field label={t("Website")} required shake={shakeFields.has("website")}>
                 <Input maxLength={255} value={form.website} onChange={set("website")} placeholder="acme.com" />
               </Field>
+            </div>
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <UploadCloud className="h-4 w-4 shrink-0" />
+              <span>
+                {t("Have multiple leads?")}{" "}
+                <Link to="/bulk" className="text-primary hover:underline font-medium">
+                  {t("Upload them in bulk")}
+                </Link>
+              </span>
             </div>
           </FormSection>
 
