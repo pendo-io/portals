@@ -226,7 +226,8 @@ export default function OpportunityDetail() {
               </CardHeader>
               <CardContent className="text-sm space-y-0">
                 <Row label="Initial Contact" value={opp.Initial_Contact__r?.Name} />
-                <Row label="Initial Contact Role" value={opp.Initial_Contact_Role__c} />
+                <Row label="Email" value={opp.Initial_Contact__r?.Email} />
+                <Row label="Role" value={opp.Initial_Contact_Role__c} />
               </CardContent>
             </Card>
 

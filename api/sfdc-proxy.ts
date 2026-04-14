@@ -130,7 +130,7 @@ const OPP_DETAIL_FIELDS = `Id, Name, Account.Name, Account.Website, Owner.Name, 
                 Initial_Product_Interest__c, Management_Notes__c,
                 Solution_Partner_SI__c, Cloud_Hosting_Commit_Hyperscalers__c,
                 Data_Warehouse_Provider__c, Referring_Account_Owner__r.Name,
-                Initial_Contact__c, Initial_Contact__r.Name, Initial_Contact_Role__c`;
+                Initial_Contact__c, Initial_Contact__r.Name, Initial_Contact__r.Email, Initial_Contact_Role__c`;
 
 const BI_FIELDS = `Id, Name, Installment_Date__c, Installments_Total_Amount__c`;
 

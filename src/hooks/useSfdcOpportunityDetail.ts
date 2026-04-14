@@ -36,7 +36,7 @@ export interface SfdcOpportunityDetail {
   Data_Warehouse_Provider__c: string | null;
   Referring_Account_Owner__r: { Name: string } | null;
   Initial_Contact__c: string | null;
-  Initial_Contact__r: { Name: string } | null;
+  Initial_Contact__r: { Name: string; Email: string | null } | null;
   Initial_Contact_Role__c: string | null;
 }
 
