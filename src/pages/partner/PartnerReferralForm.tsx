@@ -56,12 +56,12 @@ const STEPS: StepConfig[] = [
     id: "contact-name",
     question: "Who's the main contact?",
     subtext: "The person at the referred company we should connect with.",
-    required: ["lastName"],
+    required: ["lastName", "title"],
   },
   {
     id: "contact-details",
     question: "How can we reach them?",
-    required: ["email", "title"],
+    required: ["email"],
   },
   {
     id: "use-case",
@@ -293,39 +293,26 @@ const PartnerReferralForm = () => {
             )}
 
             {step === 1 && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <Field label={t("First Name")}>
-                  <Input
-                    value={form.firstName}
-                    onChange={set("firstName")}
-                    placeholder="First name"
-                    autoFocus
-                    className="h-11 text-base"
-                  />
-                </Field>
-                <Field label={t("Last Name")} required shake={shakeFields.has("lastName")}>
-                  <Input
-                    value={form.lastName}
-                    onChange={set("lastName")}
-                    placeholder="Last name"
-                    className="h-11 text-base"
-                  />
-                </Field>
-              </div>
-            )}
-
-            {step === 2 && (
               <>
-                <Field label={t("Email")} required shake={shakeFields.has("email")}>
-                  <Input
-                    type="email"
-                    value={form.email}
-                    onChange={set("email")}
-                    placeholder="name@company.com"
-                    autoFocus
-                    className="h-11 text-base"
-                  />
-                </Field>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <Field label={t("First Name")}>
+                    <Input
+                      value={form.firstName}
+                      onChange={set("firstName")}
+                      placeholder="First name"
+                      autoFocus
+                      className="h-11 text-base"
+                    />
+                  </Field>
+                  <Field label={t("Last Name")} required shake={shakeFields.has("lastName")}>
+                    <Input
+                      value={form.lastName}
+                      onChange={set("lastName")}
+                      placeholder="Last name"
+                      className="h-11 text-base"
+                    />
+                  </Field>
+                </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <Field label={t("Title")} required shake={shakeFields.has("title")}>
                     <Input
@@ -345,6 +332,19 @@ const PartnerReferralForm = () => {
                   </Field>
                 </div>
               </>
+            )}
+
+            {step === 2 && (
+              <Field label={t("Email")} required shake={shakeFields.has("email")}>
+                <Input
+                  type="email"
+                  value={form.email}
+                  onChange={set("email")}
+                  placeholder="name@company.com"
+                  autoFocus
+                  className="h-11 text-base"
+                />
+              </Field>
             )}
 
             {step === 3 && (
@@ -439,7 +439,7 @@ const PartnerReferralForm = () => {
               ? submitMutation.isPending ? t("Submitting...") : t("Submit")
               : (
                 <>
-                  {t("OK")}
+                  {t("Next")}
                   <ChevronRight className="h-4 w-4" />
                 </>
               )
