@@ -350,7 +350,7 @@ const PartnerReferralForm = () => {
             {step === 3 && (
               <Field label={t("Use Case")} required shake={shakeFields.has("useCase")}>
                 <Select value={form.useCase} onValueChange={setSelect("useCase")}>
-                  <SelectTrigger className="h-11 text-base">
+                  <SelectTrigger className="h-11">
                     <SelectValue placeholder="Select use case" />
                   </SelectTrigger>
                   <SelectContent>
