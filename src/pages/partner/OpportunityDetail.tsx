@@ -239,10 +239,8 @@ export default function OpportunityDetail() {
               </CardContent>
             </Card>
 
-          </div>
-
           {/* Billing Installments */}
-          <Card>
+          <Card className="md:col-span-2">
             <CardHeader>
               <CardTitle className="text-sm font-medium flex items-center gap-2">
                 <DollarSign className="h-4 w-4" />
@@ -304,6 +302,7 @@ export default function OpportunityDetail() {
               )}
             </CardContent>
           </Card>
+          </div>
         </div>
       </div>
     </div>
