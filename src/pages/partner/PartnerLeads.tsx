@@ -191,10 +191,10 @@ const PartnerLeads = () => {
             <Table className="table-fixed [&_th]:border-r [&_th:last-child]:border-r-0 [&_td]:border-r [&_td:last-child]:border-r-0">
               <TableHeader>
                 <TableRow className="bg-muted/30 hover:bg-muted/30">
-                  <TableHead className={thClass} style={{ width: "20%" }} resizable onClick={() => handleSort("contact")}>
+                  <TableHead className={thClass} style={{ width: "16%" }} resizable onClick={() => handleSort("contact")}>
                     <span className="inline-flex items-center">Name<SortIcon active={sortKey === "contact"} dir={sortDir} /></span>
                   </TableHead>
-                  <TableHead className={`${thClass} hidden md:table-cell`} style={{ width: "26%" }} resizable onClick={() => handleSort("email")}>
+                  <TableHead className={`${thClass} hidden md:table-cell`} style={{ width: "22%" }} resizable onClick={() => handleSort("email")}>
                     <span className="inline-flex items-center">Email<SortIcon active={sortKey === "email"} dir={sortDir} /></span>
                   </TableHead>
                   <TableHead className={thClass} style={{ width: "20%" }} resizable onClick={() => handleSort("company")}>
@@ -207,7 +207,7 @@ const PartnerLeads = () => {
                     <span className="inline-flex items-center">Created Date<SortIcon active={sortKey === "created"} dir={sortDir} /></span>
                   </TableHead>
                   {isSuperAdmin && (
-                    <TableHead className={`${thClass} hidden lg:table-cell`} style={{ width: "160px" }}>
+                    <TableHead className={`${thClass} hidden lg:table-cell`} style={{ width: "200px" }}>
                       <TooltipProvider>
                         <Tooltip>
                           <TooltipTrigger asChild>
@@ -243,7 +243,7 @@ const PartnerLeads = () => {
                     </TableCell>
                     <TableCell className="py-2 hidden sm:table-cell">
                       <span className="text-sm text-muted-foreground tabular-nums">
-                        {new Date(lead.CreatedDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" })}
+                        {new Date(lead.CreatedDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
                       </span>
                     </TableCell>
                     {isSuperAdmin && (
