@@ -211,22 +211,19 @@ const PartnerOpportunities = () => {
             <Table className="table-fixed [&_th]:border-r [&_th:last-child]:border-r-0 [&_td]:border-r [&_td:last-child]:border-r-0">
               <TableHeader>
                 <TableRow className="bg-muted/30 hover:bg-muted/30">
-                  <TableHead className={thClass} style={{ width: "34%" }} resizable onClick={() => handleSort("name")}>
+                  <TableHead className={thClass} style={{ width: "40%" }} resizable onClick={() => handleSort("name")}>
                     <span className="inline-flex items-center">Opportunity Name<SortIcon active={sortKey === "name"} dir={sortDir} /></span>
                   </TableHead>
-                  <TableHead className={`${thClass} hidden md:table-cell`} style={{ width: "16%" }} resizable onClick={() => handleSort("account")}>
-                    <span className="inline-flex items-center">Account Name<SortIcon active={sortKey === "account"} dir={sortDir} /></span>
-                  </TableHead>
-                  <TableHead className={thClass} style={{ width: "14%" }} resizable onClick={() => handleSort("stage")}>
+                  <TableHead className={thClass} style={{ width: "16%" }} resizable onClick={() => handleSort("stage")}>
                     <span className="inline-flex items-center">Stage<SortIcon active={sortKey === "stage"} dir={sortDir} /></span>
                   </TableHead>
                   <TableHead className={`${thClass} hidden sm:table-cell`} style={{ width: "110px" }} resizable onClick={() => handleSort("closeDate")}>
                     <span className="inline-flex items-center">Close Date<SortIcon active={sortKey === "closeDate"} dir={sortDir} /></span>
                   </TableHead>
-                  <TableHead className={`${thClass} text-right hidden sm:table-cell`} style={{ width: "75px" }} resizable onClick={() => handleSort("arr")}>
+                  <TableHead className={`${thClass} text-right hidden sm:table-cell`} style={{ width: "95px" }} resizable onClick={() => handleSort("arr")}>
                     <span className="inline-flex items-center justify-end">ARR<SortIcon active={sortKey === "arr"} dir={sortDir} /></span>
                   </TableHead>
-                  <TableHead className={`${thClass} text-right`} style={{ width: "75px" }} resizable onClick={() => handleSort("amount")}>
+                  <TableHead className={`${thClass} text-right`} style={{ width: "95px" }} resizable onClick={() => handleSort("amount")}>
                     <span className="inline-flex items-center justify-end">TCV<SortIcon active={sortKey === "amount"} dir={sortDir} /></span>
                   </TableHead>
                   <TableHead className={`${thClass} hidden lg:table-cell`} style={{ width: "130px" }} resizable onClick={() => handleSort("ae")}>
@@ -251,9 +248,6 @@ const PartnerOpportunities = () => {
                   <TableRow key={opp.Id} className="cursor-pointer hover:bg-muted/50 h-[52px]" onClick={() => navigate(`${basePath}/opportunities/${opp.Id}`)}>
                     <TableCell className="py-2">
                       <p className="font-medium text-sm leading-tight truncate min-w-[140px] sm:min-w-[180px]">{opp.Name}</p>
-                    </TableCell>
-                    <TableCell className="py-2 hidden md:table-cell">
-                      <span className="text-sm">{opp.Account?.Name ?? "—"}</span>
                     </TableCell>
                     <TableCell className="py-2">
                       {opp.StageName ? (
