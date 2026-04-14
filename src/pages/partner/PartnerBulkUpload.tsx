@@ -281,6 +281,7 @@ const PartnerBulkUpload = () => {
 
       try {
         const fields: Record<string, unknown> = {
+          RecordTypeId: "0125b000000vvJJAAY",
           LeadSource: "Partner Referral",
           Status: "Pending",
         };

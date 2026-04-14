@@ -154,6 +154,7 @@ const PartnerReferralForm = () => {
     if (!user) { toast.error("Not authenticated"); return; }
 
     const fields: Record<string, unknown> = {
+      RecordTypeId: "0125b000000vvJJAAY",
       Company: form.company,
       Website: form.website,
       FirstName: form.firstName || null,
