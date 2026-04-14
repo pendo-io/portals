@@ -20,7 +20,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Search, Loader2, ArrowUp, ArrowDown, ArrowUpDown, ChevronLeft, ChevronRight, Lock } from "lucide-react";
+import { Search, Loader2, ArrowUp, ArrowDown, ArrowUpDown, ChevronLeft, ChevronRight } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useSfdcLeads } from "@/hooks/useSfdcLeads";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -207,12 +208,14 @@ const PartnerLeads = () => {
                   </TableHead>
                   {isSuperAdmin && (
                     <TableHead className={`${thClass} hidden lg:table-cell`} style={{ width: "160px" }}>
-                      <span className="inline-flex items-center gap-1.5">
-                        Partner Account
-                        <span className="inline-flex items-center gap-0.5 text-[10px] font-normal normal-case tracking-normal text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/30 rounded px-1 py-0.5">
-                          <Lock className="h-2.5 w-2.5" />Admin
-                        </span>
-                      </span>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <span className="inline-flex items-center cursor-default">Partner Account</span>
+                          </TooltipTrigger>
+                          <TooltipContent className="text-xs">Only visible to admins</TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
                     </TableHead>
                   )}
                 </TableRow>
