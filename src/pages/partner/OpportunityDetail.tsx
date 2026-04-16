@@ -120,7 +120,7 @@ export default function OpportunityDetail() {
             <div className="flex items-center gap-4 text-sm text-muted-foreground flex-wrap">
               <span className="flex items-center gap-1.5">
                 <DollarSign className="h-3.5 w-3.5" />
-                TCV {opp.Amount != null ? fmtCurrency(opp.Amount) : "—"}
+                ARR {opp.ARR__c != null ? fmtCurrency(opp.ARR__c) : "—"}
               </span>
             </div>
           </div>

@@ -130,8 +130,6 @@ const PartnerOpportunities = () => {
   }, [filtered, sortKey, sortDir]);
 
   const totalARR = filtered.reduce((sum, o) => sum + (o.ARR__c ?? 0), 0);
-  const totalTCV = filtered.reduce((sum, o) => sum + (o.Amount ?? 0), 0);
-
   const totalPages = Math.max(1, Math.ceil(sorted.length / PAGE_SIZE));
   const paginated = useMemo(() => {
     const start = page * PAGE_SIZE;
@@ -173,7 +171,6 @@ const PartnerOpportunities = () => {
               : `${filtered.length} of ${opps.length} opportunities`}
           </Badge>
           <Badge variant="secondary">ARR {formatCurrency(totalARR)}</Badge>
-          <Badge variant="secondary">TCV {formatCurrency(totalTCV)}</Badge>
           <Tooltip>
             <TooltipTrigger asChild>
               <Info className="h-3.5 w-3.5 text-muted-foreground cursor-default shrink-0" />
@@ -223,9 +220,6 @@ const PartnerOpportunities = () => {
                   <TableHead className={`${thClass} text-right hidden sm:table-cell`} style={{ width: "95px" }} resizable onClick={() => handleSort("arr")}>
                     <span className="inline-flex items-center justify-end">ARR<SortIcon active={sortKey === "arr"} dir={sortDir} /></span>
                   </TableHead>
-                  <TableHead className={`${thClass} text-right`} style={{ width: "95px" }} resizable onClick={() => handleSort("amount")}>
-                    <span className="inline-flex items-center justify-end">TCV<SortIcon active={sortKey === "amount"} dir={sortDir} /></span>
-                  </TableHead>
                   <TableHead className={`${thClass} hidden lg:table-cell`} style={{ width: "130px" }} resizable onClick={() => handleSort("ae")}>
                     <span className="inline-flex items-center">AE<SortIcon active={sortKey === "ae"} dir={sortDir} /></span>
                   </TableHead>
@@ -265,9 +259,6 @@ const PartnerOpportunities = () => {
                     </TableCell>
                     <TableCell className="py-2 text-right hidden sm:table-cell">
                       <span className="text-sm font-medium tabular-nums">{formatCurrency(opp.ARR__c)}</span>
-                    </TableCell>
-                    <TableCell className="py-2 text-right">
-                      <span className="text-sm font-medium tabular-nums">{formatCurrency(opp.Amount)}</span>
                     </TableCell>
                     <TableCell className="py-2 hidden lg:table-cell">
                       <span className="text-sm text-muted-foreground truncate block">{opp.Owner?.Name ?? "—"}</span>
