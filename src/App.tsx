@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation, useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import ThemeWrapper from "@/components/ThemeWrapper";
 import { AuthProvider } from "@/hooks/useAuth";
@@ -31,6 +31,17 @@ function ScrollToTop() {
   return null;
 }
 
+function InviteRedirect() {
+  const navigate = useNavigate();
+  useEffect(() => {
+    const hash = window.location.hash;
+    if (hash.includes("type=invite") && window.location.pathname !== "/accept-invite") {
+      navigate("/accept-invite" + hash, { replace: true });
+    }
+  }, [navigate]);
+  return null;
+}
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeWrapper>
@@ -40,6 +51,7 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <ScrollToTop />
+          <InviteRedirect />
           <Routes>
             <Route path="/login" element={<Login />} />
             <Route path="/accept-invite" element={<AcceptInvite />} />
