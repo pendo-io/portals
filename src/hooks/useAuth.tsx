@@ -47,6 +47,12 @@ interface UserMeta {
   sfdcAccountId: string | null;
   partnerOwnerId: string | null;
   isSuperAdmin: boolean;
+  email: string | null;
+  fullName: string | null;
+  partnerId: string | null;
+  createdAt: string | null;
+  partnerName: string | null;
+  partnerCreatedAt: string | null;
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -59,7 +65,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     session: null,
     partnerType: null,
     sfdcAccountId: null,
+    partnerOwnerId: null,
     isSuperAdmin: false,
+    email: null,
+    fullName: null,
+    partnerId: null,
+    createdAt: null,
+    partnerName: null,
+    partnerCreatedAt: null,
     loading: true,
   });
 
@@ -72,9 +85,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (session?.user) {
         fetchUserMeta(session.user.id).then((meta) => {
           setState({ user: session.user, session, ...meta, loading: false });
+          identifyPendoUser(session.user, meta);
         });
       } else {
-        setState({ user: null, session: null, partnerType: null, sfdcAccountId: null, partnerOwnerId: null, isSuperAdmin: false, loading: false });
+        setState({ user: null, session: null, partnerType: null, sfdcAccountId: null, partnerOwnerId: null, isSuperAdmin: false, email: null, fullName: null, partnerId: null, createdAt: null, partnerName: null, partnerCreatedAt: null, loading: false });
       }
     });
 
@@ -83,9 +97,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (session?.user) {
           fetchUserMeta(session.user.id).then((meta) => {
             setState({ user: session.user, session, ...meta, loading: false });
+            identifyPendoUser(session.user, meta);
           });
         } else {
-          setState({ user: null, session: null, partnerType: null, sfdcAccountId: null, partnerOwnerId: null, isSuperAdmin: false, loading: false });
+          setState({ user: null, session: null, partnerType: null, sfdcAccountId: null, partnerOwnerId: null, isSuperAdmin: false, email: null, fullName: null, partnerId: null, createdAt: null, partnerName: null, partnerCreatedAt: null, loading: false });
         }
       }
     );
@@ -160,7 +175,7 @@ async function fetchUserMeta(userId: string): Promise<UserMeta> {
   const [profileRes, rolesRes] = await Promise.all([
     supabase
       .from("profiles")
-      .select("partners(type, sfdc_account_id, owner_id)")
+      .select("email, full_name, partner_id, created_at, partners(id, name, type, sfdc_account_id, owner_id, created_at)")
       .eq("id", userId)
       .single(),
     supabase
@@ -169,12 +184,48 @@ async function fetchUserMeta(userId: string): Promise<UserMeta> {
       .eq("user_id", userId),
   ]);
 
-  const partner = (profileRes.data as any)?.partners;
+  const profile = profileRes.data as any;
+  const partner = profile?.partners;
   const partnerType = partner?.type ?? null;
   const sfdcAccountId = partner?.sfdc_account_id ?? null;
   const partnerOwnerId = partner?.owner_id ?? null;
   const roles = rolesRes.data?.map((r: any) => r.role) ?? [];
   const isSuperAdmin = roles.includes("super_admin");
 
-  return { partnerType, sfdcAccountId, partnerOwnerId, isSuperAdmin };
+  return {
+    partnerType,
+    sfdcAccountId,
+    partnerOwnerId,
+    isSuperAdmin,
+    email: profile?.email ?? null,
+    fullName: profile?.full_name ?? null,
+    partnerId: profile?.partner_id ?? null,
+    createdAt: profile?.created_at ?? null,
+    partnerName: partner?.name ?? null,
+    partnerCreatedAt: partner?.created_at ?? null,
+  };
+}
+
+function identifyPendoUser(user: User, meta: UserMeta) {
+  pendo.identify({
+    visitor: {
+      id: user.id,
+      email: meta.email || '',
+      full_name: meta.fullName || '',
+      role: meta.isSuperAdmin ? 'super_admin' : 'user',
+      partner_id: meta.partnerId || '',
+      created_at: meta.createdAt || '',
+      partner_type: meta.partnerType || '',
+      sfdc_account_id: meta.sfdcAccountId || '',
+      is_super_admin: meta.isSuperAdmin,
+    },
+    account: {
+      id: meta.partnerId || '',
+      name: meta.partnerName || '',
+      partner_type: meta.partnerType || '',
+      sfdc_account_id: meta.sfdcAccountId || '',
+      owner_id: meta.partnerOwnerId || '',
+      created_at: meta.partnerCreatedAt || '',
+    },
+  });
 }
