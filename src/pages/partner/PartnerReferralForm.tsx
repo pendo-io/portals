@@ -109,10 +109,31 @@ const PartnerReferralForm = () => {
       queryClient.invalidateQueries({ queryKey: ["sfdc-leads"] });
       setSubmitted(true);
       toast.success("Referral submitted successfully");
+      pendo.track("lead_referral_submitted", {
+        company: form.company,
+        website: form.website,
+        firstName: form.firstName,
+        lastName: form.lastName,
+        email: form.email,
+        title: form.title,
+        useCase: form.useCase,
+        numberOfUsers: form.numberOfUsers,
+        currentTechStack: form.currentTechStack,
+        competitors: form.competitors,
+        sfdcAccountId: sfdcAccountId || "",
+        partnerOwnerId: partnerOwnerId || "",
+        hasAdditionalInfo: Boolean(form.additionalInfo),
+      });
     },
     onError: (err: Error) => {
       console.error("Failed to create lead:", err);
       toast.error(err.message || "Failed to submit referral");
+      pendo.track("lead_referral_failed", {
+        errorMessage: (err.message || "Unknown error").substring(0, 200),
+        company: form.company,
+        email: form.email,
+        sfdcAccountId: sfdcAccountId || "",
+      });
     },
   });
 

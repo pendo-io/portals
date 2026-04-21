@@ -165,14 +165,28 @@ const AdminUsers = () => {
       sfdcAccountId: u.partners?.sfdc_account_id ?? null,
       partnerOwnerId: u.partners?.owner_id ?? null,
     });
+    pendo.track("user_impersonation_started", {
+      targetUserId: u.id,
+      targetEmail: u.email,
+      targetFullName: u.full_name || "",
+      targetPartnerType: partnerType || "",
+      targetSfdcAccountId: u.partners?.sfdc_account_id || "",
+    });
     toast.success(`Impersonating ${u.full_name || u.email}`);
     window.scrollTo(0, 0);
     navigate("/", { replace: true });
   };
 
-  const handleRoleChange = async (userId: string, role: string) => {
+  const handleRoleChange = async (userId: string, newRole: string) => {
+    const targetUser = allUsers.find((u) => u.id === userId);
+    const previousRole = targetUser ? getPrimaryRole(targetUser) : "";
     try {
-      await updateRole.mutateAsync({ userId, role });
+      await updateRole.mutateAsync({ userId, role: newRole });
+      pendo.track("user_role_changed", {
+        userId,
+        newRole,
+        previousRole,
+      });
       toast.success("Role updated");
     } catch (err) {
       toast.error((err as Error).message || "Failed to update role");
@@ -195,9 +209,15 @@ const AdminUsers = () => {
       }
       const newPartnerId = editPartnerId === "none" ? null : editPartnerId;
       if (newPartnerId !== editUser.partner_id) {
-        tasks.push(assignPartner.mutateAsync({ userId: editUser.id, partnerId: newPartnerId }));
+        tasks.push(assignPartner.mutateAsync({ userId: editUser.id, partnerId: newPartnerId, previousPartnerId: editUser.partner_id }));
       }
       await Promise.all(tasks);
+      pendo.track("user_profile_updated", {
+        userId: editUser.id,
+        nameChanged: editName.trim() !== (editUser.full_name || ""),
+        partnerChanged: newPartnerId !== editUser.partner_id,
+        newPartnerId: newPartnerId || "",
+      });
       toast.success("User updated");
       setEditUser(null);
     } catch (err) {
@@ -213,6 +233,11 @@ const AdminUsers = () => {
     setDeleteTarget(null);
     try {
       await deleteUser.mutateAsync(target.id);
+      pendo.track("user_deleted", {
+        deletedUserId: target.id,
+        deletedUserEmail: target.email,
+        deletedUserName: target.full_name || "",
+      });
       toast.success(`${target.full_name || target.email} has been deleted`);
     } catch (err) {
       toast.error((err as Error).message || "Failed to delete user");

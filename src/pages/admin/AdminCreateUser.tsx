@@ -64,6 +64,12 @@ const AdminCreateUser = () => {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to send invitation");
 
+      pendo.track("user_invited", {
+        email: email.trim(),
+        fullName: fullName.trim(),
+        role,
+        partnerId: partnerId !== "none" ? partnerId : "",
+      });
       toast.success(`Invitation sent to ${email.trim()}`);
       navigate("/admin/users");
     } catch (err) {

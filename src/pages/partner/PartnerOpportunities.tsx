@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { usePortalType } from "@/hooks/usePortalType";
@@ -102,6 +102,23 @@ const PartnerOpportunities = () => {
       return matchesSearch && matchesStage;
     });
   }, [opps, search, stageFilter]);
+
+  const searchTrackTimer = useRef<ReturnType<typeof setTimeout>>();
+  useEffect(() => {
+    if (!search && stageFilter === "all") return;
+    clearTimeout(searchTrackTimer.current);
+    searchTrackTimer.current = setTimeout(() => {
+      pendo.track("opportunity_search_executed", {
+        searchQuery: search,
+        stageFilter,
+        resultsCount: filtered.length,
+        totalARR: filtered.reduce((sum, o) => sum + (o.ARR__c ?? 0), 0),
+        sortKey: sortKey || "",
+        sortDirection: sortDir,
+      });
+    }, 500);
+    return () => clearTimeout(searchTrackTimer.current);
+  }, [search, stageFilter]);
 
   const sorted = useMemo(() => {
     if (!sortKey) return filtered;

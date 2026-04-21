@@ -119,6 +119,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const stopImpersonating = useCallback(() => {
+    const target = getStoredImpersonation();
+    if (target) {
+      pendo.track("user_impersonation_stopped", {
+        targetUserId: target.id,
+      });
+    }
     sessionStorage.removeItem(IMPERSONATE_KEY);
     setImpersonating(null);
   }, []);
