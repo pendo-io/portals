@@ -103,15 +103,21 @@ export function useAssignPartner() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ userId, partnerId }: { userId: string; partnerId: string | null }) => {
+    mutationFn: async ({ userId, partnerId, previousPartnerId }: { userId: string; partnerId: string | null; previousPartnerId?: string | null }) => {
       const { error } = await supabase
         .from("profiles")
         .update({ partner_id: partnerId })
         .eq("id", userId);
 
       if (error) throw error;
+      return { userId, partnerId, previousPartnerId };
     },
-    onSuccess: () => {
+    onSuccess: (_data, variables) => {
+      pendo.track("partner_assigned_to_user", {
+        userId: variables.userId,
+        newPartnerId: variables.partnerId || "",
+        previousPartnerId: variables.previousPartnerId || "",
+      });
       queryClient.invalidateQueries({ queryKey: ["admin-users"] });
     },
   });

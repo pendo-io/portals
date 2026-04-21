@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { usePortalType } from "@/hooks/usePortalType";
@@ -100,6 +100,22 @@ const PartnerLeads = () => {
       return matchesSearch && matchesStatus;
     });
   }, [leads, search, statusFilter]);
+
+  const searchTrackTimer = useRef<ReturnType<typeof setTimeout>>();
+  useEffect(() => {
+    if (!search && statusFilter === "all") return;
+    clearTimeout(searchTrackTimer.current);
+    searchTrackTimer.current = setTimeout(() => {
+      pendo.track("lead_search_executed", {
+        searchQuery: search,
+        statusFilter,
+        resultsCount: filtered.length,
+        sortKey: sortKey || "",
+        sortDirection: sortDir,
+      });
+    }, 500);
+    return () => clearTimeout(searchTrackTimer.current);
+  }, [search, statusFilter]);
 
   const sorted = useMemo(() => {
     if (!sortKey) return filtered;

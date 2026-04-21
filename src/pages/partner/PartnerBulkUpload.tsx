@@ -127,6 +127,10 @@ const PartnerBulkUpload = () => {
   /* ── Template download ── */
 
   const downloadTemplate = () => {
+    pendo.track("bulk_upload_template_downloaded", {
+      sfdcAccountId: sfdcAccountId || "",
+      partnerOwnerId: partnerOwnerId || "",
+    });
     const exampleRow: Record<string, string> = {
       "Company": "Acme Inc",
       "Website": "acme.com",
@@ -160,6 +164,10 @@ const PartnerBulkUpload = () => {
   const downloadErrors = () => {
     const failed = rows.filter((r) => r.status === "error");
     if (failed.length === 0) return;
+    pendo.track("bulk_upload_failed_rows_exported", {
+      failedRowCount: failed.length,
+      sfdcAccountId: sfdcAccountId || "",
+    });
     const data = failed.map((r) => ({ ...r.data, "Error": r.error || "" }));
     const csv = Papa.unparse(data);
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
@@ -242,6 +250,15 @@ const PartnerBulkUpload = () => {
         const rowErrs = parsed.filter((r) => r.status === "error").length;
         const headerErrs = errors.filter((e) => !e.startsWith("Row")).length;
 
+        pendo.track("bulk_upload_file_parsed", {
+          totalRows: parsed.length,
+          validRows: parsed.filter((r) => r.status === "pending").length,
+          invalidRows: parsed.filter((r) => r.status === "error").length,
+          fileName: file.name,
+          fileSize: file.size,
+          validationErrors: errors.length + parsed.filter((r) => r.status === "error").length,
+        });
+
         if (headerErrs > 0) {
           toast.error("Template mismatch — check column headers");
         } else if (rowErrs === parsed.length && parsed.length > 0) {
@@ -316,6 +333,14 @@ const PartnerBulkUpload = () => {
     setUploading(false);
     setDone(true);
 
+    pendo.track("bulk_upload_completed", {
+      totalRows: indices.length,
+      successCount: ok,
+      failureCount: fail,
+      sfdcAccountId: sfdcAccountId || "",
+      partnerOwnerId: partnerOwnerId || "",
+    });
+
     if (fail === 0) {
       toast.success(`All ${ok} lead${ok === 1 ? "" : "s"} uploaded successfully`);
     } else if (ok === 0) {
@@ -326,7 +351,13 @@ const PartnerBulkUpload = () => {
   };
 
   const handleUpload = () => uploadRows((r) => r.status === "pending");
-  const handleRetryFailed = () => uploadRows((r) => r.status === "error");
+  const handleRetryFailed = () => {
+    pendo.track("bulk_upload_retry", {
+      failedRowCount: rows.filter((r) => r.status === "error").length,
+      sfdcAccountId: sfdcAccountId || "",
+    });
+    uploadRows((r) => r.status === "error");
+  };
 
   const reset = () => {
     setRows([]);

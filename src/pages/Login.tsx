@@ -38,6 +38,15 @@ const Login = () => {
     if (signInError) {
       setError(signInError.message);
       setLoading(false);
+      pendo.track("user_login_failed", {
+        email,
+        errorMessage: signInError.message,
+      });
+    } else {
+      pendo.track("user_login_succeeded", {
+        email,
+        loginMethod: "email_password",
+      });
     }
   };
 

@@ -45,6 +45,9 @@ const AcceptInvite = () => {
     try {
       const { error } = await supabase.auth.updateUser({ password });
       if (error) throw error;
+      pendo.track("invite_accepted", {
+        email: email || "",
+      });
       toast.success("Password set — welcome to Partner Portal!");
       navigate("/");
     } catch (err) {
